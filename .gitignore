@@ -38,7 +38,11 @@ yarn-error.log*
 next-env.d.ts
 
 .genkit/*
+<<<<<<< HEAD
 .env*
+=======
+
+>>>>>>> 8c7225b (first commit)
 
 # firebase
 firebase-debug.log

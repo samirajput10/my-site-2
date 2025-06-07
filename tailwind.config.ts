@@ -10,9 +10,15 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+<<<<<<< HEAD
         body: ['Alegreya', 'serif'],
         headline: ['Belleza', 'sans-serif'],
         code: ['monospace'],
+=======
+        sans: ['Alegreya', 'serif'], // Defaulting to Alegreya for sans if not specified
+        body: ['Alegreya', 'serif'],
+        headline: ['Belleza', 'sans-serif'],
+>>>>>>> 8c7225b (first commit)
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -28,6 +34,10 @@ export default {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
+<<<<<<< HEAD
+=======
+          dark: 'hsl(var(--primary-dark))',
+>>>>>>> 8c7225b (first commit)
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -48,8 +58,18 @@ export default {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+<<<<<<< HEAD
         chart: {
           '1': 'hsl(var(--chart-1))',
+=======
+        
+        'footer-bg': 'hsl(var(--footer-bg))',
+        'footer-text': 'hsl(var(--footer-text))',
+        'footer-heading': 'hsl(var(--footer-heading))',
+
+        chart: {
+          '1': 'hsl(var(--chart-1))', // Assuming chart colors might be defined or kept from previous theme
+>>>>>>> 8c7225b (first commit)
           '2': 'hsl(var(--chart-2))',
           '3': 'hsl(var(--chart-3))',
           '4': 'hsl(var(--chart-4))',
@@ -67,9 +87,16 @@ export default {
         },
       },
       borderRadius: {
+<<<<<<< HEAD
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+=======
+        lg: 'var(--radius)', // 0.75rem from old theme
+        md: 'calc(var(--radius) - 0.125rem)', // Adjusted slightly
+        sm: 'calc(var(--radius) - 0.25rem)',  // Adjusted slightly
+        full: '9999px', 
+>>>>>>> 8c7225b (first commit)
       },
       keyframes: {
         'accordion-down': {

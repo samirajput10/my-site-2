@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8c7225b (first commit)
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -14,6 +18,7 @@ import { Filter as FilterIcon, X as ClearIcon } from 'lucide-react';
 interface FilterSidebarProps {
   onFilterChange: (filters: Partial<Filters>) => void;
   initialFilters?: Partial<Filters>;
+<<<<<<< HEAD
   maxPrice?: number;
 }
 
@@ -32,6 +37,46 @@ export function FilterSidebar({ onFilterChange, initialFilters = {}, maxPrice = 
       setPriceRange([priceRange[0], maxPrice]);
     }
   }, [maxPrice, priceRange]);
+=======
+  maxPrice?: number; // Overall maximum price for the slider
+}
+
+const DEFAULT_MAX_PRICE = 500; // Fallback if maxPrice prop is not provided or zero
+
+export function FilterSidebar({ 
+  onFilterChange, 
+  initialFilters = {}, 
+  maxPrice: maxPriceProp = DEFAULT_MAX_PRICE 
+}: FilterSidebarProps) {
+  
+  const effectiveMaxPrice = maxPriceProp > 0 ? maxPriceProp : DEFAULT_MAX_PRICE;
+
+  const [categories, setCategories] = useState<ProductCategory[]>(initialFilters.categories || []);
+  const [sizes, setSizes] = useState<ProductSize[]>(initialFilters.sizes || []);
+  
+  const [priceRange, setPriceRange] = useState<[number, number]>(() => {
+    if (initialFilters.priceRange) {
+      return [
+        Math.max(0, initialFilters.priceRange.min), 
+        Math.min(initialFilters.priceRange.max, effectiveMaxPrice)
+      ];
+    }
+    return [0, effectiveMaxPrice];
+  });
+
+  // Update priceRange if initialFilters or effectiveMaxPrice changes after initial mount
+  useEffect(() => {
+    setPriceRange(currentSelection => {
+        const newMin = initialFilters?.priceRange?.min !== undefined ? Math.max(0, initialFilters.priceRange.min) : 0;
+        const newMaxFromInitial = initialFilters?.priceRange?.max !== undefined ? initialFilters.priceRange.max : effectiveMaxPrice;
+        
+        return [
+            Math.min(newMin, effectiveMaxPrice), // Min shouldn't exceed effectiveMaxPrice
+            Math.min(newMaxFromInitial, effectiveMaxPrice) // Max from initial, capped by effectiveMaxPrice
+        ];
+    });
+  }, [initialFilters?.priceRange?.min, initialFilters?.priceRange?.max, effectiveMaxPrice]);
+>>>>>>> 8c7225b (first commit)
 
 
   const handleCategoryChange = (category: ProductCategory) => {
@@ -61,11 +106,19 @@ export function FilterSidebar({ onFilterChange, initialFilters = {}, maxPrice = 
   const clearFilters = () => {
     setCategories([]);
     setSizes([]);
+<<<<<<< HEAD
     setPriceRange([0, maxPrice]);
     onFilterChange({
       categories: [],
       sizes: [],
       priceRange: { min: 0, max: maxPrice },
+=======
+    setPriceRange([0, effectiveMaxPrice]); // Reset to full available range
+    onFilterChange({
+      categories: [],
+      sizes: [],
+      priceRange: { min: 0, max: effectiveMaxPrice },
+>>>>>>> 8c7225b (first commit)
     });
   };
 
@@ -89,6 +142,10 @@ export function FilterSidebar({ onFilterChange, initialFilters = {}, maxPrice = 
                   id={`category-${category}`}
                   checked={categories.includes(category)}
                   onCheckedChange={() => handleCategoryChange(category)}
+<<<<<<< HEAD
+=======
+                  aria-label={`Filter by category ${category}`}
+>>>>>>> 8c7225b (first commit)
                 />
                 <Label htmlFor={`category-${category}`} className="font-normal text-sm">{category}</Label>
               </div>
@@ -106,6 +163,11 @@ export function FilterSidebar({ onFilterChange, initialFilters = {}, maxPrice = 
                 size="sm"
                 onClick={() => handleSizeChange(size)}
                 className="text-xs"
+<<<<<<< HEAD
+=======
+                aria-pressed={sizes.includes(size)}
+                aria-label={`Filter by size ${size}`}
+>>>>>>> 8c7225b (first commit)
               >
                 {size}
               </Button>
@@ -117,11 +179,20 @@ export function FilterSidebar({ onFilterChange, initialFilters = {}, maxPrice = 
           <h4 className="mb-2 font-semibold text-md">Price Range</h4>
           <Slider
             min={0}
+<<<<<<< HEAD
             max={maxPrice}
             step={10}
             value={priceRange}
             onValueChange={(value) => handlePriceChange(value as [number, number])}
             className="mb-2"
+=======
+            max={effectiveMaxPrice} // Use the overall max price for the slider scale
+            step={10} // Or a more dynamic step, e.g., effectiveMaxPrice / 50
+            value={priceRange} // Current selected range
+            onValueChange={(value) => handlePriceChange(value as [number, number])}
+            className="mb-2"
+            aria-label="Price range slider"
+>>>>>>> 8c7225b (first commit)
           />
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>${priceRange[0]}</span>
