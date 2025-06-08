@@ -13,7 +13,7 @@ import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAle
 import { auth, db } from '@/lib/firebase/config';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, type Timestamp } from 'firebase/firestore';
 import type { Product, ProductCategory } from '@/types';
 import { ALL_CATEGORIES } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
@@ -56,6 +56,7 @@ export default function SellerDashboardPage() {
       const querySnapshot = await getDocs(q);
       const products = querySnapshot.docs.map(doc => {
         const data = doc.data();
+        const createdAtTimestamp = data.createdAt as Timestamp;
         return {
           id: doc.id,
           name: data.name || "Unnamed Product",
@@ -69,7 +70,7 @@ export default function SellerDashboardPage() {
                     ? data.sizes.split(',').map((s: string) => s.trim()).filter(Boolean) 
                     : ['One Size']),
           sellerId: data.sellerId || user.uid,
-          createdAt: data.createdAt, 
+          createdAt: createdAtTimestamp ? createdAtTimestamp.toDate().toISOString() : undefined, 
         } as Product;
       }).filter(product => product.name !== "Unnamed Product" || product.price !== 0);
       
@@ -161,7 +162,7 @@ export default function SellerDashboardPage() {
         description: `${formState.name} has been successfully listed.`,
       });
       setFormState({ name: '', description: '', price: '', imageUrl: 'https://placehold.co/300x400.png', category: '', sizes: '' });
-      if (currentUser) { // Refetch products for the current user
+      if (currentUser) { 
         fetchSellerProducts(currentUser);
       }
     } catch (error) {
@@ -213,7 +214,6 @@ export default function SellerDashboardPage() {
     );
   }
   
-  // Only render dashboard if isSeller is true
   if (isSeller === true) {
     return (
       <div className="container mx-auto py-8 md:py-12">

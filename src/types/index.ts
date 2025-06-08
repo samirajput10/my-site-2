@@ -8,7 +8,7 @@ export type Product = {
   category: ProductCategory;
   sizes: ProductSize[];
   sellerId: string; 
-  createdAt?: any; // Firestore ServerTimestamp
+  createdAt?: string; // Serialized Firestore Timestamp (ISO string)
 };
 
 export type ProductCategory = "Tops" | "Dresses" | "Pants" | "Accessories" | "Shoes" | "Outerwear";
