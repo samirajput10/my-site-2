@@ -14,8 +14,8 @@ import { auth, db } from '@/lib/firebase/config';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy } from 'firebase/firestore';
-import type { Product, ProductCategory } from '@/types'; // Added ProductCategory
-import { ALL_CATEGORIES } from '@/types'; // Added ALL_CATEGORIES
+import type { Product, ProductCategory } from '@/types';
+import { ALL_CATEGORIES } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
 
 interface NewProductForm {
@@ -34,7 +34,7 @@ export default function SellerDashboardPage() {
     name: '',
     description: '',
     price: '',
-    imageUrl: 'https://placehold.co/300x400.png', // Default placeholder
+    imageUrl: 'https://placehold.co/300x400.png',
     category: '',
     sizes: '',
   });
@@ -56,7 +56,6 @@ export default function SellerDashboardPage() {
       const querySnapshot = await getDocs(q);
       const products = querySnapshot.docs.map(doc => {
         const data = doc.data();
-        // Robust mapping with defaults
         return {
           id: doc.id,
           name: data.name || "Unnamed Product",
@@ -64,17 +63,27 @@ export default function SellerDashboardPage() {
           price: typeof data.price === 'number' ? data.price : 0,
           imageUrl: data.imageUrl || `https://placehold.co/300x400.png`,
           category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
-          sizes: Array.isArray(data.sizes) && data.sizes.length > 0 ? data.sizes.filter((s: any) => typeof s === 'string' && s.trim() !== '') : (typeof data.sizes === 'string' && data.sizes.length > 0 ? data.sizes.split(',').map((s: string) => s.trim()).filter(Boolean) : ['One Size']),
-          sellerId: data.sellerId || user.uid, // Fallback to current user's UID if missing, though query should ensure it
-          createdAt: data.createdAt, // Keep as is from Firestore (Timestamp object or null)
+          sizes: Array.isArray(data.sizes) && data.sizes.length > 0 
+                 ? data.sizes.filter((s: any) => typeof s === 'string' && s.trim() !== '') 
+                 : (typeof data.sizes === 'string' && data.sizes.length > 0 
+                    ? data.sizes.split(',').map((s: string) => s.trim()).filter(Boolean) 
+                    : ['One Size']),
+          sellerId: data.sellerId || user.uid,
+          createdAt: data.createdAt, 
         } as Product;
-      }).filter(product => product.name !== "Unnamed Product" || product.price !== 0); // Basic filter for potentially incomplete data
+      }).filter(product => product.name !== "Unnamed Product" || product.price !== 0);
       
       setSellerProducts(products);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching seller products:", error);
-      setListingError("Failed to load your products. Please try again or check console for details.");
-      toast({ title: "Error", description: "Could not fetch your products.", variant: "destructive" });
+      let userMessage = "Failed to load your products. Please try again or check your browser console for details.";
+      if (error && error.code === 'permission-denied') {
+        userMessage = "Permission denied. Please check your Firestore security rules to allow access to products. The browser console may have more details.";
+      } else if (error && error.message) {
+        userMessage = `Failed to load products: ${error.message}. Check browser console for full details.`;
+      }
+      setListingError(userMessage);
+      toast({ title: "Error Loading Products", description: "Could not fetch your products. See dashboard message for more info.", variant: "destructive" });
     } finally {
       setListingLoading(false);
     }
@@ -128,10 +137,9 @@ export default function SellerDashboardPage() {
         return;
     }
     if (!ALL_CATEGORIES.includes(formState.category as ProductCategory)) {
-        toast({ title: "Invalid Category", description: `Please enter a valid category (e.g., ${ALL_CATEGORIES.slice(0,3).join(', ')}...).`, variant: "destructive" });
+        toast({ title: "Invalid Category", description: `Please select a valid category. You entered: ${formState.category}. Valid categories are: ${ALL_CATEGORIES.join(', ')}.`, variant: "destructive" });
         return;
     }
-
 
     setIsSubmitting(true);
     try {
@@ -140,8 +148,8 @@ export default function SellerDashboardPage() {
         description: formState.description,
         price: parseFloat(formState.price),
         imageUrl: formState.imageUrl || 'https://placehold.co/300x400.png',
-        category: formState.category as ProductCategory, // Already validated
-        sizes: formState.sizes.split(',').map(s => s.trim()).filter(Boolean), // Ensure no empty strings from sizes
+        category: formState.category as ProductCategory,
+        sizes: formState.sizes.split(',').map(s => s.trim()).filter(Boolean),
         sellerId: currentUser.uid,
         createdAt: serverTimestamp(),
       };
@@ -153,7 +161,9 @@ export default function SellerDashboardPage() {
         description: `${formState.name} has been successfully listed.`,
       });
       setFormState({ name: '', description: '', price: '', imageUrl: 'https://placehold.co/300x400.png', category: '', sizes: '' });
-      fetchSellerProducts(currentUser); 
+      if (currentUser) { // Refetch products for the current user
+        fetchSellerProducts(currentUser);
+      }
     } catch (error) {
       console.error("Error adding product to Firestore:", error);
       toast({
@@ -203,6 +213,7 @@ export default function SellerDashboardPage() {
     );
   }
   
+  // Only render dashboard if isSeller is true
   if (isSeller === true) {
     return (
       <div className="container mx-auto py-8 md:py-12">
@@ -224,11 +235,11 @@ export default function SellerDashboardPage() {
               </div>
               <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-md">
                 <span className="font-medium">Pending Orders</span>
-                <span className="text-primary font-bold text-lg">0</span> {/* Static for now */}
+                <span className="text-primary font-bold text-lg">0</span>
               </div>
                <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-md">
                 <span className="font-medium">Total Sales</span>
-                <span className="text-accent font-bold text-lg">$0.00</span> {/* Static for now */}
+                <span className="text-accent font-bold text-lg">$0.00</span>
               </div>
             </CardContent>
           </Card>
@@ -241,6 +252,7 @@ export default function SellerDashboardPage() {
               </CardTitle>
               <CardDescription>
                 Fill in the details to list a new item in your store. Use comma-separated values for sizes (e.g. S,M,L).
+                 Valid categories are: {ALL_CATEGORIES.join(', ')}.
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
@@ -262,7 +274,10 @@ export default function SellerDashboardPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="category" className="text-base">Category *</Label>
-                    <Input id="category" name="category" value={formState.category} onChange={handleChange} placeholder={`e.g., ${ALL_CATEGORIES[0]}, ${ALL_CATEGORIES[1]}`} required className="mt-1" disabled={isSubmitting}/>
+                    <Input id="category" name="category" value={formState.category} onChange={handleChange} placeholder={`e.g., ${ALL_CATEGORIES[0]}`} list="category-options" required className="mt-1" disabled={isSubmitting}/>
+                    <datalist id="category-options">
+                        {ALL_CATEGORIES.map(cat => <option key={cat} value={cat} />)}
+                    </datalist>
                   </div>
                    <div>
                     <Label htmlFor="sizes" className="text-base">Sizes (comma-separated) *</Label>
@@ -308,9 +323,10 @@ export default function SellerDashboardPage() {
                 </div>
               )}
               {listingError && (
-                <div className="text-center py-8 text-destructive">
+                <div className="text-center py-8 text-destructive bg-destructive/10 p-4 rounded-md">
                   <AlertTriangle className="mx-auto h-12 w-12 mb-2" />
-                  <p>{listingError}</p>
+                  <p className="font-semibold">Error Loading Products</p>
+                  <p className="text-sm">{listingError}</p>
                 </div>
               )}
               {!listingLoading && !listingError && sellerProducts.length === 0 && (
@@ -337,7 +353,6 @@ export default function SellerDashboardPage() {
                         <p className="text-xs text-muted-foreground mt-1">Sizes: {product.sizes.join(', ')}</p>
                       </CardContent>
                       <CardFooter className="p-4 pt-0">
-                        {/* Placeholder for Edit/Delete buttons */}
                         <Button variant="outline" size="sm" className="w-full" disabled>Manage (Soon)</Button>
                       </CardFooter>
                     </Card>
@@ -350,6 +365,7 @@ export default function SellerDashboardPage() {
     );
   }
 
+  // Fallback for when isSeller is null (still loading auth/profile)
   return (
     <div className="container mx-auto flex min-h-[calc(100vh-10rem)] items-center justify-center py-12">
       <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -357,3 +373,4 @@ export default function SellerDashboardPage() {
     </div>
   );
 }
+
