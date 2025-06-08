@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,13 +6,13 @@
 @layer base {
   :root {
     --background: 190 83% 95%; /* Dimly Blue */
-    --foreground: 240 10% 3.9%; /* Default dark for text */
+    --foreground: 240 10% 3.9%;
 
     --primary: 7 100% 50%; /* Brightly Orange */
-    --primary-foreground: 0 0% 100%; /* White for contrast on orange */
+    --primary-foreground: 0 0% 100%;
 
     --accent: 150 56% 58%; /* Alert/Highlight Green */
-    --accent-foreground: 0 0% 100%; /* White for contrast on green */
+    --accent-foreground: 0 0% 100%;
 
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -56,9 +57,8 @@
     --input: 240 5% 12%;
     --ring: 7 100% 55%;
   }
-}
 
-@layer base {
+  /* Consolidating base styles here */
   * {
     @apply border-border;
   }
