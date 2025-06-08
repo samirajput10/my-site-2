@@ -14,7 +14,8 @@ import { auth, db } from '@/lib/firebase/config';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy } from 'firebase/firestore';
-import type { Product } from '@/types';
+import type { Product, ProductCategory } from '@/types'; // Added ProductCategory
+import { ALL_CATEGORIES } from '@/types'; // Added ALL_CATEGORIES
 import { ProductImage } from '@/components/products/ProductImage';
 
 interface NewProductForm {
@@ -53,11 +54,26 @@ export default function SellerDashboardPage() {
       const productsRef = collection(db, 'products');
       const q = query(productsRef, where('sellerId', '==', user.uid), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
-      const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      const products = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        // Robust mapping with defaults
+        return {
+          id: doc.id,
+          name: data.name || "Unnamed Product",
+          description: data.description || "",
+          price: typeof data.price === 'number' ? data.price : 0,
+          imageUrl: data.imageUrl || `https://placehold.co/300x400.png`,
+          category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
+          sizes: Array.isArray(data.sizes) && data.sizes.length > 0 ? data.sizes.filter((s: any) => typeof s === 'string' && s.trim() !== '') : (typeof data.sizes === 'string' && data.sizes.length > 0 ? data.sizes.split(',').map((s: string) => s.trim()).filter(Boolean) : ['One Size']),
+          sellerId: data.sellerId || user.uid, // Fallback to current user's UID if missing, though query should ensure it
+          createdAt: data.createdAt, // Keep as is from Firestore (Timestamp object or null)
+        } as Product;
+      }).filter(product => product.name !== "Unnamed Product" || product.price !== 0); // Basic filter for potentially incomplete data
+      
       setSellerProducts(products);
     } catch (error) {
       console.error("Error fetching seller products:", error);
-      setListingError("Failed to load your products. Please try again.");
+      setListingError("Failed to load your products. Please try again or check console for details.");
       toast({ title: "Error", description: "Could not fetch your products.", variant: "destructive" });
     } finally {
       setListingLoading(false);
@@ -74,7 +90,7 @@ export default function SellerDashboardPage() {
             const userProfile = JSON.parse(userProfileString);
             if (userProfile.role === 'seller') {
               setIsSeller(true);
-              fetchSellerProducts(user); // Fetch products when confirmed as seller
+              fetchSellerProducts(user); 
             } else {
               setIsSeller(false);
             }
@@ -104,9 +120,18 @@ export default function SellerDashboardPage() {
       return;
     }
     if (!formState.name || !formState.price || !formState.category || !formState.sizes) {
-        toast({ title: "Missing Fields", description: "Please fill in all required fields.", variant: "destructive" });
+        toast({ title: "Missing Fields", description: "Please fill in all required fields (Name, Price, Category, Sizes).", variant: "destructive" });
         return;
     }
+     if (parseFloat(formState.price) <= 0) {
+        toast({ title: "Invalid Price", description: "Price must be greater than zero.", variant: "destructive" });
+        return;
+    }
+    if (!ALL_CATEGORIES.includes(formState.category as ProductCategory)) {
+        toast({ title: "Invalid Category", description: `Please enter a valid category (e.g., ${ALL_CATEGORIES.slice(0,3).join(', ')}...).`, variant: "destructive" });
+        return;
+    }
+
 
     setIsSubmitting(true);
     try {
@@ -115,8 +140,8 @@ export default function SellerDashboardPage() {
         description: formState.description,
         price: parseFloat(formState.price),
         imageUrl: formState.imageUrl || 'https://placehold.co/300x400.png',
-        category: formState.category as Product["category"],
-        sizes: formState.sizes.split(',').map(s => s.trim()),
+        category: formState.category as ProductCategory, // Already validated
+        sizes: formState.sizes.split(',').map(s => s.trim()).filter(Boolean), // Ensure no empty strings from sizes
         sellerId: currentUser.uid,
         createdAt: serverTimestamp(),
       };
@@ -128,7 +153,7 @@ export default function SellerDashboardPage() {
         description: `${formState.name} has been successfully listed.`,
       });
       setFormState({ name: '', description: '', price: '', imageUrl: 'https://placehold.co/300x400.png', category: '', sizes: '' });
-      fetchSellerProducts(currentUser); // Refresh product list
+      fetchSellerProducts(currentUser); 
     } catch (error) {
       console.error("Error adding product to Firestore:", error);
       toast({
@@ -215,7 +240,7 @@ export default function SellerDashboardPage() {
                 Add New Product
               </CardTitle>
               <CardDescription>
-                Fill in the details to list a new item in your store. Use comma-separated values for sizes.
+                Fill in the details to list a new item in your store. Use comma-separated values for sizes (e.g. S,M,L).
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
@@ -227,7 +252,7 @@ export default function SellerDashboardPage() {
                   </div>
                   <div>
                     <Label htmlFor="price" className="text-base">Price ($) *</Label>
-                    <Input id="price" name="price" type="number" value={formState.price} onChange={handleChange} placeholder="e.g., 49.99" required className="mt-1" step="0.01" min="0" disabled={isSubmitting}/>
+                    <Input id="price" name="price" type="number" value={formState.price} onChange={handleChange} placeholder="e.g., 49.99" required className="mt-1" step="0.01" min="0.01" disabled={isSubmitting}/>
                   </div>
                 </div>
                 <div>
@@ -237,16 +262,28 @@ export default function SellerDashboardPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="category" className="text-base">Category *</Label>
-                    <Input id="category" name="category" value={formState.category} onChange={handleChange} placeholder="e.g., Dresses, Tops" required className="mt-1" disabled={isSubmitting}/>
+                    <Input id="category" name="category" value={formState.category} onChange={handleChange} placeholder={`e.g., ${ALL_CATEGORIES[0]}, ${ALL_CATEGORIES[1]}`} required className="mt-1" disabled={isSubmitting}/>
                   </div>
                    <div>
                     <Label htmlFor="sizes" className="text-base">Sizes (comma-separated) *</Label>
-                    <Input id="sizes" name="sizes" value={formState.sizes} onChange={handleChange} placeholder="e.g., S, M, L, XL" required className="mt-1" disabled={isSubmitting}/>
+                    <Input id="sizes" name="sizes" value={formState.sizes} onChange={handleChange} placeholder="e.g., S, M, L, XL or One Size" required className="mt-1" disabled={isSubmitting}/>
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="imageUrl" className="text-base">Image URL</Label>
                   <Input id="imageUrl" name="imageUrl" value={formState.imageUrl} onChange={handleChange} placeholder="https://example.com/image.jpg" className="mt-1" disabled={isSubmitting}/>
+                  {formState.imageUrl && (
+                     <div className="mt-2">
+                        <ProductImage 
+                            src={formState.imageUrl} 
+                            alt="Preview" 
+                            width={100} 
+                            height={133} 
+                            className="rounded-md border"
+                            aiHint="product preview"
+                        />
+                    </div>
+                  )}
                 </div>
                 <Button type="submit" size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isSubmitting}>
                   {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <PlusCircle className="mr-2 h-5 w-5" />}
@@ -287,9 +324,9 @@ export default function SellerDashboardPage() {
                          <ProductImage 
                             src={product.imageUrl} 
                             alt={product.name} 
-                            width={300} // Example width
-                            height={400} // Example height, maintain aspect ratio if possible
-                            className="w-full h-64 object-cover rounded-t-lg" // Fixed height for consistency
+                            width={300}
+                            height={400} 
+                            className="w-full h-64 object-cover rounded-t-lg" 
                             aiHint={`${product.category.toLowerCase()} ${product.name.split(' ')[0].toLowerCase()}`} 
                         />
                       </CardHeader>
