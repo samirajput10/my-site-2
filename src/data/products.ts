@@ -1,3 +1,4 @@
+
 import type { Product, ProductCategory, ProductSize } from '@/types';
 
 const PLACEHOLDER_IMAGE_URL = 'https://placehold.co/';
@@ -11,6 +12,8 @@ export const mockProducts: Product[] = [
     imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
     category: 'Dresses',
     sizes: ['S', 'M', 'L'],
+    sellerId: 'seller123',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '2',
@@ -20,6 +23,8 @@ export const mockProducts: Product[] = [
     imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
     category: 'Tops',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    sellerId: 'seller123',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '3',
@@ -29,6 +34,8 @@ export const mockProducts: Product[] = [
     imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
     category: 'Pants',
     sizes: ['S', 'M', 'L', 'XL'],
+    sellerId: 'seller456',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '4',
@@ -38,6 +45,8 @@ export const mockProducts: Product[] = [
     imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
     category: 'Accessories',
     sizes: ['One Size'],
+    sellerId: 'seller789',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '5',
@@ -47,6 +56,8 @@ export const mockProducts: Product[] = [
     imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
     category: 'Shoes',
     sizes: ['S', 'M', 'L'], // Typically shoe sizes are numbers, but using SML for consistency in mock data
+    sellerId: 'seller123',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '6',
@@ -56,6 +67,8 @@ export const mockProducts: Product[] = [
     imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
     category: 'Outerwear',
     sizes: ['S', 'M', 'L', 'XL'],
+    sellerId: 'seller456',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '7',
@@ -65,6 +78,8 @@ export const mockProducts: Product[] = [
     imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
     category: 'Accessories',
     sizes: ['One Size'],
+    sellerId: 'seller789',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '8',
@@ -74,6 +89,8 @@ export const mockProducts: Product[] = [
     imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
     category: 'Tops',
     sizes: ['S', 'M', 'L'],
+    sellerId: 'seller123',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '9',
@@ -83,6 +100,8 @@ export const mockProducts: Product[] = [
     imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
     category: 'Pants',
     sizes: ['XS', 'S', 'M'],
+    sellerId: 'seller456',
+    createdAt: new Date().toISOString(),
   },
   {
     id: '10',
@@ -92,14 +111,245 @@ export const mockProducts: Product[] = [
     imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
     category: 'Shoes',
     sizes: ['M', 'L', 'XL'],
+    sellerId: 'seller789',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '11',
+    name: 'Bohemian Rhapsody Blouse',
+    description: 'Flowy blouse with intricate embroidery, perfect for a bohemian look.',
+    price: 55.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Tops',
+    sizes: ['S', 'M'],
+    sellerId: 'sellerABC',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '12',
+    name: 'Urban Explorer Jacket',
+    description: 'Durable and stylish jacket designed for city adventures.',
+    price: 180.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Outerwear',
+    sizes: ['M', 'L', 'XL'],
+    sellerId: 'sellerDEF',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '13',
+    name: 'Vintage Wash Mom Jeans',
+    description: 'Comfortable high-waisted mom jeans with a cool vintage wash.',
+    price: 75.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Pants',
+    sizes: ['S', 'M', 'L'],
+    sellerId: 'sellerGHI',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '14',
+    name: 'Sunset Glow Midi Skirt',
+    description: 'Elegant midi skirt in a warm sunset hue, perfect for transitioning seasons.',
+    price: 68.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Dresses', // Assuming skirts fall under Dresses category for now
+    sizes: ['XS', 'S', 'M'],
+    sellerId: 'sellerJKL',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '15',
+    name: 'Woven Straw Hat',
+    description: 'Stylish wide-brim straw hat for sun protection and a chic summer look.',
+    price: 30.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Accessories',
+    sizes: ['One Size'],
+    sellerId: 'sellerMNO',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '16',
+    name: 'Leather Loafers',
+    description: 'Classic leather loafers, combining comfort and timeless style.',
+    price: 110.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Shoes',
+    sizes: ['M', 'L'],
+    sellerId: 'sellerPQR',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '17',
+    name: 'Chunky Knit Cardigan',
+    description: 'Oversized and cozy chunky knit cardigan for ultimate comfort.',
+    price: 90.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Outerwear',
+    sizes: ['One Size'],
+    sellerId: 'sellerSTU',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '18',
+    name: 'Delicate Layered Necklace',
+    description: 'A set of three delicate gold-plated necklaces for a layered look.',
+    price: 40.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Accessories',
+    sizes: ['One Size'],
+    sellerId: 'sellerVWX',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '19',
+    name: 'Sporty Chic Leggings',
+    description: 'High-performance leggings that are perfect for workouts or casual wear.',
+    price: 60.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Pants',
+    sizes: ['S', 'M', 'L'],
+    sellerId: 'sellerYZA',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '20',
+    name: 'Floral Print Sundress',
+    description: 'Light and airy sundress with a vibrant floral print, ideal for warm days.',
+    price: 72.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Dresses',
+    sizes: ['S', 'M', 'L'],
+    sellerId: 'sellerBCD',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '21',
+    name: 'Cropped Hoodie',
+    description: 'Fashionable cropped hoodie in a soft cotton blend.',
+    price: 48.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Tops',
+    sizes: ['XS', 'S', 'M'],
+    sellerId: 'sellerEFG',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '22',
+    name: 'Puffer Vest',
+    description: 'Lightweight puffer vest, great for layering in cooler weather.',
+    price: 85.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Outerwear',
+    sizes: ['S', 'M', 'L', 'XL'],
+    sellerId: 'sellerHIJ',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '23',
+    name: 'Tailored Blazer',
+    description: 'Sharp and sophisticated tailored blazer for a polished look.',
+    price: 140.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Outerwear',
+    sizes: ['S', 'M', 'L'],
+    sellerId: 'sellerKLM',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '24',
+    name: 'Pleated Midi Dress',
+    description: 'Elegant pleated midi dress with a flattering A-line silhouette.',
+    price: 95.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Dresses',
+    sizes: ['M', 'L', 'XL'],
+    sellerId: 'sellerNOP',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '25',
+    name: 'Canvas Tote Bag',
+    description: 'Durable and spacious canvas tote bag, perfect for daily essentials.',
+    price: 35.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Accessories',
+    sizes: ['One Size'],
+    sellerId: 'sellerQRS',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '26',
+    name: 'Suede Ankle Strap Heels',
+    description: 'Elegant suede heels with a delicate ankle strap, perfect for special occasions.',
+    price: 130.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Shoes',
+    sizes: ['S', 'M', 'L'], // Representing shoe sizes
+    sellerId: 'sellerTUV',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '27',
+    name: 'Graphic Print Sweatshirt',
+    description: 'Comfortable sweatshirt with a unique graphic print.',
+    price: 58.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Tops',
+    sizes: ['M', 'L', 'XL'],
+    sellerId: 'sellerWXY',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '28',
+    name: 'Wide Leg Linen Pants',
+    description: 'Breathable wide-leg linen pants for a relaxed yet stylish look.',
+    price: 78.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Pants',
+    sizes: ['S', 'M', 'L'],
+    sellerId: 'sellerZAB',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '29',
+    name: 'Patterned Kimono',
+    description: 'Lightweight kimono with a beautiful pattern, perfect as a cover-up or statement piece.',
+    price: 62.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Outerwear',
+    sizes: ['One Size'],
+    sellerId: 'sellerCDE',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '30',
+    name: 'Statement Earrings',
+    description: 'Bold and beautiful statement earrings to elevate any outfit.',
+    price: 28.00,
+    imageUrl: `${PLACEHOLDER_IMAGE_URL}300x450.png`,
+    category: 'Accessories',
+    sizes: ['One Size'],
+    sellerId: 'sellerFGH',
+    createdAt: new Date().toISOString(),
   },
 ];
 
 export const getProductById = (id: string): Product | undefined => {
-  return mockProducts.find(product => product.id === id);
+  // First, try to find in mockProducts (if this function is still used elsewhere for mock data)
+  const mockProduct = mockProducts.find(product => product.id === id);
+  if (mockProduct) return mockProduct;
+
+  // In a real scenario, you'd fetch from Firestore here if not found in mock,
+  // but for now, we assume product detail page will be updated to fetch directly.
+  console.warn(`getProductById: Product with ID ${id} not found in mock data. Consider fetching from DB.`);
+  return undefined;
 };
 
 export const getProducts = (filters?: { category?: ProductCategory, searchQuery?: string }): Product[] => {
+  // This function currently operates on mockProducts.
+  // The shop page now fetches from DB, so this might be for other uses or can be deprecated.
   let products = mockProducts;
   if (filters?.category) {
     products = products.filter(p => p.category === filters.category);
@@ -109,3 +359,5 @@ export const getProducts = (filters?: { category?: ProductCategory, searchQuery?
   }
   return products;
 };
+
+    
