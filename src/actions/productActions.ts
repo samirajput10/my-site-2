@@ -3,7 +3,7 @@
 
 import { db } from '@/lib/firebase/config';
 import type { Product, ProductCategory } from '@/types';
-import { ALL_CATEGORIES }_from_ '@/types';
+import { ALL_CATEGORIES } from '@/types';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 
 export async function getAllProductsFromDB(): Promise<Product[] | { error: string }> {
