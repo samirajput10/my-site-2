@@ -1,25 +1,26 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import type { Product, Filters, ProductCategory, ProductSize } from '@/types';
+import type { Product, Filters } from '@/types';
 import { ProductCard } from './ProductCard';
-import { mockProducts } from '@/data/products'; // Using mock products directly for client-side filtering
+// import { mockProducts } from '@/data/products'; // No longer using mockProducts
 
 interface ProductListProps {
-  initialProducts?: Product[]; // For potential server-side pre-fetching
+  initialProducts?: Product[]; 
   filters: Partial<Filters>;
 }
 
 export function ProductList({ initialProducts, filters }: ProductListProps) {
-  const [productsToDisplay, setProductsToDisplay] = useState<Product[]>(initialProducts || mockProducts);
+  const [productsToDisplay, setProductsToDisplay] = useState<Product[]>(initialProducts || []);
 
   const filteredProducts = useMemo(() => {
-    let tempProducts = initialProducts || mockProducts;
+    let tempProducts = initialProducts || [];
 
     if (filters.searchQuery) {
       tempProducts = tempProducts.filter(p =>
         p.name.toLowerCase().includes(filters.searchQuery!.toLowerCase()) ||
-        p.description.toLowerCase().includes(filters.searchQuery!.toLowerCase())
+        (p.description && p.description.toLowerCase().includes(filters.searchQuery!.toLowerCase()))
       );
     }
 
@@ -43,14 +44,26 @@ export function ProductList({ initialProducts, filters }: ProductListProps) {
     setProductsToDisplay(filteredProducts);
   }, [filteredProducts]);
 
-  if (productsToDisplay.length === 0) {
-    return (
+  // The parent component (ShopPage) now handles the main loading/error states for initialProducts.
+  // This component just displays what it's given or the filtered result.
+  if (!initialProducts || initialProducts.length === 0 && !filters.searchQuery) { // Show message if initial list is empty AND no search is active
+     return (
       <div className="text-center py-10">
-        <h2 className="text-2xl font-semibold mb-2">No Products Found</h2>
+        <h2 className="text-2xl font-semibold mb-2">No Products Available</h2>
+        <p className="text-muted-foreground">Check back later or try adjusting your filters if applied.</p>
+      </div>
+    );
+  }
+  
+  if (productsToDisplay.length === 0) {
+     return (
+      <div className="text-center py-10">
+        <h2 className="text-2xl font-semibold mb-2">No Products Found Matching Your Criteria</h2>
         <p className="text-muted-foreground">Try adjusting your filters or search terms.</p>
       </div>
     );
   }
+
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
