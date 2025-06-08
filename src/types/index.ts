@@ -1,12 +1,14 @@
+
 export type Product = {
-  id: string;
+  id: string; // Firestore document ID when fetched
   name: string;
   description: string;
   price: number;
   imageUrl: string;
   category: ProductCategory;
   sizes: ProductSize[];
-  sellerId?: string; // Optional for now
+  sellerId: string; 
+  createdAt?: any; // Firestore ServerTimestamp
 };
 
 export type ProductCategory = "Tops" | "Dresses" | "Pants" | "Accessories" | "Shoes" | "Outerwear";

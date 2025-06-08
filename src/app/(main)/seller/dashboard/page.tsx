@@ -7,12 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
-import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert } from 'lucide-react';
-import { auth } from '@/lib/firebase/config';
+import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks } from 'lucide-react';
+import { auth, db } from '@/lib/firebase/config';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy } from 'firebase/firestore';
+import type { Product } from '@/types';
+import { ProductImage } from '@/components/products/ProductImage';
 
 interface NewProductForm {
   name: string;
@@ -30,40 +33,60 @@ export default function SellerDashboardPage() {
     name: '',
     description: '',
     price: '',
-    imageUrl: '',
+    imageUrl: 'https://placehold.co/300x400.png', // Default placeholder
     category: '',
     sizes: '',
   });
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isSeller, setIsSeller] = useState<boolean | null>(null); // null for loading, true/false for status
+  const [isSeller, setIsSeller] = useState<boolean | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
+  const [listingLoading, setListingLoading] = useState(false);
+  const [listingError, setListingError] = useState<string | null>(null);
+
+  const fetchSellerProducts = async (user: User) => {
+    if (!user) return;
+    setListingLoading(true);
+    setListingError(null);
+    try {
+      const productsRef = collection(db, 'products');
+      const q = query(productsRef, where('sellerId', '==', user.uid), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      setSellerProducts(products);
+    } catch (error) {
+      console.error("Error fetching seller products:", error);
+      setListingError("Failed to load your products. Please try again.");
+      toast({ title: "Error", description: "Could not fetch your products.", variant: "destructive" });
+    } finally {
+      setListingLoading(false);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (user) {
-        // Check role from localStorage - FOR PROTOTYPING ONLY
-        // In a real app, this should come from a secure backend source (e.g., Firestore user document custom claims)
         const userProfileString = localStorage.getItem(`userProfile_${user.uid}`);
         if (userProfileString) {
           try {
             const userProfile = JSON.parse(userProfileString);
             if (userProfile.role === 'seller') {
               setIsSeller(true);
+              fetchSellerProducts(user); // Fetch products when confirmed as seller
             } else {
               setIsSeller(false);
             }
           } catch (e) {
             console.error("Error parsing user profile from localStorage", e);
-            setIsSeller(false); // Default to not seller on error
+            setIsSeller(false);
           }
         } else {
-          // If no profile in localStorage, assume not a seller for safety.
-          // This could happen if user clears localStorage or signup didn't save it.
-          setIsSeller(false); 
+          setIsSeller(false);
         }
       } else {
-        setIsSeller(false); // No user logged in
+        setIsSeller(false);
       }
       setLoadingAuth(false);
     });
@@ -74,24 +97,56 @@ export default function SellerDashboardPage() {
     setFormState({ ...formState, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("New Product Data:", formState);
-    toast({
-      title: "Product Submitted (Mock)",
-      description: `${formState.name} has been submitted for review. This is a demo feature.`,
-    });
-    setFormState({ name: '', description: '', price: '', imageUrl: '', category: '', sizes: '' });
+    if (!currentUser || !isSeller) {
+      toast({ title: "Error", description: "You must be a logged-in seller to add products.", variant: "destructive" });
+      return;
+    }
+    if (!formState.name || !formState.price || !formState.category || !formState.sizes) {
+        toast({ title: "Missing Fields", description: "Please fill in all required fields.", variant: "destructive" });
+        return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const productData = {
+        name: formState.name,
+        description: formState.description,
+        price: parseFloat(formState.price),
+        imageUrl: formState.imageUrl || 'https://placehold.co/300x400.png',
+        category: formState.category as Product["category"],
+        sizes: formState.sizes.split(',').map(s => s.trim()),
+        sellerId: currentUser.uid,
+        createdAt: serverTimestamp(),
+      };
+
+      await addDoc(collection(db, 'products'), productData);
+      
+      toast({
+        title: "Product Added",
+        description: `${formState.name} has been successfully listed.`,
+      });
+      setFormState({ name: '', description: '', price: '', imageUrl: 'https://placehold.co/300x400.png', category: '', sizes: '' });
+      fetchSellerProducts(currentUser); // Refresh product list
+    } catch (error) {
+      console.error("Error adding product to Firestore:", error);
+      toast({
+        title: "Failed to Add Product",
+        description: "There was an error listing your product. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Use useEffect for redirection to prevent attempting to update during render
   useEffect(() => {
     if (!loadingAuth && !currentUser) {
       toast({ title: "Access Denied", description: "Please login to view the seller dashboard.", variant: "destructive"});
       router.push('/login');
     }
   }, [loadingAuth, currentUser, router, toast]);
-
 
   if (loadingAuth) {
     return (
@@ -103,8 +158,6 @@ export default function SellerDashboardPage() {
   }
 
   if (!currentUser) {
-    // This state will be brief as the useEffect above will redirect.
-    // Showing a message can improve UX.
     return (
          <div className="container mx-auto flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center py-12 text-center">
             <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
@@ -142,15 +195,15 @@ export default function SellerDashboardPage() {
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-md">
                 <span className="font-medium">Active Listings</span>
-                <span className="text-primary font-bold text-lg">120</span>
+                <span className="text-primary font-bold text-lg">{sellerProducts.length}</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-md">
                 <span className="font-medium">Pending Orders</span>
-                <span className="text-primary font-bold text-lg">15</span>
+                <span className="text-primary font-bold text-lg">0</span> {/* Static for now */}
               </div>
                <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-md">
                 <span className="font-medium">Total Sales</span>
-                <span className="text-accent font-bold text-lg">$5,670.00</span>
+                <span className="text-accent font-bold text-lg">$0.00</span> {/* Static for now */}
               </div>
             </CardContent>
           </Card>
@@ -162,42 +215,42 @@ export default function SellerDashboardPage() {
                 Add New Product
               </CardTitle>
               <CardDescription>
-                Fill in the details to list a new item in your store.
+                Fill in the details to list a new item in your store. Use comma-separated values for sizes.
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="name" className="text-base">Product Name</Label>
-                    <Input id="name" name="name" value={formState.name} onChange={handleChange} placeholder="e.g., Summer Floral Dress" required className="mt-1" />
+                    <Label htmlFor="name" className="text-base">Product Name *</Label>
+                    <Input id="name" name="name" value={formState.name} onChange={handleChange} placeholder="e.g., Summer Floral Dress" required className="mt-1" disabled={isSubmitting} />
                   </div>
                   <div>
-                    <Label htmlFor="price" className="text-base">Price ($)</Label>
-                    <Input id="price" name="price" type="number" value={formState.price} onChange={handleChange} placeholder="e.g., 49.99" required className="mt-1" />
+                    <Label htmlFor="price" className="text-base">Price ($) *</Label>
+                    <Input id="price" name="price" type="number" value={formState.price} onChange={handleChange} placeholder="e.g., 49.99" required className="mt-1" step="0.01" min="0" disabled={isSubmitting}/>
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="description" className="text-base">Description</Label>
-                  <Textarea id="description" name="description" value={formState.description} onChange={handleChange} placeholder="Describe your product..." rows={4} required className="mt-1" />
+                  <Textarea id="description" name="description" value={formState.description} onChange={handleChange} placeholder="Describe your product..." rows={4} className="mt-1" disabled={isSubmitting}/>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="category" className="text-base">Category</Label>
-                    <Input id="category" name="category" value={formState.category} onChange={handleChange} placeholder="e.g., Dresses, Tops" required className="mt-1" />
+                    <Label htmlFor="category" className="text-base">Category *</Label>
+                    <Input id="category" name="category" value={formState.category} onChange={handleChange} placeholder="e.g., Dresses, Tops" required className="mt-1" disabled={isSubmitting}/>
                   </div>
                    <div>
-                    <Label htmlFor="sizes" className="text-base">Sizes (comma-separated)</Label>
-                    <Input id="sizes" name="sizes" value={formState.sizes} onChange={handleChange} placeholder="e.g., S, M, L, XL" required className="mt-1" />
+                    <Label htmlFor="sizes" className="text-base">Sizes (comma-separated) *</Label>
+                    <Input id="sizes" name="sizes" value={formState.sizes} onChange={handleChange} placeholder="e.g., S, M, L, XL" required className="mt-1" disabled={isSubmitting}/>
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="imageUrl" className="text-base">Image URL</Label>
-                  <Input id="imageUrl" name="imageUrl" value={formState.imageUrl} onChange={handleChange} placeholder="https://example.com/image.jpg" required className="mt-1" />
+                  <Input id="imageUrl" name="imageUrl" value={formState.imageUrl} onChange={handleChange} placeholder="https://example.com/image.jpg" className="mt-1" disabled={isSubmitting}/>
                 </div>
-                <Button type="submit" size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <PlusCircle className="mr-2 h-5 w-5" />
-                  Add Product
+                <Button type="submit" size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isSubmitting}>
+                  {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <PlusCircle className="mr-2 h-5 w-5" />}
+                  {isSubmitting ? 'Adding Product...' : 'Add Product'}
                 </Button>
               </CardContent>
             </form>
@@ -205,20 +258,61 @@ export default function SellerDashboardPage() {
         </div>
          <Card className="mt-8 shadow-lg rounded-xl">
             <CardHeader>
-              <CardTitle className="text-xl">Manage Existing Products</CardTitle>
+              <CardTitle className="text-xl flex items-center"><ListChecks className="mr-2 h-5 w-5"/>Your Listed Products</CardTitle>
               <CardDescription>
-                Product listing and management tools will be available here soon.
+                View and manage products you have listed.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground italic">Feature under development.</p>
+              {listingLoading && (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                  <p className="ml-4 text-muted-foreground">Loading your products...</p>
+                </div>
+              )}
+              {listingError && (
+                <div className="text-center py-8 text-destructive">
+                  <AlertTriangle className="mx-auto h-12 w-12 mb-2" />
+                  <p>{listingError}</p>
+                </div>
+              )}
+              {!listingLoading && !listingError && sellerProducts.length === 0 && (
+                <p className="text-muted-foreground text-center py-8">You haven&apos;t listed any products yet. Add one using the form above!</p>
+              )}
+              {!listingLoading && !listingError && sellerProducts.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {sellerProducts.map(product => (
+                    <Card key={product.id} className="flex flex-col">
+                      <CardHeader className="p-0">
+                         <ProductImage 
+                            src={product.imageUrl} 
+                            alt={product.name} 
+                            width={300} // Example width
+                            height={400} // Example height, maintain aspect ratio if possible
+                            className="w-full h-64 object-cover rounded-t-lg" // Fixed height for consistency
+                            aiHint={`${product.category.toLowerCase()} ${product.name.split(' ')[0].toLowerCase()}`} 
+                        />
+                      </CardHeader>
+                      <CardContent className="p-4 flex-grow">
+                        <h3 className="text-lg font-semibold truncate" title={product.name}>{product.name}</h3>
+                        <p className="text-sm text-muted-foreground">{product.category}</p>
+                        <p className="text-xl font-bold text-primary mt-1">${product.price.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Sizes: {product.sizes.join(', ')}</p>
+                      </CardContent>
+                      <CardFooter className="p-4 pt-0">
+                        {/* Placeholder for Edit/Delete buttons */}
+                        <Button variant="outline" size="sm" className="w-full" disabled>Manage (Soon)</Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
       </div>
     );
   }
 
-  // Fallback for isSeller === null, if somehow reached despite loadingAuth.
   return (
     <div className="container mx-auto flex min-h-[calc(100vh-10rem)] items-center justify-center py-12">
       <Loader2 className="h-12 w-12 animate-spin text-primary" />
