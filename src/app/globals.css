@@ -4,167 +4,91 @@
 
 @layer base {
   :root {
-<<<<<<< HEAD
-    --background: 193 88% 95%; /* #e8f9fd Dimly Blue */
-    --foreground: 215 25% 27%; /* Dark Blue/Gray for text */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
 
-    --card: 0 0% 100%; /* White */
-    --card-foreground: 215 25% 27%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
 
-    --popover: 0 0% 100%; /* White */
-    --popover-foreground: 215 25% 27%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
 
-    --primary: 7 100% 50%; /* #ff1e00 Brightly Orange */
-    --primary-foreground: 0 0% 98%; /* White */
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 193 60% 90%; /* Lighter blue, derived from background */
-    --secondary-foreground: 215 25% 27%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 3.9%;
 
-    --muted: 193 50% 85%; /* Muted blue */
-    --muted-foreground: 215 20% 45%; /* Darker muted text */
+    --muted: 240 5% 90%;
+    --muted-foreground: 240 5% 45%;
 
-    --accent: 151 52% 58%; /* #59ce8f Alert/Highlight Green */
-    --accent-foreground: 0 0% 100%; /* White text on accent */
-=======
-    --background: 193 80% 96%; /* Light teal/cyan */
-    --foreground: 215 25% 27%; /* Dark blue/gray */
-
-    --card: 193 80% 92%;
-    --card-foreground: 215 25% 27%;
-
-    --popover: 193 80% 92%;
-    --popover-foreground: 215 25% 27%;
-
-    --primary: 7 100% 73%; /* Brightly Orange */
-    --primary-foreground: 215 25% 20%; /* Darker for readability on orange */
-    
-    --primary-dark: 7 100% 50%; /* Darker orange for hover or active states */
-
-    --secondary: 193 30% 85%;
-    --secondary-foreground: 7 100% 73%; /* Orange for text on secondary */
-
-    --muted: 193 30% 85%;
-    --muted-foreground: 215 16% 47%;
-
-    --accent: 151 52% 58%; /* Greenish accent */
+    --accent: 150 70% 45%;
     --accent-foreground: 0 0% 100%;
->>>>>>> 8c7225b (first commit)
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-<<<<<<< HEAD
-    --border: 193 30% 88%; /* Light blue-gray border */
-    --input: 193 30% 92%; /* Slightly lighter for input background */
-    --ring: 7 100% 50%; /* Primary color for rings */
+    --border: 240 5% 85%;
+    --input: 240 5% 90%;
+    --ring: 25 95% 53%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* Sidebar specific colors - can be adjusted if sidebar needs distinct styling */
-    --sidebar-background: 193 80% 92%;
-    --sidebar-foreground: 215 25% 27%;
-    --sidebar-primary: 7 100% 50%;
-=======
-    --border: 193 30% 85%;
-    --input: 193 30% 85%;
-    --ring: 7 100% 73%; /* Orange for focus rings */
+    --footer-bg: 240 5% 15%;
+    --footer-text: 0 0% 80%;
+    --footer-heading: 0 0% 95%;
 
-    --radius: 0.75rem; /* Old radius */
-    
-    /* Footer specific colors */
-    --footer-bg: 215 25% 27%; /* Dark blue/gray */
-    --footer-text: 193 30% 70%; /* Lighter teal/cyan */
-    --footer-heading: 193 80% 96%; /* Light teal/cyan */
-    
-    /* Sidebar specific colors (reverted) */
-    --sidebar-background: 193 80% 92%;
-    --sidebar-foreground: 215 25% 27%;
-    --sidebar-primary: 7 100% 73%;
->>>>>>> 8c7225b (first commit)
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 10% 3.9%;
+    --sidebar-primary: 25 95% 53%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 151 52% 58%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 193 30% 85%;
-<<<<<<< HEAD
-    --sidebar-ring: 7 100% 50%;
+    --sidebar-accent: 30 90% 50%;
+    --sidebar-accent-foreground: 240 10% 3.9%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 25 95% 53%;
   }
 
   .dark {
-    --background: 220 15% 10%; /* Dark blue-gray */
-    --foreground: 0 0% 95%; /* Light gray text */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
 
-    --card: 220 15% 15%;
-    --card-foreground: 0 0% 95%;
+    --card: 240 5% 10%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 220 15% 15%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 240 5% 10%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 7 100% 55%; /* Slightly lighter orange for dark mode */
-    --primary-foreground: 0 0% 10%; /* Dark text on orange */
+    --primary: 25 95% 58%;
+    --primary-foreground: 0 0% 10%;
 
-    --secondary: 220 15% 20%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 240 5% 15%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 220 15% 25%;
+    --muted: 240 5% 20%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 151 52% 65%; /* Slightly lighter green for dark mode */
-    --accent-foreground: 0 0% 10%; /* Dark text on accent */
-=======
-    --sidebar-ring: 7 100% 73%;
-  }
-
-  .dark {
-    --background: 215 25% 15%; /* Dark blue/gray */
-    --foreground: 193 80% 96%; /* Light teal/cyan */
-
-    --card: 215 25% 18%;
-    --card-foreground: 193 80% 96%;
-
-    --popover: 215 25% 18%;
-    --popover-foreground: 193 80% 96%;
-
-    --primary: 7 100% 65%; /* Lighter orange for dark mode */
-    --primary-foreground: 215 25% 15%; 
-    
-    --primary-dark: 7 100% 45%;
-
-    --secondary: 193 30% 30%;
-    --secondary-foreground: 7 100% 65%;
-
-    --muted: 193 30% 30%;
-    --muted-foreground: 193 30% 65%;
-
-    --accent: 151 52% 50%; 
-    --accent-foreground: 0 0% 98%;
->>>>>>> 8c7225b (first commit)
+    --accent: 150 70% 50%;
+    --accent-foreground: 0 0% 10%;
 
     --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 95%;
+    --destructive-foreground: 0 0% 98%;
 
-<<<<<<< HEAD
-    --border: 220 15% 25%;
-    --input: 220 15% 20%;
-    --ring: 7 100% 55%;
+    --border: 240 5% 15%;
+    --input: 240 5% 12%;
+    --ring: 25 95% 58%;
 
-    /* Sidebar dark theme colors */
-    --sidebar-background: 220 15% 12%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 7 100% 55%;
+    --footer-bg: 240 10% 2.5%;
+    --footer-text: 0 0% 70%;
+    --footer-heading: 0 0% 90%;
+
+    --sidebar-background: 240 8% 5%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 25 95% 58%;
     --sidebar-primary-foreground: 0 0% 10%;
-    --sidebar-accent: 151 52% 65%;
+    --sidebar-accent: 30 90% 60%;
     --sidebar-accent-foreground: 0 0% 10%;
-    --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 7 100% 55%;
-=======
-    --border: 193 30% 35%;
-    --input: 193 30% 35%;
-    --ring: 7 100% 65%;
-    
-    --footer-bg: 215 25% 10%; 
-    --footer-text: 193 30% 50%; 
-    --footer-heading: 193 80% 85%;
->>>>>>> 8c7225b (first commit)
+    --sidebar-border: 240 5% 12%;
+    --sidebar-ring: 25 95% 58%;
   }
 }
 
@@ -174,19 +98,10 @@
   }
   body {
     @apply bg-background text-foreground;
-<<<<<<< HEAD
-=======
-    font-family: 'Alegreya', serif;
->>>>>>> 8c7225b (first commit)
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   h1,h2,h3,h4,h5,h6 {
-<<<<<<< HEAD
     @apply font-headline;
-=======
-    font-family: 'Belleza', sans-serif;
-    @apply font-bold;
->>>>>>> 8c7225b (first commit)
   }
 }
