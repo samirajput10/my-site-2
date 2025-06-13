@@ -28,6 +28,7 @@ import { useRouter } from 'next/navigation';
 const mainNavLinks = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
+  { href: '/style-assistant', label: 'Style Assistant' },
   // Links to anchors might be better handled by specific landing page sections or removed if not applicable
   // { href: '/#brands', label: 'Brands' }, 
   // { href: '/#discover', label: 'Discover' },
@@ -106,6 +107,14 @@ export function Header() {
             <Heart className="mr-2 h-4 w-4" />
             <span>Wishlist</span>
           </DropdownMenuItem>
+           <DropdownMenuItem onClick={() => { router.push('/style-assistant'); onItemClick?.(); }}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            <span>AI Style Assistant</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <span>Seller Dashboard</span>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => {handleLogout(); onItemClick?.();}} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
             <LogOut className="mr-2 h-4 w-4" />
@@ -122,17 +131,17 @@ export function Header() {
             <UserPlus className="mr-2 h-4 w-4" />
             <span>Sign Up</span>
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
+           <DropdownMenuItem onClick={() => { router.push('/style-assistant'); onItemClick?.(); }}>
+            <Sparkles className="mr-2 h-4 w-4" />
+            <span>AI Style Assistant</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <span>Seller Dashboard</span>
+          </DropdownMenuItem>
         </>
       )}
-      <DropdownMenuSeparator />
-       <DropdownMenuItem onClick={() => { router.push('/style-assistant'); onItemClick?.(); }}>
-        <Sparkles className="mr-2 h-4 w-4" />
-        <span>AI Style Assistant</span>
-      </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
-        <LayoutDashboard className="mr-2 h-4 w-4" />
-        <span>Seller Dashboard</span>
-      </DropdownMenuItem>
        {/* Other links like Settings, Help can be added here */}
     </>
   );
@@ -265,3 +274,5 @@ export function Header() {
     </header>
   );
 }
+
+    
