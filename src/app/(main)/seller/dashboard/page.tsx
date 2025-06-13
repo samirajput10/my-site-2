@@ -9,14 +9,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
-import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Beaker } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Beaker, Trash2 } from 'lucide-react';
 import { auth, db } from '@/lib/firebase/config';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, type Timestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, type Timestamp, doc, deleteDoc } from 'firebase/firestore';
 import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface NewProductForm {
   name: string;
@@ -46,6 +57,8 @@ export default function SellerDashboardPage() {
   const [listingLoading, setListingLoading] = useState(false);
   const [listingError, setListingError] = useState<string | null>(null);
   const [isSeeding, setIsSeeding] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
 
   const fetchSellerProducts = async (user: User) => {
     if (!user) return;
@@ -207,21 +220,20 @@ export default function SellerDashboardPage() {
       if (category === 'Accessories') {
         productSizes = ['One Size'];
       } else if (category === 'Shoes') {
-         // Simplified shoe sizes for dummy data
-        const shoeSizes: ProductSize[] = ['S', 'M', 'L']; // Could be '7', '8', '9' etc.
+        const shoeSizes: ProductSize[] = ['S', 'M', 'L']; 
         productSizes = [shoeSizes[i % shoeSizes.length]];
       } else {
         const availableSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
         productSizes = [availableSizes[i % availableSizes.length]];
         if (i % 2 === 0 && productSizes.length < 3) productSizes.push(availableSizes[(i+1) % availableSizes.length]);
         if (i % 3 === 0 && productSizes.length < 3) productSizes.push(availableSizes[(i+2) % availableSizes.length]);
-        productSizes = [...new Set(productSizes)]; // Remove duplicates
+        productSizes = [...new Set(productSizes)]; 
       }
 
       products.push({
         name: `${baseName} ${itemType} No. ${i + 1}`,
         description: `Discover the ${itemType.toLowerCase()} from our exclusive ${baseName} line. This piece, number ${i + 1}, offers unparalleled style and comfort.`,
-        price: parseFloat((Math.random() * 180 + 20).toFixed(2)), // Price between $20 and $200
+        price: parseFloat((Math.random() * 180 + 20).toFixed(2)), 
         imageUrl: `https://placehold.co/300x400.png?text=${encodeURIComponent(itemType)}+${i + 1}`,
         category: category,
         sizes: productSizes,
@@ -246,7 +258,7 @@ export default function SellerDashboardPage() {
     for (const productData of dummyProductsData) {
       try {
         await addDoc(collection(db, 'products'), {
-          ...productData, // Spread the product data
+          ...productData, 
           createdAt: serverTimestamp(),
         });
         successCount++;
@@ -261,7 +273,7 @@ export default function SellerDashboardPage() {
         title: "Seeding Successful",
         description: `${successCount} products added to the database. ${errorCount > 0 ? `${errorCount} products failed to add.` : ''}`,
       });
-      fetchSellerProducts(currentUser); // Refresh the product list
+      fetchSellerProducts(currentUser); 
     } else if (errorCount > 0) {
        toast({
         title: "Seeding Failed",
@@ -272,12 +284,37 @@ export default function SellerDashboardPage() {
        toast({
         title: "Seeding Info",
         description: "Seeding process initiated, but no products were processed or outcome unclear.",
-        variant: "default", // More neutral
+        variant: "default", 
       });
     }
     setIsSeeding(false);
   };
 
+  const handleDeleteProduct = async (productId: string) => {
+    if (!currentUser) {
+      toast({ title: "Error", description: "Authentication required.", variant: "destructive" });
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      await deleteDoc(doc(db, "products", productId));
+      toast({
+        title: "Product Deleted",
+        description: "The product has been successfully removed.",
+      });
+      fetchSellerProducts(currentUser); // Refresh list
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast({
+        title: "Deletion Failed",
+        description: "Could not delete the product. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setProductToDeleteId(null); // Close dialog
+    }
+  };
 
   useEffect(() => {
     if (!loadingAuth && !currentUser) {
@@ -411,81 +448,113 @@ export default function SellerDashboardPage() {
           </Card>
         </div>
 
-         <Card className="mt-8 shadow-lg rounded-xl">
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center"><ListChecks className="mr-2 h-5 w-5"/>Your Listed Products</CardTitle>
-              <CardDescription>
-                View and manage products you have listed.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {listingLoading && (
-                <div className="flex justify-center items-center py-8">
-                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                  <p className="ml-4 text-muted-foreground">Loading your products...</p>
-                </div>
-              )}
-              {listingError && (
-                <div className="text-center py-8 text-destructive bg-destructive/10 p-4 rounded-md">
-                  <AlertTriangle className="mx-auto h-12 w-12 mb-2" />
-                  <p className="font-semibold">Error Loading Products</p>
-                  <p className="text-sm">{listingError}</p>
-                </div>
-              )}
-              {!listingLoading && !listingError && sellerProducts.length === 0 && (
-                <p className="text-muted-foreground text-center py-8">You haven&apos;t listed any products yet. Add one using the form above!</p>
-              )}
-              {!listingLoading && !listingError && sellerProducts.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {sellerProducts.map(product => (
-                    <Card key={product.id} className="flex flex-col">
-                      <CardHeader className="p-0">
-                         <ProductImage 
-                            src={product.imageUrl} 
-                            alt={product.name} 
-                            width={300}
-                            height={400} 
-                            className="w-full h-64 object-cover rounded-t-lg" 
-                            aiHint={`${product.category.toLowerCase()} ${product.name.split(' ')[0].toLowerCase()}`} 
+        <Card className="mt-8 shadow-lg rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center"><ListChecks className="mr-2 h-5 w-5"/>Your Listed Products</CardTitle>
+            <CardDescription>
+              View and manage products you have listed. Click delete to remove a product.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {listingLoading && (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <p className="ml-4 text-muted-foreground">Loading your products...</p>
+              </div>
+            )}
+            {listingError && (
+              <div className="text-center py-8 text-destructive bg-destructive/10 p-4 rounded-md">
+                <AlertTriangle className="mx-auto h-12 w-12 mb-2" />
+                <p className="font-semibold">Error Loading Products</p>
+                <p className="text-sm">{listingError}</p>
+              </div>
+            )}
+            {!listingLoading && !listingError && sellerProducts.length === 0 && (
+              <p className="text-muted-foreground text-center py-8">You haven&apos;t listed any products yet. Add one using the form above!</p>
+            )}
+            {!listingLoading && !listingError && sellerProducts.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sellerProducts.map(product => (
+                  <Card key={product.id} className="flex flex-col">
+                    <CardHeader className="p-0">
+                        <ProductImage 
+                          src={product.imageUrl} 
+                          alt={product.name} 
+                          width={300}
+                          height={400} 
+                          className="w-full h-64 object-cover rounded-t-lg" 
+                          aiHint={`${product.category.toLowerCase()} ${product.name.split(' ')[0].toLowerCase()}`} 
                         />
-                      </CardHeader>
-                      <CardContent className="p-4 flex-grow">
-                        <h3 className="text-lg font-semibold truncate" title={product.name}>{product.name}</h3>
-                        <p className="text-sm text-muted-foreground">{product.category}</p>
-                        <p className="text-xl font-bold text-primary mt-1">${product.price.toFixed(2)}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Sizes: {product.sizes.join(', ')}</p>
-                      </CardContent>
-                      <CardFooter className="p-4 pt-0">
-                        <Button variant="outline" size="sm" className="w-full" disabled>Manage (Soon)</Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    </CardHeader>
+                    <CardContent className="p-4 flex-grow">
+                      <h3 className="text-lg font-semibold truncate" title={product.name}>{product.name}</h3>
+                      <p className="text-sm text-muted-foreground">{product.category}</p>
+                      <p className="text-xl font-bold text-primary mt-1">${product.price.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Sizes: {product.sizes.join(', ')}</p>
+                    </CardContent>
+                    <CardFooter className="p-4 pt-0">
+                       <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="w-full" 
+                          onClick={() => setProductToDeleteId(product.id)}
+                          disabled={isDeleting && productToDeleteId === product.id}
+                        >
+                          {isDeleting && productToDeleteId === product.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4" />}
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-          <Card className="mt-8 shadow-lg rounded-xl">
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center">
-                <Beaker className="mr-2 h-5 w-5 text-primary" />
-                Developer Tools
-              </CardTitle>
-              <CardDescription>
-                Utilities for development and testing. Use with caution.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={handleSeedProducts} disabled={isSeeding || !currentUser} variant="destructive" className="w-full sm:w-auto">
-                {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Beaker className="mr-2 h-4 w-4" />}
-                Seed 20 Dummy Products
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2">
-                This will add 20 dummy products to the Firestore database under your seller ID.
-                Intended for development purposes only. Refresh product list if needed.
-              </p>
-            </CardContent>
-          </Card>
+        {productToDeleteId && (
+          <AlertDialog open={!!productToDeleteId} onOpenChange={(isOpen) => !isOpen && setProductToDeleteId(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the product
+                  from the database.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setProductToDeleteId(null)} disabled={isDeleting}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => handleDeleteProduct(productToDeleteId)} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                  {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                  Yes, delete product
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+
+        <Card className="mt-8 shadow-lg rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center">
+              <Beaker className="mr-2 h-5 w-5 text-primary" />
+              Developer Tools
+            </CardTitle>
+            <CardDescription>
+              Utilities for development and testing. Use with caution.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleSeedProducts} disabled={isSeeding || !currentUser} variant="destructive" className="w-full sm:w-auto">
+              {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Beaker className="mr-2 h-4 w-4" />}
+              Seed 20 Dummy Products
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              This will add 20 dummy products to the Firestore database under your seller ID.
+              Intended for development purposes only. Refresh product list if needed.
+            </p>
+          </CardContent>
+        </Card>
 
       </div>
     );
@@ -499,3 +568,4 @@ export default function SellerDashboardPage() {
     </div>
   );
 }
+
