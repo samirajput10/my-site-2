@@ -26,7 +26,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
+  // AlertDialogTrigger, // No longer directly used around the button
 } from "@/components/ui/alert-dialog";
 
 interface NewProductForm {
@@ -312,7 +312,7 @@ export default function SellerDashboardPage() {
       });
     } finally {
       setIsDeleting(false);
-      setProductToDeleteId(null); // Close dialog
+      setProductToDeleteId(null); // Close dialog by resetting the ID
     }
   };
 
@@ -493,7 +493,6 @@ export default function SellerDashboardPage() {
                       <p className="text-xs text-muted-foreground mt-1">Sizes: {product.sizes.join(', ')}</p>
                     </CardContent>
                     <CardFooter className="p-4 pt-0">
-                       <AlertDialogTrigger asChild>
                         <Button 
                           variant="destructive" 
                           size="sm" 
@@ -504,7 +503,6 @@ export default function SellerDashboardPage() {
                           {isDeleting && productToDeleteId === product.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4" />}
                           Delete
                         </Button>
-                      </AlertDialogTrigger>
                     </CardFooter>
                   </Card>
                 ))}
@@ -514,7 +512,7 @@ export default function SellerDashboardPage() {
         </Card>
 
         {productToDeleteId && (
-          <AlertDialog open={!!productToDeleteId} onOpenChange={(isOpen) => !isOpen && setProductToDeleteId(null)}>
+          <AlertDialog open={!!productToDeleteId} onOpenChange={(isOpen) => { if (!isOpen) setProductToDeleteId(null); }}>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -525,7 +523,11 @@ export default function SellerDashboardPage() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel onClick={() => setProductToDeleteId(null)} disabled={isDeleting}>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => handleDeleteProduct(productToDeleteId)} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+                <AlertDialogAction 
+                    onClick={() => handleDeleteProduct(productToDeleteId)} 
+                    disabled={isDeleting} 
+                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                 >
                   {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
                   Yes, delete product
                 </AlertDialogAction>
@@ -568,4 +570,3 @@ export default function SellerDashboardPage() {
     </div>
   );
 }
-
