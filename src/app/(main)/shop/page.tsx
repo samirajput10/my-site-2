@@ -48,30 +48,43 @@ export default function ShopPage() {
   // Effect to update filters based on URL search parameters
   useEffect(() => {
     const categoryFromUrl = searchParams.get('category') as ProductCategory | null;
-    const searchQueryFromUrl = searchParams.get('search');
+    const searchQueryFromUrl = searchParams.get('search'); // Can be string or null
 
     setFilters(prevFilters => {
-      let newCategories = prevFilters.categories || [];
-      if (categoryFromUrl && ALL_CATEGORIES.includes(categoryFromUrl)) {
-        newCategories = [categoryFromUrl];
+      let newSearchQuery = prevFilters.searchQuery || ''; // Default to previous or empty
+      if (searchQueryFromUrl !== null) { // If ?search= is in URL (even ?search=, which means empty search)
+        newSearchQuery = searchQueryFromUrl;
       }
-      
+      // If searchQueryFromUrl is null (no ?search in URL), newSearchQuery retains prevFilters.searchQuery
+
+      let newCategories = prevFilters.categories || []; // Default to previous or empty
+      if (categoryFromUrl && ALL_CATEGORIES.includes(categoryFromUrl)) {
+        // If navigating via a category link (category in URL)
+        newCategories = [categoryFromUrl]; // This category becomes the sole active category
+        // And if this category navigation did NOT also come with a search query in the URL,
+        // it's a pure category navigation, so clear any previous search query.
+        if (searchQueryFromUrl === null) {
+          newSearchQuery = '';
+        }
+      }
+      // If no categoryFromUrl, newCategories remains as prevFilters.categories (respecting manual selections in sidebar)
+
       return {
-        ...prevFilters,
+        ...prevFilters, // Keep other filters like size, priceRange from previous state
         categories: newCategories,
-        searchQuery: searchQueryFromUrl !== null ? searchQueryFromUrl : (prevFilters.searchQuery || ''),
+        searchQuery: newSearchQuery,
       };
     });
   }, [searchParams]);
 
+
   // Effect to initialize/update priceRange filter once products are loaded or maxProductPrice changes
   useEffect(() => {
-    if (allProducts.length > 0 || maxProductPrice > 0) { // Ensure this runs even if allProducts is empty but maxProductPrice has a default
+    if (allProducts.length > 0 || maxProductPrice > 0) {
       setFilters(prevFilters => ({
         ...prevFilters,
         priceRange: { 
           min: prevFilters.priceRange?.min ?? 0, 
-          // Use maxProductPrice if available, otherwise keep existing or default from initial state
           max: maxProductPrice > 0 ? maxProductPrice : (prevFilters.priceRange?.max ?? 500)
         },
       }));
@@ -98,7 +111,7 @@ export default function ShopPage() {
         <div className="lg:col-span-1">
           <FilterSidebar 
             onFilterChange={handleFilterChange} 
-            initialFilters={filters} // Pass the dynamically updated filters
+            initialFilters={filters}
             maxPrice={maxProductPrice}
           />
         </div>
