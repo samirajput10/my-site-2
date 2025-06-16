@@ -2,15 +2,17 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ProductList } from '@/components/products/ProductList';
 import { FilterSidebar } from '@/components/products/FilterSidebar';
-import type { Filters, Product } from '@/types';
-// import { mockProducts } from '@/data/products'; // No longer using mockProducts directly here
+import type { Filters, Product, ProductCategory } from '@/types';
+import { ALL_CATEGORIES } from '@/types';
 import { getAllProductsFromDB } from '@/actions/productActions';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function ShopPage() {
+  const searchParams = useSearchParams();
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +20,7 @@ export default function ShopPage() {
   const [filters, setFilters] = useState<Partial<Filters>>({
     categories: [],
     sizes: [],
-    priceRange: { min: 0, max: 500 }, // Default, will be updated
+    priceRange: { min: 0, max: 500 }, // Initial default, updated by maxProductPrice
     searchQuery: '',
   });
 
@@ -39,19 +41,43 @@ export default function ShopPage() {
   }, []);
 
   const maxProductPrice = useMemo(() => {
-    if (allProducts.length === 0) return 500; // Default if no products
+    if (allProducts.length === 0) return 500;
     return Math.max(...allProducts.map(p => p.price), 0);
   }, [allProducts]);
 
+  // Effect to update filters based on URL search parameters
   useEffect(() => {
-    // Initialize filters with the actual max product price once products are loaded
-    if (allProducts.length > 0) {
+    const categoryFromUrl = searchParams.get('category') as ProductCategory | null;
+    const searchQueryFromUrl = searchParams.get('search');
+
+    setFilters(prevFilters => {
+      let newCategories = prevFilters.categories || [];
+      if (categoryFromUrl && ALL_CATEGORIES.includes(categoryFromUrl)) {
+        newCategories = [categoryFromUrl];
+      }
+      
+      return {
+        ...prevFilters,
+        categories: newCategories,
+        searchQuery: searchQueryFromUrl !== null ? searchQueryFromUrl : (prevFilters.searchQuery || ''),
+      };
+    });
+  }, [searchParams]);
+
+  // Effect to initialize/update priceRange filter once products are loaded or maxProductPrice changes
+  useEffect(() => {
+    if (allProducts.length > 0 || maxProductPrice > 0) { // Ensure this runs even if allProducts is empty but maxProductPrice has a default
       setFilters(prevFilters => ({
         ...prevFilters,
-        priceRange: { min: 0, max: maxProductPrice },
+        priceRange: { 
+          min: prevFilters.priceRange?.min ?? 0, 
+          // Use maxProductPrice if available, otherwise keep existing or default from initial state
+          max: maxProductPrice > 0 ? maxProductPrice : (prevFilters.priceRange?.max ?? 500)
+        },
       }));
     }
   }, [allProducts, maxProductPrice]);
+
 
   const handleFilterChange = (newFilters: Partial<Filters>) => {
     setFilters(prevFilters => ({ ...prevFilters, ...newFilters }));
@@ -72,7 +98,7 @@ export default function ShopPage() {
         <div className="lg:col-span-1">
           <FilterSidebar 
             onFilterChange={handleFilterChange} 
-            initialFilters={filters}
+            initialFilters={filters} // Pass the dynamically updated filters
             maxPrice={maxProductPrice}
           />
         </div>

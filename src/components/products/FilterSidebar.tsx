@@ -14,15 +14,15 @@ import { Filter as FilterIcon, X as ClearIcon } from 'lucide-react';
 
 interface FilterSidebarProps {
   onFilterChange: (filters: Partial<Filters>) => void;
-  initialFilters?: Partial<Filters>;
-  maxPrice?: number; // Overall maximum price for the slider
+  initialFilters: Partial<Filters>; // Changed from optional to required for better state sync
+  maxPrice?: number;
 }
 
-const DEFAULT_MAX_PRICE = 500; // Fallback if maxPrice prop is not provided or zero
+const DEFAULT_MAX_PRICE = 500;
 
 export function FilterSidebar({ 
   onFilterChange, 
-  initialFilters = {}, 
+  initialFilters, 
   maxPrice: maxPriceProp = DEFAULT_MAX_PRICE 
 }: FilterSidebarProps) {
   
@@ -30,29 +30,26 @@ export function FilterSidebar({
 
   const [categories, setCategories] = useState<ProductCategory[]>(initialFilters.categories || []);
   const [sizes, setSizes] = useState<ProductSize[]>(initialFilters.sizes || []);
-  
-  const [priceRange, setPriceRange] = useState<[number, number]>(() => {
-    if (initialFilters.priceRange) {
-      return [
-        Math.max(0, initialFilters.priceRange.min), 
-        Math.min(initialFilters.priceRange.max, effectiveMaxPrice)
-      ];
-    }
-    return [0, effectiveMaxPrice];
-  });
+  const [priceRange, setPriceRange] = useState<[number, number]>(
+    initialFilters.priceRange 
+      ? [Math.max(0, initialFilters.priceRange.min), Math.min(initialFilters.priceRange.max, effectiveMaxPrice)] 
+      : [0, effectiveMaxPrice]
+  );
 
-  // Update priceRange if initialFilters or effectiveMaxPrice changes after initial mount
+  // Effect to synchronize internal state with initialFilters prop changes
   useEffect(() => {
-    setPriceRange(currentSelection => {
-        const newMin = initialFilters?.priceRange?.min !== undefined ? Math.max(0, initialFilters.priceRange.min) : 0;
-        const newMaxFromInitial = initialFilters?.priceRange?.max !== undefined ? initialFilters.priceRange.max : effectiveMaxPrice;
-        
-        return [
-            Math.min(newMin, effectiveMaxPrice), // Min shouldn't exceed effectiveMaxPrice
-            Math.min(newMaxFromInitial, effectiveMaxPrice) // Max from initial, capped by effectiveMaxPrice
-        ];
-    });
-  }, [initialFilters?.priceRange?.min, initialFilters?.priceRange?.max, effectiveMaxPrice]);
+    setCategories(initialFilters.categories || []);
+    setSizes(initialFilters.sizes || []);
+    if (initialFilters.priceRange) {
+      setPriceRange([
+        Math.max(0, initialFilters.priceRange.min),
+        Math.min(initialFilters.priceRange.max, effectiveMaxPrice)
+      ]);
+    } else {
+      // If parent doesn't provide priceRange, reset to full based on effectiveMaxPrice
+      setPriceRange([0, effectiveMaxPrice]);
+    }
+  }, [initialFilters, effectiveMaxPrice]);
 
 
   const handleCategoryChange = (category: ProductCategory) => {
@@ -82,11 +79,12 @@ export function FilterSidebar({
   const clearFilters = () => {
     setCategories([]);
     setSizes([]);
-    setPriceRange([0, effectiveMaxPrice]); // Reset to full available range
-    onFilterChange({
+    setPriceRange([0, effectiveMaxPrice]);
+    onFilterChange({ // Also inform parent to clear its filter state for these
       categories: [],
       sizes: [],
       priceRange: { min: 0, max: effectiveMaxPrice },
+      searchQuery: initialFilters.searchQuery // Preserve search query unless also cleared
     });
   };
 
@@ -141,9 +139,9 @@ export function FilterSidebar({
           <h4 className="mb-2 font-semibold text-md">Price Range</h4>
           <Slider
             min={0}
-            max={effectiveMaxPrice} // Use the overall max price for the slider scale
-            step={10} // Or a more dynamic step, e.g., effectiveMaxPrice / 50
-            value={priceRange} // Current selected range
+            max={effectiveMaxPrice}
+            step={10}
+            value={priceRange}
             onValueChange={(value) => handlePriceChange(value as [number, number])}
             className="mb-2"
             aria-label="Price range slider"

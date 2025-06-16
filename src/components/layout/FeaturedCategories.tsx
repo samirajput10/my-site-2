@@ -1,29 +1,30 @@
+
 // src/components/layout/FeaturedCategories.tsx
 import { CategoryCard } from './CategoryCard';
 
 const categories = [
   { 
-    name: 'Shirts', 
-    imageUrl: 'https://placehold.co/600x800.png', // Placeholder
-    href: '/#shirts', // Placeholder, update with actual category links
+    name: 'Tops', 
+    imageUrl: 'https://placehold.co/600x800.png',
+    href: '/shop?category=Tops',
     imageAiHint: 'shirts fashion'
   },
   { 
     name: 'Dresses', 
     imageUrl: 'https://placehold.co/600x800.png', 
-    href: '/#dresses',
+    href: '/shop?category=Dresses',
     imageAiHint: 'dresses fashion'
   },
   { 
     name: 'Pants', 
     imageUrl: 'https://placehold.co/600x800.png', 
-    href: '/#pants',
+    href: '/shop?category=Pants',
     imageAiHint: 'pants fashion'
   },
   { 
     name: 'Accessories', 
     imageUrl: 'https://placehold.co/600x800.png', 
-    href: '/#accessories',
+    href: '/shop?category=Accessories',
     imageAiHint: 'accessories fashion'
   },
 ];
@@ -46,3 +47,4 @@ export function FeaturedCategories() {
     </section>
   );
 }
+
