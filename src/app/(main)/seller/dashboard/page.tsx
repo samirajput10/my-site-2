@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, type Timestamp, doc, deleteDoc } from 'firebase/firestore';
@@ -322,7 +321,7 @@ export default function SellerDashboardPage() {
                 <Input id="image-upload" type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" disabled={isSubmitting} />
                 <p className="text-sm text-muted-foreground mt-2">Or enter image URL:</p>
                 <Input id="imageUrl" name="imageUrl" value={formState.imageUrl} onChange={handleChange} disabled={isSubmitting || !!imageFile} />
-                {previewUrl && <Image src={previewUrl} alt="Preview" width={100} height={133} className="rounded-md border object-cover mt-2 w-[100px] h-[133px]" />}
+                {previewUrl && <img src={previewUrl} alt="Preview" width={100} height={133} className="rounded-md border object-cover mt-2 w-[100px] h-[133px]" />}
               </div>
               <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isSubmitting}>
                 {isSubmitting ? <Loader2 className="mr-2 animate-spin" /> : <PlusCircle className="mr-2" />}
