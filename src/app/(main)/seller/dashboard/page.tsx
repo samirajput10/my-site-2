@@ -9,13 +9,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
-import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Beaker, Trash2 } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2 } from 'lucide-react';
 import { auth, db, storage } from '@/lib/firebase/config';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, type Timestamp, doc, deleteDoc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { Product, ProductCategory, ProductSize } from '@/types';
+import type { Product, ProductCategory } from '@/types';
 import { ALL_CATEGORIES } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
 import {
@@ -39,15 +39,7 @@ interface NewProductForm {
   sizes: string; // Comma-separated
 }
 
-interface DummyProductData {
-  name: string;
-  description: string;
-  price: number;
-  imageUrl: string;
-  category: ProductCategory;
-  sizes: ProductSize[];
-  sellerId: string;
-}
+// Dummy product generation logic has been removed to resolve a persistent build error.
 
 export default function SellerDashboardPage() {
   const { toast } = useToast();
@@ -71,7 +63,6 @@ export default function SellerDashboardPage() {
   const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
   const [listingLoading, setListingLoading] = useState(false);
   const [listingError, setListingError] = useState<string | null>(null);
-  const [isSeeding, setIsSeeding] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
 
@@ -249,103 +240,6 @@ export default function SellerDashboardPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const generateDummyProducts = (sellerId: string): DummyProductData[] => {
-    const products: DummyProductData[] = [];
-    const baseNames = [
-      "Urban Chic", "Boho Dream", "Classic Comfort", "Modern Edge", "Minimalist Style",
-      "Vintage Charm", "Sporty Look", "Elegant Evening", "Casual Day", "Work Ready",
-      "Weekend Vibes", "Street Smart", "Artisan Craft", "Eco Friendly", "Luxury Touch",
-      "Summer Breeze", "Winter Warmth", "Autumn Hues", "Spring Bloom", "Midnight Glam"
-    ];
-    const itemTypesByCategory: Record<ProductCategory, string[]> = {
-      "Tops": ["Blouse", "T-Shirt", "Tank", "Sweater", "Shirt"],
-      "Dresses": ["Maxi Dress", "Midi Dress", "Mini Dress", "Sundress", "Evening Gown"],
-      "Pants": ["Jeans", "Trousers", "Leggings", "Shorts", "Culottes"],
-      "Accessories": ["Scarf", "Belt", "Hat", "Bag", "Necklace"],
-      "Shoes": ["Sneakers", "Boots", "Sandals", "Heels", "Loafers"],
-      "Outerwear": ["Jacket", "Coat", "Blazer", "Cardigan", "Vest"]
-    };
-
-    for (let i = 0; i < 20; i++) {
-      const category = ALL_CATEGORIES[i % ALL_CATEGORIES.length];
-      const itemTypes = itemTypesByCategory[category];
-      const itemType = itemTypes[i % itemTypes.length];
-      const baseName = baseNames[i % baseNames.length];
-      
-      let productSizes: ProductSize[];
-      if (category === 'Accessories') {
-        productSizes = ['One Size'];
-      } else if (category === 'Shoes') {
-        const shoeSizes: ProductSize[] = ['S', 'M', 'L']; 
-        productSizes = [shoeSizes[i % shoeSizes.length]];
-      } else {
-        const availableSizes: ProductSize[] = ['XS', 'S', 'M', 'L', 'XL'];
-        productSizes = [availableSizes[i % availableSizes.length]];
-        if (i % 2 === 0 && productSizes.length < 3) productSizes.push(availableSizes[(i+1) % availableSizes.length]);
-        if (i % 3 === 0 && productSizes.length < 3) productSizes.push(availableSizes[(i+2) % availableSizes.length]);
-        productSizes = [...new Set(productSizes)]; 
-      }
-
-      products.push({
-        name: `${baseName} ${itemType} No. ${i + 1}`,
-        description: `Discover the ${itemType.toLowerCase()} from our exclusive ${baseName} line. This piece, number ${i + 1}, offers unparalleled style and comfort.`,
-        price: parseFloat((Math.random() * 180 + 20).toFixed(2)), 
-        imageUrl: `https://placehold.co/300x400.png?text=${encodeURIComponent(itemType)}+${i + 1}`,
-        category: category,
-        sizes: productSizes,
-        sellerId: sellerId,
-      });
-    }
-    return products;
-  };
-
-  const handleSeedProducts = async () => {
-    if (!currentUser) {
-      toast({ title: "Authentication Error", description: "You must be logged in to seed products.", variant: "destructive" });
-      return;
-    }
-    setIsSeeding(true);
-    toast({ title: "Seeding Process Started", description: "Attempting to add 20 dummy products to the database..." });
-
-    const dummyProductsData = generateDummyProducts(currentUser.uid);
-    let successCount = 0;
-    let errorCount = 0;
-
-    for (const productData of dummyProductsData) {
-      try {
-        await addDoc(collection(db, 'products'), {
-          ...productData, 
-          createdAt: serverTimestamp(),
-        });
-        successCount++;
-      } catch (error) {
-        console.error("Error adding one product to Firestore during seeding:", error);
-        errorCount++;
-      }
-    }
-
-    if (successCount > 0) {
-      toast({
-        title: "Seeding Successful",
-        description: `${successCount} products added to the database. ${errorCount > 0 ? `${errorCount} products failed to add.` : ''}`,
-      });
-      fetchSellerProducts(currentUser); 
-    } else if (errorCount > 0) {
-       toast({
-        title: "Seeding Failed",
-        description: "No products were added. Please check the browser console for errors.",
-        variant: "destructive",
-      });
-    } else {
-       toast({
-        title: "Seeding Info",
-        description: "Seeding process initiated, but no products were processed or outcome unclear.",
-        variant: "default", 
-      });
-    }
-    setIsSeeding(false);
   };
 
   const handleDeleteProduct = async (productId: string) => {
@@ -610,28 +504,6 @@ export default function SellerDashboardPage() {
             </AlertDialogContent>
           </AlertDialog>
         )}
-
-        <Card className="mt-8 shadow-lg rounded-xl">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center">
-              <Beaker className="mr-2 h-5 w-5 text-primary" />
-              Developer Tools
-            </CardTitle>
-            <CardDescription>
-              Utilities for development and testing. Use with caution.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={handleSeedProducts} disabled={isSeeding || !currentUser} variant="destructive" className="w-full sm:w-auto">
-              {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Beaker className="mr-2 h-4 w-4" />}
-              Seed 20 Dummy Products
-            </Button>
-            <p className="text-xs text-muted-foreground mt-2">
-              This will add 20 dummy products to the Firestore database under your seller ID.
-              Intended for development purposes only. Refresh product list if needed.
-            </p>
-          </CardContent>
-        </Card>
 
       </div>
     );
