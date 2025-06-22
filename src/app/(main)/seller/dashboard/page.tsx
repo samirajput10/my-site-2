@@ -28,7 +28,6 @@ import { useToast } from "@/hooks/use-toast";
 import { auth, db, storage } from '@/lib/firebase/config';
 import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
-import { ProductImage } from '@/components/products/ProductImage';
 
 interface NewProductForm {
   name: string;
@@ -342,7 +341,7 @@ export default function SellerDashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {sellerProducts.map(product => (
                 <Card key={product.id} className="flex flex-col">
-                  <ProductImage src={product.imageUrl} alt={product.name} width={300} height={400} className="w-full h-64 object-cover rounded-t-lg" />
+                  <img src={product.imageUrl} alt={product.name} className="w-full h-64 object-cover rounded-t-lg" onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/300x400.png`; }} />
                   <CardContent className="p-4 flex-grow">
                     <h3 className="font-semibold truncate">{product.name}</h3>
                     <p className="text-xl font-bold text-primary mt-1">${product.price.toFixed(2)}</p>
