@@ -11,21 +11,62 @@ interface ProductImageProps {
   aiHint?: string;
 }
 
+const WHITELISTED_HOSTNAMES = ['placehold.co', 'firebasestorage.googleapis.com'];
+
 export function ProductImage({ src, alt, width, height, className, priority = false, aiHint = "fashion clothing" }: ProductImageProps) {
-  const placeholderSrc = src.startsWith('https://placehold.co') ? src : `https://placehold.co/${width}x${height}.png`;
+  const placeholderSrc = `https://placehold.co/${width}x${height}.png`;
   
+  let isWhitelisted = false;
+  if (src) {
+    try {
+      // Check for local paths first, which are always "whitelisted"
+      if (src.startsWith('/')) {
+        isWhitelisted = true;
+      } else {
+        const url = new URL(src);
+        if (WHITELISTED_HOSTNAMES.includes(url.hostname)) {
+          isWhitelisted = true;
+        }
+      }
+    } catch (error) {
+      // Invalid URL format, treat as not whitelisted.
+      isWhitelisted = false;
+    }
+  }
+
+
+  const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = placeholderSrc;
+  };
+
+  const imageClasses = "object-cover transition-transform duration-300 group-hover:scale-105 w-full h-full";
+
   return (
-    <div className={cn("relative overflow-hidden rounded-md", className)} style={{ width, height }}>
-      <Image
-        src={src.startsWith('https://placehold.co') ? placeholderSrc : src}
-        alt={alt}
-        width={width}
-        height={height}
-        className="object-cover transition-transform duration-300 group-hover:scale-105"
-        priority={priority}
-        data-ai-hint={aiHint}
-        onError={(e) => { (e.target as HTMLImageElement).src = placeholderSrc; }}
-      />
+    <div className={cn("relative overflow-hidden rounded-md bg-muted", className)} style={{ width, height }}>
+      {isWhitelisted ? (
+        <Image
+          src={src || placeholderSrc}
+          alt={alt}
+          width={width}
+          height={height}
+          className={imageClasses}
+          priority={priority}
+          data-ai-hint={aiHint}
+          onError={handleError}
+        />
+      ) : (
+        <img
+          src={src || placeholderSrc}
+          alt={alt}
+          width={width}
+          height={height}
+          className={imageClasses}
+          data-ai-hint={aiHint}
+          onError={handleError}
+          style={{ objectFit: 'cover' }}
+          loading={priority ? 'eager' : 'lazy'}
+        />
+      )}
     </div>
   );
 }
