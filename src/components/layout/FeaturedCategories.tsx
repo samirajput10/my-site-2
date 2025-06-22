@@ -5,25 +5,25 @@ import { CategoryCard } from './CategoryCard';
 const categories = [
   { 
     name: 'Tops', 
-    imageUrl: 'https://placehold.co/600x800.png',
+    imageUrl: '/images/tops.png', // Updated path
     href: '/shop?category=Tops',
     imageAiHint: 'shirts fashion'
   },
   { 
     name: 'Dresses', 
-    imageUrl: 'https://placehold.co/600x800.png', 
+    imageUrl: '/images/dresses.png', // Updated path
     href: '/shop?category=Dresses',
     imageAiHint: 'dresses fashion'
   },
   { 
     name: 'Pants', 
-    imageUrl: 'https://placehold.co/600x800.png', 
+    imageUrl: '/images/pants.png', // Updated path
     href: '/shop?category=Pants',
     imageAiHint: 'pants fashion'
   },
   { 
     name: 'Accessories', 
-    imageUrl: 'https://placehold.co/600x800.png', 
+    imageUrl: '/images/accessories.png', // Updated path
     href: '/shop?category=Accessories',
     imageAiHint: 'accessories fashion'
   },
@@ -47,4 +47,3 @@ export function FeaturedCategories() {
     </section>
   );
 }
-
