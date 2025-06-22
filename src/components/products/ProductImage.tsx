@@ -55,6 +55,7 @@ export function ProductImage({ src, alt, width, height, className, priority = fa
           onError={handleError}
         />
       ) : (
+        // Using a standard <img> tag for non-whitelisted domains to avoid Next.js errors.
         <img
           src={src || placeholderSrc}
           alt={alt}
