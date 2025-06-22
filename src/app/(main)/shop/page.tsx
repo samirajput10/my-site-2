@@ -11,6 +11,16 @@ import { getAllProductsFromDB } from '@/actions/productActions';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+const addSearchTerm = (term: string) => {
+  try {
+    const existingTerms: string[] = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+    const updatedTerms = [term.toLowerCase(), ...existingTerms.filter(t => t !== term.toLowerCase())];
+    localStorage.setItem('searchHistory', JSON.stringify(updatedTerms.slice(0, 5)));
+  } catch (error) {
+    console.error("Could not save search term to localStorage", error);
+  }
+};
+
 export default function ShopPage() {
   const searchParams = useSearchParams();
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -48,29 +58,28 @@ export default function ShopPage() {
   // Effect to update filters based on URL search parameters
   useEffect(() => {
     const categoryFromUrl = searchParams.get('category') as ProductCategory | null;
-    const searchQueryFromUrl = searchParams.get('search'); // Can be string or null
+    const searchQueryFromUrl = searchParams.get('search');
+
+    if (searchQueryFromUrl) {
+      addSearchTerm(searchQueryFromUrl);
+    }
 
     setFilters(prevFilters => {
-      let newSearchQuery = prevFilters.searchQuery || ''; // Default to previous or empty
-      if (searchQueryFromUrl !== null) { // If ?search= is in URL (even ?search=, which means empty search)
+      let newSearchQuery = prevFilters.searchQuery || ''; 
+      if (searchQueryFromUrl !== null) { 
         newSearchQuery = searchQueryFromUrl;
       }
-      // If searchQueryFromUrl is null (no ?search in URL), newSearchQuery retains prevFilters.searchQuery
 
-      let newCategories = prevFilters.categories || []; // Default to previous or empty
+      let newCategories = prevFilters.categories || [];
       if (categoryFromUrl && ALL_CATEGORIES.includes(categoryFromUrl)) {
-        // If navigating via a category link (category in URL)
-        newCategories = [categoryFromUrl]; // This category becomes the sole active category
-        // And if this category navigation did NOT also come with a search query in the URL,
-        // it's a pure category navigation, so clear any previous search query.
+        newCategories = [categoryFromUrl];
         if (searchQueryFromUrl === null) {
           newSearchQuery = '';
         }
       }
-      // If no categoryFromUrl, newCategories remains as prevFilters.categories (respecting manual selections in sidebar)
 
       return {
-        ...prevFilters, // Keep other filters like size, priceRange from previous state
+        ...prevFilters,
         categories: newCategories,
         searchQuery: newSearchQuery,
       };

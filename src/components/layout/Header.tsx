@@ -73,9 +73,22 @@ export function Header() {
     }
   };
 
+  const addSearchTerm = (term: string) => {
+    try {
+      const existingTerms: string[] = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      // Add new term to the beginning, ensure it's lowercase, and remove duplicates
+      const updatedTerms = [term.toLowerCase(), ...existingTerms.filter(t => t !== term.toLowerCase())];
+      // Keep only the last 5 search terms
+      localStorage.setItem('searchHistory', JSON.stringify(updatedTerms.slice(0, 5)));
+    } catch (error) {
+      console.error("Could not save search term to localStorage", error);
+    }
+  };
+
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      addSearchTerm(searchQuery.trim());
       router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
       if (isMobile) setMobileSearchOpen(false);
       setSearchQuery(''); 
@@ -274,5 +287,3 @@ export function Header() {
     </header>
   );
 }
-
-    
