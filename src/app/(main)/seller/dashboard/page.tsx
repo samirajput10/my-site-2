@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,10 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Beaker, Trash2 } from 'lucide-react';
-import { auth, db } from '@/lib/firebase/config';
+import { auth, db, storage } from '@/lib/firebase/config';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, type Timestamp, doc, deleteDoc } from 'firebase/firestore';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
@@ -26,8 +27,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  // AlertDialogTrigger, // No longer directly used around the button
 } from "@/components/ui/alert-dialog";
+import Image from 'next/image';
 
 interface NewProductForm {
   name: string;
@@ -49,6 +50,10 @@ export default function SellerDashboardPage() {
     category: '',
     sizes: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(formState.imageUrl);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isSeller, setIsSeller] = useState<boolean | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
@@ -59,6 +64,14 @@ export default function SellerDashboardPage() {
   const [isSeeding, setIsSeeding] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (imageFile) {
+      setPreviewUrl(URL.createObjectURL(imageFile));
+    } else {
+      setPreviewUrl(formState.imageUrl);
+    }
+  }, [imageFile, formState.imageUrl]);
 
   const fetchSellerProducts = async (user: User) => {
     if (!user) return;
@@ -136,7 +149,24 @@ export default function SellerDashboardPage() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormState({ ...formState, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormState(prev => ({ ...prev, [name]: value }));
+    if (name === 'imageUrl' && value) {
+      setImageFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      setFormState(prev => ({ ...prev, imageUrl: '' }));
+    } else {
+      setImageFile(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -160,11 +190,24 @@ export default function SellerDashboardPage() {
 
     setIsSubmitting(true);
     try {
+      let finalImageUrl = formState.imageUrl;
+
+      if (imageFile) {
+        toast({ title: "Uploading Image...", description: "Please wait while your image is being uploaded." });
+        const sRef = storageRef(storage, `products/${Date.now()}_${imageFile.name}`);
+        await uploadBytes(sRef, imageFile);
+        finalImageUrl = await getDownloadURL(sRef);
+      }
+      
+      if (!finalImageUrl) {
+        finalImageUrl = 'https://placehold.co/300x400.png';
+      }
+
       const productData = {
         name: formState.name,
         description: formState.description,
         price: parseFloat(formState.price),
-        imageUrl: formState.imageUrl || 'https://placehold.co/300x400.png',
+        imageUrl: finalImageUrl,
         category: formState.category as ProductCategory,
         sizes: formState.sizes.split(',').map(s => s.trim()).filter(Boolean),
         sellerId: currentUser.uid,
@@ -178,6 +221,11 @@ export default function SellerDashboardPage() {
         description: `${formState.name} has been successfully listed.`,
       });
       setFormState({ name: '', description: '', price: '', imageUrl: 'https://placehold.co/300x400.png', category: '', sizes: '' });
+      setImageFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
       if (currentUser) { 
         fetchSellerProducts(currentUser);
       }
@@ -424,17 +472,34 @@ export default function SellerDashboardPage() {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="imageUrl" className="text-base">Image URL</Label>
-                  <Input id="imageUrl" name="imageUrl" value={formState.imageUrl} onChange={handleChange} placeholder="https://example.com/image.jpg" className="mt-1" disabled={isSubmitting}/>
-                  {formState.imageUrl && (
+                  <Label htmlFor="image-upload" className="text-base">Product Image</Label>
+                  <Input
+                    id="image-upload"
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/png, image/jpeg, image/webp"
+                    className="mt-1 file:text-primary file:font-semibold"
+                    disabled={isSubmitting}
+                  />
+                  <p className="text-sm text-muted-foreground mt-2">Or enter image URL below:</p>
+                  <Input
+                    id="imageUrl"
+                    name="imageUrl"
+                    value={formState.imageUrl}
+                    onChange={handleChange}
+                    placeholder="https://example.com/image.jpg"
+                    className="mt-1"
+                    disabled={isSubmitting || !!imageFile}
+                  />
+                  {previewUrl && (
                      <div className="mt-2">
-                        <ProductImage 
-                            src={formState.imageUrl} 
-                            alt="Preview" 
-                            width={100} 
-                            height={133} 
-                            className="rounded-md border"
-                            aiHint="product preview"
+                        <Image
+                            src={previewUrl}
+                            alt="Preview"
+                            width={100}
+                            height={133}
+                            className="rounded-md border object-cover w-[100px] h-[133px]"
                         />
                     </div>
                   )}
@@ -519,7 +584,7 @@ export default function SellerDashboardPage() {
                 <AlertDialogDescription>
                   This action cannot be undone. This will permanently delete the product
                   from the database.
-                </AlertDialogDescription>
+                </description>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel onClick={() => setProductToDeleteId(null)} disabled={isDeleting}>Cancel</AlertDialogCancel>
