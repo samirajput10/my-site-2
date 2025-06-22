@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,16 @@ interface NewProductForm {
   sizes: string; // Comma-separated
 }
 
+interface DummyProductData {
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  category: ProductCategory;
+  sizes: ProductSize[];
+  sellerId: string;
+}
+
 export default function SellerDashboardPage() {
   const { toast } = useToast();
   const router = useRouter();
@@ -73,7 +83,7 @@ export default function SellerDashboardPage() {
     }
   }, [imageFile, formState.imageUrl]);
 
-  const fetchSellerProducts = async (user: User) => {
+  const fetchSellerProducts = useCallback(async (user: User) => {
     if (!user) return;
     setListingLoading(true);
     setListingError(null);
@@ -117,7 +127,7 @@ export default function SellerDashboardPage() {
     } finally {
       setListingLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -146,7 +156,7 @@ export default function SellerDashboardPage() {
       setLoadingAuth(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [fetchSellerProducts]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -241,8 +251,8 @@ export default function SellerDashboardPage() {
     }
   };
 
-  const generateDummyProducts = (sellerId: string): Omit<Product, 'id' | 'createdAt' | 'imageUrl'>[] & { imageUrl: string }[] => {
-    const products: Omit<Product, 'id' | 'createdAt'| 'imageUrl'>[] & { imageUrl: string }[] = [];
+  const generateDummyProducts = (sellerId: string): DummyProductData[] => {
+    const products: DummyProductData[] = [];
     const baseNames = [
       "Urban Chic", "Boho Dream", "Classic Comfort", "Modern Edge", "Minimalist Style",
       "Vintage Charm", "Sporty Look", "Elegant Evening", "Casual Day", "Work Ready",
@@ -589,7 +599,7 @@ export default function SellerDashboardPage() {
               <AlertDialogFooter>
                 <AlertDialogCancel onClick={() => setProductToDeleteId(null)} disabled={isDeleting}>Cancel</AlertDialogCancel>
                 <AlertDialogAction 
-                    onClick={() => handleDeleteProduct(productToDeleteId)} 
+                    onClick={() => { if (productToDeleteId) handleDeleteProduct(productToDeleteId) }} 
                     disabled={isDeleting} 
                     className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                  >
