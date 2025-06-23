@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AppProviders } from '@/components/layout/AppProviders';
 import { Toaster } from "@/components/ui/toaster";
+import { firebaseError } from '@/lib/firebase/config';
+import { FirebaseErrorOverlay } from '@/components/layout/FirebaseErrorOverlay';
 
 export const metadata: Metadata = {
   title: 'Fashion Frenzy - Support Small Fashion Brands',
@@ -14,6 +16,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // If there's a firebase configuration error, block the whole app and show the error overlay.
+  if (firebaseError) {
+    return (
+      <html lang="en" suppressHydrationWarning>
+         <head>
+            <title>Configuration Error</title>
+         </head>
+        <body className="font-body bg-background text-foreground antialiased">
+          <FirebaseErrorOverlay message={firebaseError} />
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

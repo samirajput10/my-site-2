@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, orderBy, type Timestamp, doc, deleteDoc } from 'firebase/firestore';
+import { ref as dbRef, set, serverTimestamp, query, orderByChild, equalTo, get, remove, push } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2 } from 'lucide-react';
 
@@ -25,10 +25,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { auth, db, storage } from '@/lib/firebase/config';
+import { auth, rtdb, storage } from '@/lib/firebase/config';
 import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import Image from 'next/image';
 
 interface NewProductForm {
   name: string;
@@ -67,14 +68,22 @@ export default function SellerDashboardPage() {
     setListingLoading(true);
     setListingError(null);
     try {
-      const productsRef = collection(db, 'products');
-      const q = query(productsRef, where('sellerId', '==', userId), orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(q);
+      const productsRef = dbRef(rtdb, 'products');
+      // NOTE: For this query to be efficient, you must define an index in your Realtime Database rules.
+      // E.g., { "rules": { "products": { ".indexOn": "sellerId" } } }
+      const q = query(productsRef, orderByChild('sellerId'), equalTo(userId));
+      const snapshot = await get(q);
 
-      const products = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        const createdAtTimestamp = data.createdAt as Timestamp;
-
+      if (!snapshot.exists()) {
+        setSellerProducts([]);
+        setListingLoading(false);
+        return;
+      }
+      
+      const productsData = snapshot.val();
+      const products = Object.keys(productsData).map(key => {
+        const data = productsData[key];
+        
         let parsedSizes: ProductSize[] = [];
         if (Array.isArray(data.sizes)) {
           parsedSizes = data.sizes.map(s => String(s).trim()).filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
@@ -83,7 +92,7 @@ export default function SellerDashboardPage() {
         }
         
         const mappedProduct: Product = {
-          id: doc.id,
+          id: key,
           name: data.name || "Unnamed Product",
           description: data.description || "",
           price: typeof data.price === 'number' ? data.price : 0,
@@ -91,15 +100,20 @@ export default function SellerDashboardPage() {
           category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
           sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
           sellerId: data.sellerId || userId,
-          createdAt: createdAtTimestamp ? createdAtTimestamp.toDate().toISOString() : undefined,
+          createdAt: data.createdAt ? new Date(data.createdAt).toISOString() : undefined,
         };
         return mappedProduct;
-      }).filter(product => product.name !== "Unnamed Product" || product.price !== 0);
+      }).filter(product => product.name !== "Unnamed Product" || product.price !== 0)
+      .sort((a, b) => { // Manual sort since we can only order by one key in the query
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
       
       setSellerProducts(products);
     } catch (error: any) {
       console.error("Error fetching seller products:", error);
-      const userMessage = "Failed to load your products. Check Firestore security rules.";
+      const userMessage = "Failed to load your products. Check Realtime Database security rules & indexes.";
       setListingError(userMessage);
       toast({ title: "Error", description: userMessage, variant: "destructive" });
     } finally {
@@ -184,7 +198,10 @@ export default function SellerDashboardPage() {
         return;
       }
 
-      const newProductDoc = {
+      const productsListRef = dbRef(rtdb, 'products');
+      const newProductRef = push(productsListRef);
+
+      const newProductData = {
         name: formState.name,
         description: formState.description,
         price: parseFloat(formState.price),
@@ -195,7 +212,7 @@ export default function SellerDashboardPage() {
         createdAt: serverTimestamp(),
       };
 
-      await addDoc(collection(db, 'products'), newProductDoc);
+      await set(newProductRef, newProductData);
       
       toast({ title: "Product Added", description: `${formState.name} is now listed.` });
       setFormState({ name: '', description: '', price: '', imageUrl: '', category: '', sizes: '' });
@@ -219,6 +236,9 @@ export default function SellerDashboardPage() {
           case 'storage/unknown':
             errorMessage = "An unknown error occurred during image upload. Please check your network and Firebase configuration.";
             break;
+          case 'permission-denied':
+             errorMessage = "Permission denied. Check your Realtime Database security rules to ensure you have write access.";
+             break;
         }
       }
       toast({ title: "Failed to Add Product", description: errorMessage, variant: "destructive" });
@@ -231,12 +251,12 @@ export default function SellerDashboardPage() {
     if (!currentUser) return;
     setIsDeleting(true);
     try {
-      await deleteDoc(doc(db, "products", productId));
+      await remove(dbRef(rtdb, `products/${productId}`));
       toast({ title: "Product Deleted" });
       setSellerProducts(prev => prev.filter(p => p.id !== productId));
     } catch (error) {
       console.error("Error deleting product:", error);
-      toast({ title: "Deletion Failed", variant: "destructive" });
+      toast({ title: "Deletion Failed", description: "Could not delete product. Check database rules.", variant: "destructive" });
     } finally {
       setIsDeleting(false);
       setProductToDeleteId(null);
