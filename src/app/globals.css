@@ -36,7 +36,7 @@
     --background: 240 10% 3.9%; 
     --foreground: 0 0% 98%; 
 
-    --primary: 7 100% 55%; /* Slightly lighter orange for dark mode */
+    --primary: 350 100% 88%; /* Baby Pink for dark mode buttons */
     --primary-foreground: 0 0% 10%;
     
     --accent: 150 56% 62%; /* Slightly lighter green for dark mode */
@@ -55,7 +55,7 @@
 
     --border: 240 5% 15%;
     --input: 240 5% 12%;
-    --ring: 7 100% 55%;
+    --ring: 350 100% 88%;
   }
 
   /* Consolidating base styles here */
