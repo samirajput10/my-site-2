@@ -5,6 +5,7 @@ import { AppProviders } from '@/components/layout/AppProviders';
 import { Toaster } from "@/components/ui/toaster";
 import { firebaseError } from '@/lib/firebase/config';
 import { FirebaseErrorOverlay } from '@/components/layout/FirebaseErrorOverlay';
+import { ThemeProvider } from '@/components/layout/ThemeProvider';
 
 export const metadata: Metadata = {
   title: 'Fashion Frenzy - Support Small Fashion Brands',
@@ -39,10 +40,17 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Belleza&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body bg-background text-foreground antialiased"> {/* Changed to font-body */}
-        <AppProviders>
-          {children}
-          <Toaster />
-        </AppProviders>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AppProviders>
+            {children}
+            <Toaster />
+          </AppProviders>
+        </ThemeProvider>
       </body>
     </html>
   );

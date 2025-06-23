@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Heart, ShoppingCart, User, Menu, X, Search, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, DollarSign, Check } from 'lucide-react'; // Added icons
+import { Heart, ShoppingCart, User, Menu, X, Search, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, DollarSign, Check, Sun, Moon } from 'lucide-react'; // Added icons
 import { Logo } from '@/components/icons/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +31,7 @@ import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { useTheme } from 'next-themes';
 
 const mainNavLinks = [
   { href: '/', label: 'Home' },
@@ -50,6 +51,7 @@ export function Header() {
   const { toast } = useToast();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -260,6 +262,27 @@ export function Header() {
                 <span className="sr-only">Cart</span>
               </Link>
             </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTheme("light")}>
+                  Light
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                  Dark
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")}>
+                  System
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <div className="hidden md:block">
               <DropdownMenu>
