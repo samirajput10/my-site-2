@@ -203,23 +203,22 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-20 items-center justify-between px-6 md:px-10">
-        <div className="flex items-center">
+        <div className="flex items-center gap-6">
           <Logo />
+          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+            {mainNavLinks.map((link) => (
+              <Button key={link.label} variant="ghost" asChild className="text-foreground hover:text-primary">
+                <Link href={link.href}>{link.label}</Link>
+              </Button>
+            ))}
+          </nav>
         </div>
 
-        <div className="hidden md:flex flex-1 max-w-xl mx-4">
-          <SearchBar />
-        </div>
+        <div className="flex items-center gap-2 md:gap-4">
+            <div className="hidden md:flex max-w-xs">
+              <SearchBar />
+            </div>
 
-        <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
-          {mainNavLinks.map((link) => (
-            <Button key={link.label} variant="ghost" asChild className="text-foreground hover:text-primary">
-              <Link href={link.href}>{link.label}</Link>
-            </Button>
-          ))}
-        </nav>
-
-        <div className="flex items-center space-x-2 sm:space-x-3">
             {isMobile && (
               <Sheet open={mobileSearchOpen} onOpenChange={setMobileSearchOpen}>
                 <SheetTrigger asChild>
