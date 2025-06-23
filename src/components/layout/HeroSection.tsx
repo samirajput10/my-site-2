@@ -1,3 +1,4 @@
+
 // src/components/layout/HeroSection.tsx
 "use client";
 import Link from 'next/link';
@@ -15,10 +16,12 @@ import { getAllProductsFromDB } from '@/actions/productActions';
 import type { Product } from '@/types';
 import { useEffect, useState } from 'react';
 import Autoplay from "embla-carousel-autoplay"
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 export function HeroSection() {
     const [newArrivals, setNewArrivals] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { formatPrice } = useCurrency();
 
     useEffect(() => {
         const fetchNewArrivals = async () => {
@@ -92,7 +95,7 @@ export function HeroSection() {
                                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300" />
                                     <div className="absolute bottom-4 left-4 right-4 text-white p-4 bg-black/50 rounded-lg backdrop-blur-sm">
                                         <h3 className="font-bold text-lg truncate">{product.name}</h3>
-                                        <p className="text-primary font-semibold">${product.price.toFixed(2)}</p>
+                                        <p className="text-primary font-semibold">{formatPrice(product.price)}</p>
                                     </div>
                                 </CardContent>
                             </Card>

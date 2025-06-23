@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState }from 'react';
@@ -12,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Heart, ShoppingCart, Loader2, AlertTriangle } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import Link from 'next/link';
 import { ProductCard } from '@/components/products/ProductCard'; // For related products
 import { cn } from '@/lib/utils';
@@ -26,6 +28,7 @@ export default function ProductDetailPage() {
 
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isWishlisted } = useWishlist();
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     if (id) {
@@ -100,7 +103,7 @@ export default function ProductDetailPage() {
               <CardDescription className="text-base text-muted-foreground leading-relaxed">
                 {product.description}
               </CardDescription>
-              <p className="text-4xl font-bold text-primary">${product.price.toFixed(2)}</p>
+              <p className="text-4xl font-bold text-primary">{formatPrice(product.price)}</p>
               
               <Separator />
 

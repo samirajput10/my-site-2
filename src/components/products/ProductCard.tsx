@@ -9,32 +9,33 @@ import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { ProductImage } from './ProductImage';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge'; // For discount/status badges
 
 interface ProductCardProps {
   product: Product;
-  // Adding optional fields from HTML example
-  discount?: string; // e.g., "-25%"
-  status?: "New" | "Last 2!" | string; // For badges like "New", "Last 2!"
-  rating?: number; // e.g., 4.5
-  reviewCount?: number; // e.g., 42
+  discount?: string; 
+  status?: "New" | "Last 2!" | string;
+  rating?: number;
+  reviewCount?: number;
   brandName?: string;
-  secondaryInfo?: string; // e.g., "Eco-friendly materials"
-  originalPrice?: number; // Added to match the usage in the component
+  secondaryInfo?: string;
+  originalPrice?: number;
 }
 
 export function ProductCard({ 
   product, 
   discount, 
   status, 
-  rating = 0, // Default to 0 if not provided
-  reviewCount = 0, // Default to 0
+  rating = 0,
+  reviewCount = 0,
   brandName,
   secondaryInfo 
 }: ProductCardProps) {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isWishlisted } = useWishlist();
+  const { formatPrice } = useCurrency();
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault(); 
@@ -54,13 +55,12 @@ export function ProductCard({
   
   const aiHintForImage = `${product.category.toLowerCase()} ${product.name.split(' ').slice(0,1).join(' ').toLowerCase()}`;
 
-  // Simplified status/discount badge logic based on HTML
   let displayBadge: React.ReactNode = null;
   if (discount) {
     displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1">{discount}</Badge>;
   } else if (status === "New") {
     displayBadge = <Badge variant="secondary" className="absolute bottom-2 left-2 text-xs px-2 py-1 bg-green-600 text-white">{status}</Badge>;
-  } else if (status) { // For "Last 2!" or other text statuses
+  } else if (status) {
     displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1">{status}</Badge>;
   }
 
@@ -68,13 +68,13 @@ export function ProductCard({
   return (
     <Card className="group flex h-full flex-col overflow-hidden rounded-lg bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
       <Link href={`/products/${product.id}`} className="flex flex-col h-full">
-        <CardHeader className="p-0 relative"> {/* Added relative for badge positioning */}
+        <CardHeader className="p-0 relative">
           <ProductImage
             src={product.imageUrl}
             alt={product.name}
             width={300}
             height={400} 
-            className="w-full h-auto aspect-[3/4] transition-transform duration-300 group-hover:scale-105" // group-hover effect from HTML
+            className="w-full h-auto aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
             aiHint={aiHintForImage}
           />
           {displayBadge}
@@ -106,9 +106,9 @@ export function ProductCard({
           )}
 
           <div className="flex items-baseline">
-            <span className="text-primary font-bold text-lg">${product.price.toFixed(2)}</span>
+            <span className="text-primary font-bold text-lg">{formatPrice(product.price)}</span>
             {(product as any).originalPrice && (product as any).originalPrice > product.price && (
-              <span className="text-muted-foreground text-sm line-through ml-2">${(product as any).originalPrice.toFixed(2)}</span>
+              <span className="text-muted-foreground text-sm line-through ml-2">{formatPrice((product as any).originalPrice)}</span>
             )}
           </div>
 

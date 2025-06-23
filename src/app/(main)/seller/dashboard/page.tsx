@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { auth, db, storage } from '@/lib/firebase/config';
 import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface NewProductForm {
   name: string;
@@ -41,12 +42,13 @@ interface NewProductForm {
 export default function SellerDashboardPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const { formatPrice } = useCurrency();
   
   const [formState, setFormState] = useState<NewProductForm>({
-    name: '', description: '', price: '', imageUrl: 'https://placehold.co/300x400.png', category: '', sizes: '',
+    name: '', description: '', price: '', imageUrl: '', category: '', sizes: '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(formState.imageUrl);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -129,9 +131,13 @@ export default function SellerDashboardPage() {
 
   useEffect(() => {
     if (imageFile) {
-      setPreviewUrl(URL.createObjectURL(imageFile));
+      const objectUrl = URL.createObjectURL(imageFile);
+      setPreviewUrl(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    } else if (formState.imageUrl) {
+        setPreviewUrl(formState.imageUrl);
     } else {
-      setPreviewUrl(formState.imageUrl);
+        setPreviewUrl(null);
     }
   }, [imageFile, formState.imageUrl]);
 
@@ -186,11 +192,10 @@ export default function SellerDashboardPage() {
       await addDoc(collection(db, 'products'), newProductDoc);
       
       toast({ title: "Product Added", description: `${formState.name} is now listed.` });
-      setFormState({ name: '', description: '', price: '', imageUrl: 'https://placehold.co/300x400.png', category: '', sizes: '' });
+      setFormState({ name: '', description: '', price: '', imageUrl: '', category: '', sizes: '' });
       setImageFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       
-      // Manually add product to local state to avoid re-fetch, assuming createdAt will be set by server
       const tempNewProduct: Product = {
         id: 'temp-id-' + Date.now(), // Placeholder ID
         ...newProductDoc,
@@ -296,7 +301,7 @@ export default function SellerDashboardPage() {
                   <Input id="name" name="name" value={formState.name} onChange={handleChange} required disabled={isSubmitting} />
                 </div>
                 <div>
-                  <Label htmlFor="price">Price ($) *</Label>
+                  <Label htmlFor="price">Price (USD) *</Label>
                   <Input id="price" name="price" type="number" value={formState.price} onChange={handleChange} required step="0.01" min="0.01" disabled={isSubmitting}/>
                 </div>
               </div>
@@ -344,7 +349,7 @@ export default function SellerDashboardPage() {
                   <img src={product.imageUrl} alt={product.name} className="w-full h-64 object-cover rounded-t-lg" onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/300x400.png`; }} />
                   <CardContent className="p-4 flex-grow">
                     <h3 className="font-semibold truncate">{product.name}</h3>
-                    <p className="text-xl font-bold text-primary mt-1">${product.price.toFixed(2)}</p>
+                    <p className="text-xl font-bold text-primary mt-1">{formatPrice(product.price)}</p>
                   </CardContent>
                   <CardFooter className="p-4 pt-0">
                     <Button variant="destructive" size="sm" className="w-full" onClick={() => setProductToDeleteId(product.id)} disabled={isDeleting && productToDeleteId === product.id}>

@@ -1,7 +1,9 @@
+
 "use client";
 
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { ProductImage } from '@/components/products/ProductImage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function CartPage() {
   const { cartItems, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
+  const { formatPrice } = useCurrency();
   const { toast } = useToast();
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
@@ -61,7 +64,7 @@ export default function CartPage() {
                     <h2 className="text-lg font-semibold hover:text-primary transition-colors">{item.name}</h2>
                 </Link>
                 <p className="text-sm text-muted-foreground">{item.category} - {item.sizes.join(', ')}</p>
-                <p className="text-lg font-semibold text-primary mt-1">${item.price.toFixed(2)}</p>
+                <p className="text-lg font-semibold text-primary mt-1">{formatPrice(item.price)}</p>
               </div>
               <div className="flex items-center space-x-2 mt-4 sm:mt-0 sm:ml-auto">
                 <Input
@@ -95,7 +98,7 @@ export default function CartPage() {
             <CardContent className="p-0 space-y-4">
               <div className="flex justify-between">
                 <p>Subtotal ({totalItems} items)</p>
-                <p>${totalPrice.toFixed(2)}</p>
+                <p>{formatPrice(totalPrice)}</p>
               </div>
               <div className="flex justify-between">
                 <p>Shipping</p>
@@ -104,7 +107,7 @@ export default function CartPage() {
               <Separator />
               <div className="flex justify-between font-bold text-xl">
                 <p>Total</p>
-                <p>${totalPrice.toFixed(2)}</p>
+                <p>{formatPrice(totalPrice)}</p>
               </div>
               <Button size="lg" className="w-full mt-6 bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleCheckout}>
                 Proceed to Checkout

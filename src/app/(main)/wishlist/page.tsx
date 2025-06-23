@@ -1,8 +1,10 @@
+
 "use client";
 
 import Link from 'next/link';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { ProductImage } from '@/components/products/ProductImage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +14,7 @@ import type { WishlistItem } from '@/types';
 export default function WishlistPage() {
   const { wishlistItems, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { formatPrice } = useCurrency();
 
   const handleMoveToCart = (item: WishlistItem) => {
     addToCart(item);
@@ -48,7 +51,7 @@ export default function WishlistPage() {
               <Link href={`/products/${item.id}`}>
                 <CardTitle className="text-lg mb-1 truncate hover:text-primary transition-colors" title={item.name}>{item.name}</CardTitle>
               </Link>
-              <p className="text-primary font-semibold text-lg">${item.price.toFixed(2)}</p>
+              <p className="text-primary font-semibold text-lg">{formatPrice(item.price)}</p>
             </CardContent>
             <CardFooter className="p-4 pt-0 grid grid-cols-2 gap-2">
               <Button size="sm" variant="outline" onClick={() => handleMoveToCart(item)} className="w-full">

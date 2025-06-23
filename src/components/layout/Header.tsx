@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Heart, ShoppingCart, User, Menu, X, Search, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard } from 'lucide-react'; // Added Sparkles and LayoutDashboard, removed unused icons
+import { Heart, ShoppingCart, User, Menu, X, Search, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, DollarSign, Check } from 'lucide-react'; // Added icons
 import { Logo } from '@/components/icons/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -24,19 +30,18 @@ import type { User as FirebaseUser } from 'firebase/auth';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 const mainNavLinks = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
   { href: '/style-assistant', label: 'Style Assistant' },
-  // Links to anchors might be better handled by specific landing page sections or removed if not applicable
-  // { href: '/#brands', label: 'Brands' }, 
-  // { href: '/#discover', label: 'Discover' },
 ];
 
 export function Header() {
   const { totalItems: cartTotalItems } = useCart();
   const { wishlistItems } = useWishlist();
+  const { currency, setCurrency } = useCurrency();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -76,9 +81,7 @@ export function Header() {
   const addSearchTerm = (term: string) => {
     try {
       const existingTerms: string[] = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      // Add new term to the beginning, ensure it's lowercase, and remove duplicates
       const updatedTerms = [term.toLowerCase(), ...existingTerms.filter(t => t !== term.toLowerCase())];
-      // Keep only the last 5 search terms
       localStorage.setItem('searchHistory', JSON.stringify(updatedTerms.slice(0, 5)));
     } catch (error) {
       console.error("Could not save search term to localStorage", error);
@@ -108,14 +111,6 @@ export function Header() {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {/* <DropdownMenuItem onClick={() => { router.push('/#profile'); onItemClick?.(); }}> // Placeholder, actual profile page TBD
-            <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => { router.push('/#orders'); onItemClick?.(); }}> // Placeholder
-            <ShoppingBag className="mr-2 h-4 w-4" />
-            <span>Orders</span>
-          </DropdownMenuItem> */}
           <DropdownMenuItem onClick={() => { router.push('/wishlist'); onItemClick?.(); }}>
             <Heart className="mr-2 h-4 w-4" />
             <span>Wishlist</span>
@@ -128,6 +123,21 @@ export function Header() {
             <LayoutDashboard className="mr-2 h-4 w-4" />
             <span>Seller Dashboard</span>
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <DollarSign className="mr-2 h-4 w-4" />
+              <span>Currency</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuRadioGroup value={currency} onValueChange={(value) => setCurrency(value as 'USD' | 'PKR')}>
+                  <DropdownMenuRadioItem value="USD">USD ($)</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="PKR">PKR (Rs)</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => {handleLogout(); onItemClick?.();}} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
             <LogOut className="mr-2 h-4 w-4" />
@@ -153,9 +163,23 @@ export function Header() {
             <LayoutDashboard className="mr-2 h-4 w-4" />
             <span>Seller Dashboard</span>
           </DropdownMenuItem>
+           <DropdownMenuSeparator />
+           <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <DollarSign className="mr-2 h-4 w-4" />
+              <span>Currency</span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuRadioGroup value={currency} onValueChange={(value) => setCurrency(value as 'USD' | 'PKR')}>
+                  <DropdownMenuRadioItem value="USD">USD ($)</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="PKR">PKR (Rs)</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
+          </DropdownMenuSub>
         </>
       )}
-       {/* Other links like Settings, Help can be added here */}
     </>
   );
 
