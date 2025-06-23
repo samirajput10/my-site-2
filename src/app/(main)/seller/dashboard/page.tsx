@@ -185,15 +185,19 @@ export default function SellerDashboardPage() {
     setIsSubmitting(true);
     try {
       let finalImageUrl = formState.imageUrl;
+
+      // Step 1: Handle the image upload to Firebase Storage if a file is selected.
+      // This is the correct place to store large files like images.
       if (imageFile) {
-        toast({ title: "Uploading Image..." });
-        const sRef = storageRef(storage, `products/${Date.now()}_${imageFile.name}`);
-        await uploadBytes(sRef, imageFile);
-        finalImageUrl = await getDownloadURL(sRef);
+        toast({ title: "Uploading Image...", description: "Your image is being uploaded to secure storage." });
+        const sRef = storageRef(storage, `products/${currentUser.uid}/${Date.now()}_${imageFile.name}`);
+        const uploadTask = await uploadBytes(sRef, imageFile);
+        finalImageUrl = await getDownloadURL(uploadTask.ref);
+        toast({ title: "Image Upload Complete!", description: "A link to your image has been generated." });
       }
       
-      if (imageFile && !finalImageUrl) {
-        toast({ title: "Image Upload Failed", description: "Could not get the image URL after upload. Please try again.", variant: "destructive" });
+      if ((imageFile || formState.imageUrl) && !finalImageUrl) {
+        toast({ title: "Image Error", description: "Could not get a valid image URL. Please try uploading again or use a different URL.", variant: "destructive" });
         setIsSubmitting(false);
         return;
       }
@@ -201,6 +205,8 @@ export default function SellerDashboardPage() {
       const productsListRef = dbRef(rtdb, 'products');
       const newProductRef = push(productsListRef);
 
+      // Step 2: Save the product data, including the link to the image, in the Realtime Database.
+      // We store the URL, not the image itself, which is efficient and standard practice.
       const newProductData = {
         name: formState.name,
         description: formState.description,
@@ -214,12 +220,11 @@ export default function SellerDashboardPage() {
 
       await set(newProductRef, newProductData);
       
-      toast({ title: "Product Added", description: `${formState.name} is now listed.` });
+      toast({ title: "Product Added", description: `Your product data has been saved to the database.` });
       setFormState({ name: '', description: '', price: '', imageUrl: '', category: '', sizes: '' });
       setImageFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       
-      // Re-fetch products from the database to ensure UI is up-to-date
       fetchSellerProducts(currentUser.uid);
 
     } catch (error: any) {
@@ -417,5 +422,7 @@ export default function SellerDashboardPage() {
     </div>
   );
 }
+
+    
 
     
