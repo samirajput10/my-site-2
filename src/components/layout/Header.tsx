@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Heart, ShoppingCart, User, Menu, X, Search, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, DollarSign, Check, Sun, Moon } from 'lucide-react'; // Added icons
+import { Heart, ShoppingCart, User, Menu, X, Search, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Sun, Moon } from 'lucide-react'; // Added icons
 import { Logo } from '@/components/icons/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -126,21 +126,6 @@ export function Header() {
             <span>Seller Dashboard</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <DollarSign className="mr-2 h-4 w-4" />
-              <span>Currency</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuRadioGroup value={currency} onValueChange={(value) => setCurrency(value as 'USD' | 'PKR')}>
-                  <DropdownMenuRadioItem value="USD">USD ($)</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="PKR">PKR (Rs)</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => {handleLogout(); onItemClick?.();}} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
             <LogOut className="mr-2 h-4 w-4" />
             <span>Sign out</span>
@@ -165,21 +150,6 @@ export function Header() {
             <LayoutDashboard className="mr-2 h-4 w-4" />
             <span>Seller Dashboard</span>
           </DropdownMenuItem>
-           <DropdownMenuSeparator />
-           <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <DollarSign className="mr-2 h-4 w-4" />
-              <span>Currency</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuRadioGroup value={currency} onValueChange={(value) => setCurrency(value as 'USD' | 'PKR')}>
-                  <DropdownMenuRadioItem value="USD">USD ($)</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="PKR">PKR (Rs)</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
         </>
       )}
     </>
@@ -220,6 +190,23 @@ export function Header() {
             <div className="hidden md:flex max-w-xs">
               <SearchBar />
             </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="hidden md:flex text-muted-foreground hover:text-primary">
+                  {currency}
+                  <ChevronDown className="ml-1 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Select Currency</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={currency} onValueChange={(value) => setCurrency(value as 'USD' | 'PKR')}>
+                  <DropdownMenuRadioItem value="USD">USD ($)</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="PKR">PKR (Rs)</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {isMobile && (
               <Sheet open={mobileSearchOpen} onOpenChange={setMobileSearchOpen}>
