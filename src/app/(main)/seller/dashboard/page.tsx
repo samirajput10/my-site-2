@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -63,51 +63,51 @@ export default function SellerDashboardPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchSellerProducts = async (userId: string) => {
-      setListingLoading(true);
-      setListingError(null);
-      try {
-        const productsRef = collection(db, 'products');
-        const q = query(productsRef, where('sellerId', '==', userId), orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
+  const fetchSellerProducts = useCallback(async (userId: string) => {
+    setListingLoading(true);
+    setListingError(null);
+    try {
+      const productsRef = collection(db, 'products');
+      const q = query(productsRef, where('sellerId', '==', userId), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
 
-        const products = querySnapshot.docs.map(doc => {
-          const data = doc.data();
-          const createdAtTimestamp = data.createdAt as Timestamp;
+      const products = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        const createdAtTimestamp = data.createdAt as Timestamp;
 
-          let parsedSizes: ProductSize[] = [];
-          if (Array.isArray(data.sizes)) {
-            parsedSizes = data.sizes.map(s => String(s).trim()).filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
-          } else if (typeof data.sizes === 'string' && data.sizes.length > 0) {
-            parsedSizes = data.sizes.split(',').map(s => s.trim()).filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
-          }
-          
-          const mappedProduct: Product = {
-            id: doc.id,
-            name: data.name || "Unnamed Product",
-            description: data.description || "",
-            price: typeof data.price === 'number' ? data.price : 0,
-            imageUrl: data.imageUrl || `https://placehold.co/300x400.png`,
-            category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
-            sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
-            sellerId: data.sellerId || userId,
-            createdAt: createdAtTimestamp ? createdAtTimestamp.toDate().toISOString() : undefined,
-          };
-          return mappedProduct;
-        }).filter(product => product.name !== "Unnamed Product" || product.price !== 0);
+        let parsedSizes: ProductSize[] = [];
+        if (Array.isArray(data.sizes)) {
+          parsedSizes = data.sizes.map(s => String(s).trim()).filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
+        } else if (typeof data.sizes === 'string' && data.sizes.length > 0) {
+          parsedSizes = data.sizes.split(',').map(s => s.trim()).filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
+        }
         
-        setSellerProducts(products);
-      } catch (error: any) {
-        console.error("Error fetching seller products:", error);
-        const userMessage = "Failed to load your products. Check Firestore security rules.";
-        setListingError(userMessage);
-        toast({ title: "Error", description: userMessage, variant: "destructive" });
-      } finally {
-        setListingLoading(false);
-      }
-    };
+        const mappedProduct: Product = {
+          id: doc.id,
+          name: data.name || "Unnamed Product",
+          description: data.description || "",
+          price: typeof data.price === 'number' ? data.price : 0,
+          imageUrl: data.imageUrl || `https://placehold.co/300x400.png`,
+          category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
+          sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
+          sellerId: data.sellerId || userId,
+          createdAt: createdAtTimestamp ? createdAtTimestamp.toDate().toISOString() : undefined,
+        };
+        return mappedProduct;
+      }).filter(product => product.name !== "Unnamed Product" || product.price !== 0);
+      
+      setSellerProducts(products);
+    } catch (error: any) {
+      console.error("Error fetching seller products:", error);
+      const userMessage = "Failed to load your products. Check Firestore security rules.";
+      setListingError(userMessage);
+      toast({ title: "Error", description: userMessage, variant: "destructive" });
+    } finally {
+      setListingLoading(false);
+    }
+  }, [toast]);
 
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (user) {
@@ -127,7 +127,7 @@ export default function SellerDashboardPage() {
       setLoadingAuth(false);
     });
     return () => unsubscribe();
-  }, [toast]);
+  }, [fetchSellerProducts]);
 
   useEffect(() => {
     if (imageFile) {
@@ -177,6 +177,12 @@ export default function SellerDashboardPage() {
         await uploadBytes(sRef, imageFile);
         finalImageUrl = await getDownloadURL(sRef);
       }
+      
+      if (imageFile && !finalImageUrl) {
+        toast({ title: "Image Upload Failed", description: "Could not get the image URL after upload. Please try again.", variant: "destructive" });
+        setIsSubmitting(false);
+        return;
+      }
 
       const newProductDoc = {
         name: formState.name,
@@ -196,17 +202,26 @@ export default function SellerDashboardPage() {
       setImageFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       
-      const tempNewProduct: Product = {
-        id: 'temp-id-' + Date.now(), // Placeholder ID
-        ...newProductDoc,
-        price: newProductDoc.price,
-        createdAt: new Date().toISOString(),
-      };
-      setSellerProducts(prev => [tempNewProduct, ...prev]);
+      // Re-fetch products from the database to ensure UI is up-to-date
+      fetchSellerProducts(currentUser.uid);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding product:", error);
-      toast({ title: "Failed to Add Product", variant: "destructive" });
+      let errorMessage = "Failed to add product. Please try again.";
+      if (error.code) {
+        switch (error.code) {
+          case 'storage/unauthorized':
+            errorMessage = "Image upload failed. You don't have permission. Please check your Firebase Storage security rules.";
+            break;
+          case 'storage/canceled':
+            errorMessage = "Image upload was canceled.";
+            break;
+          case 'storage/unknown':
+            errorMessage = "An unknown error occurred during image upload. Please check your network and Firebase configuration.";
+            break;
+        }
+      }
+      toast({ title: "Failed to Add Product", description: errorMessage, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -382,3 +397,5 @@ export default function SellerDashboardPage() {
     </div>
   );
 }
+
+    
