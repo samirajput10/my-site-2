@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useTransition } from 'react';
@@ -8,10 +9,17 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Sparkles, AlertTriangle } from 'lucide-react';
 import { getStyleAdvice } from '@/actions/styleActions';
 import Image from 'next/image';
+import { ProductCard } from '@/components/products/ProductCard';
+import type { Product } from '@/types';
+
+interface StyleResult {
+  suggestions: string;
+  recommendedProducts?: Product[];
+}
 
 export default function StyleAssistantPage() {
   const [prompt, setPrompt] = useState('');
-  const [suggestions, setSuggestions] = useState<string | null>(null);
+  const [result, setResult] = useState<StyleResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -22,14 +30,17 @@ export default function StyleAssistantPage() {
       return;
     }
     setError(null);
-    setSuggestions(null);
+    setResult(null);
 
     startTransition(async () => {
-      const result = await getStyleAdvice({ prompt });
-      if ('error' in result) {
-        setError(result.error);
+      const response = await getStyleAdvice({ prompt });
+      if ('error' in response) {
+        setError(response.error);
       } else {
-        setSuggestions(result.suggestions);
+        setResult({
+            suggestions: response.suggestions,
+            recommendedProducts: response.recommendedProducts || []
+        });
       }
     });
   };
@@ -41,7 +52,7 @@ export default function StyleAssistantPage() {
           <Sparkles className="mx-auto h-16 w-16 text-primary mb-4" />
           <h1 className="text-4xl font-headline font-bold mb-3">AI Style Assistant</h1>
           <p className="text-lg text-muted-foreground">
-            Describe your fashion needs, an upcoming event, or a style you're curious about, and get personalized advice!
+            Describe your fashion needs, an upcoming event, or a style you're curious about, and get personalized advice and product recommendations!
           </p>
         </div>
 
@@ -100,20 +111,33 @@ export default function StyleAssistantPage() {
           </Card>
         )}
 
-        {suggestions && (
-          <Card className="mt-8 shadow-lg rounded-xl">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center">
-                 <Image src="https://placehold.co/40x40.png" alt="AI Stylist" width={40} height={40} className="rounded-full mr-3" data-ai-hint="avatar fashion" />
-                Your Style Suggestions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="prose dark:prose-invert max-w-none whitespace-pre-line text-base leading-relaxed">
-                {suggestions}
+        {result && (
+          <div className="mt-8 space-y-12">
+            <Card className="shadow-lg rounded-xl">
+              <CardHeader>
+                <CardTitle className="text-2xl flex items-center">
+                   <Image src="https://placehold.co/40x40.png" alt="AI Stylist" width={40} height={40} className="rounded-full mr-3" data-ai-hint="avatar fashion" />
+                  Your Style Suggestions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="prose dark:prose-invert max-w-none whitespace-pre-line text-base leading-relaxed">
+                  {result.suggestions}
+                </div>
+              </CardContent>
+            </Card>
+
+            {result.recommendedProducts && result.recommendedProducts.length > 0 && (
+              <div>
+                <h3 className="text-2xl md:text-3xl font-headline font-semibold mb-6 text-center">Shop The Look</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {result.recommendedProducts.map(product => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </div>
         )}
       </div>
     </div>
