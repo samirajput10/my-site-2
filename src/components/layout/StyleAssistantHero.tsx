@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Sparkles, ArrowRight } from 'lucide-react';
+ 
 
 export function StyleAssistantHero() {
   return (
@@ -25,7 +26,7 @@ export function StyleAssistantHero() {
           </div>
           <div className="order-1 md:order-2">
             <Image
-              src="https://placehold.co/600x600.png"
+              src="/images/ai.jpg"
               alt="AI Style Assistant creating outfits"
               width={600}
               height={600}
