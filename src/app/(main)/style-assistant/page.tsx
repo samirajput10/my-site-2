@@ -121,7 +121,6 @@ export default function StyleAssistantPage() {
             
             {/* Suggestions */}
             <div className={cn(
-              "order-1 lg:order-2",
               result.recommendedProducts && result.recommendedProducts.length > 0
                 ? "lg:col-span-2"
                 : "lg:col-span-3"
@@ -143,7 +142,7 @@ export default function StyleAssistantPage() {
 
             {/* Recommended Products */}
             {result.recommendedProducts && result.recommendedProducts.length > 0 && (
-              <div className="lg:col-span-1 order-2 lg:order-1">
+              <div className="lg:col-span-1">
                 <h3 className="text-2xl font-headline font-semibold mb-6">Shop The Look</h3>
                 <div className="space-y-6">
                   {result.recommendedProducts.map(product => (
