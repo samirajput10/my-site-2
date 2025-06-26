@@ -20,7 +20,7 @@ const WhatsAppIcon = () => (
   );
 
 export function ChatButton() {
-  const WHATSAPP_NUMBER = "1234567890"; // Use a placeholder number
+  const WHATSAPP_NUMBER = "923204806331"; // Use a placeholder number
 
   return (
     <Link 
