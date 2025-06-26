@@ -76,7 +76,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">Visit Us</h3>
-                    <p className="text-muted-foreground">123 Fashion Ave, New York, NY 10001</p>
+                    <p className="text-muted-foreground">Minhaj University, Lahore, Pakistan</p>
                   </div>
                 </div>
               </CardContent>
