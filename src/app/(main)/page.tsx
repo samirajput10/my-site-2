@@ -5,6 +5,7 @@ import { PersonalizedRecommendations } from '@/components/layout/PersonalizedRec
 import { NewArrivals } from '@/components/layout/NewArrivals';
 import { StyleAssistantHero } from '@/components/layout/StyleAssistantHero';
 import { SaleBanner } from '@/components/layout/SaleBanner';
+import { CustomerReviewGallery } from '@/components/layout/CustomerReviewGallery';
 
 export default function HomePage() {
   return (
@@ -14,6 +15,7 @@ export default function HomePage() {
       <NewArrivals />
       <SaleBanner />
       <StyleAssistantHero />
+      <CustomerReviewGallery />
       <PersonalizedRecommendations />
     </>
   );
