@@ -10,28 +10,15 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Trash2, ShoppingBag } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
 
 export default function CartPage() {
   const { cartItems, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
   const { formatPrice } = useCurrency();
-  const { toast } = useToast();
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity >= 0) {
       updateQuantity(productId, newQuantity);
     }
-  };
-
-  const handleCheckout = () => {
-    toast({
-      title: "Checkout Initiated (Mock)",
-      description: "Checkout process is not implemented in this demo.",
-      variant: "default",
-      duration: 5000,
-    });
-    // Optionally, clear cart after mock checkout
-    // clearCart(); 
   };
   
   if (cartItems.length === 0) {
@@ -109,8 +96,8 @@ export default function CartPage() {
                 <p>Total</p>
                 <p>{formatPrice(totalPrice)}</p>
               </div>
-              <Button size="lg" className="w-full mt-6 bg-accent hover:bg-accent/90 text-accent-foreground" onClick={handleCheckout}>
-                Proceed to Checkout
+              <Button asChild size="lg" className="w-full mt-6 bg-accent hover:bg-accent/90 text-accent-foreground">
+                 <Link href="/checkout">Proceed to Checkout</Link>
               </Button>
             </CardContent>
           </Card>

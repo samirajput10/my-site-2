@@ -7,7 +7,7 @@ import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref as dbRef, set, serverTimestamp, query, orderByChild, equalTo, get, remove, push } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2 } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -315,8 +315,8 @@ export default function SellerDashboardPage() {
         <p className="text-lg text-muted-foreground">Manage your products and sales.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <Card className="md:col-span-1 shadow-lg rounded-xl">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <Card className="shadow-lg rounded-xl">
           <CardHeader>
             <CardTitle className="text-xl flex items-center"><Package className="mr-2 h-5 w-5"/>Product Overview</CardTitle>
           </CardHeader>
@@ -325,56 +325,83 @@ export default function SellerDashboardPage() {
               <span className="font-medium">Active Listings</span>
               <span className="text-primary font-bold text-lg">{sellerProducts.length}</span>
             </div>
+             <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-md">
+              <span className="font-medium">Total Sales (Mock)</span>
+              <span className="text-primary font-bold text-lg">125</span>
+            </div>
           </CardContent>
         </Card>
-
-        <Card className="md:col-span-2 shadow-xl rounded-xl">
+        
+        <Card className="lg:col-span-2 shadow-lg rounded-xl">
           <CardHeader>
-            <CardTitle className="text-2xl flex items-center"><PlusCircle className="mr-2 h-6 w-6 text-primary" />Add New Product</CardTitle>
-            <CardDescription>Valid categories are: {ALL_CATEGORIES.join(', ')}.</CardDescription>
+            <CardTitle className="text-xl flex items-center"><DollarSign className="mr-2 h-5 w-5"/>Sales & Payouts (Mock Data)</CardTitle>
           </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="name">Product Name *</Label>
-                  <Input id="name" name="name" value={formState.name} onChange={handleChange} required disabled={isSubmitting} />
-                </div>
-                <div>
-                  <Label htmlFor="price">Price (USD) *</Label>
-                  <Input id="price" name="price" type="number" value={formState.price} onChange={handleChange} required step="0.01" min="0.01" disabled={isSubmitting}/>
-                </div>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-secondary/50 rounded-md">
+                <Label className="text-sm text-muted-foreground">Total Revenue</Label>
+                <p className="text-2xl font-bold text-primary">{formatPrice(7850.50)}</p>
               </div>
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea id="description" name="description" value={formState.description} onChange={handleChange} disabled={isSubmitting}/>
+              <div className="p-4 bg-secondary/50 rounded-md">
+                <Label className="text-sm text-muted-foreground">Next Estimated Payout</Label>
+                <p className="text-2xl font-bold text-primary">{formatPrice(1230.00)}</p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="category">Category *</Label>
-                  <Input id="category" name="category" value={formState.category} onChange={handleChange} list="category-options" required disabled={isSubmitting}/>
-                  <datalist id="category-options">{ALL_CATEGORIES.map(cat => <option key={cat} value={cat} />)}</datalist>
-                </div>
-                <div>
-                  <Label htmlFor="sizes">Sizes (comma-separated) *</Label>
-                  <Input id="sizes" name="sizes" value={formState.sizes} onChange={handleChange} required disabled={isSubmitting}/>
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="image-upload">Product Image</Label>
-                <Input id="image-upload" type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" disabled={isSubmitting} />
-                <p className="text-sm text-muted-foreground mt-2">Or enter image URL:</p>
-                <Input id="imageUrl" name="imageUrl" value={formState.imageUrl} onChange={handleChange} disabled={isSubmitting || !!imageFile} />
-                {previewUrl && <img src={previewUrl} alt="Preview" width={100} height={133} className="rounded-md border object-cover mt-2 w-[100px] h-[133px]" />}
-              </div>
-              <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="mr-2 animate-spin" /> : <PlusCircle className="mr-2" />}
-                {isSubmitting ? 'Adding...' : 'Add Product'}
-              </Button>
-            </CardContent>
-          </form>
+          </CardContent>
+          <CardFooter className="p-4">
+            <Button variant="outline" className="w-full">
+              <BarChart2 className="mr-2 h-4 w-4" /> View Detailed Analytics
+            </Button>
+          </CardFooter>
         </Card>
       </div>
+
+
+      <Card className="w-full shadow-xl rounded-xl">
+        <CardHeader>
+          <CardTitle className="text-2xl flex items-center"><PlusCircle className="mr-2 h-6 w-6 text-primary" />Add New Product</CardTitle>
+          <CardDescription>Valid categories are: {ALL_CATEGORIES.join(', ')}.</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="name">Product Name *</Label>
+                <Input id="name" name="name" value={formState.name} onChange={handleChange} required disabled={isSubmitting} />
+              </div>
+              <div>
+                <Label htmlFor="price">Price (USD) *</Label>
+                <Input id="price" name="price" type="number" value={formState.price} onChange={handleChange} required step="0.01" min="0.01" disabled={isSubmitting}/>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea id="description" name="description" value={formState.description} onChange={handleChange} disabled={isSubmitting}/>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="category">Category *</Label>
+                <Input id="category" name="category" value={formState.category} onChange={handleChange} list="category-options" required disabled={isSubmitting}/>
+                <datalist id="category-options">{ALL_CATEGORIES.map(cat => <option key={cat} value={cat} />)}</datalist>
+              </div>
+              <div>
+                <Label htmlFor="sizes">Sizes (comma-separated) *</Label>
+                <Input id="sizes" name="sizes" value={formState.sizes} onChange={handleChange} required disabled={isSubmitting}/>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="image-upload">Product Image</Label>
+              <Input id="image-upload" type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" disabled={isSubmitting} />
+              <p className="text-sm text-muted-foreground mt-2">Or enter image URL:</p>
+              <Input id="imageUrl" name="imageUrl" value={formState.imageUrl} onChange={handleChange} disabled={isSubmitting || !!imageFile} />
+              {previewUrl && <img src={previewUrl} alt="Preview" width={100} height={133} className="rounded-md border object-cover mt-2 w-[100px] h-[133px]" />}
+            </div>
+            <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="mr-2 animate-spin" /> : <PlusCircle className="mr-2" />}
+              {isSubmitting ? 'Adding...' : 'Add Product'}
+            </Button>
+          </CardContent>
+        </form>
+      </Card>
+      
 
       <Card className="mt-8 shadow-lg rounded-xl">
         <CardHeader><CardTitle className="text-xl flex items-center"><ListChecks className="mr-2 h-5 w-5"/>Your Listed Products</CardTitle></CardHeader>
@@ -383,10 +410,10 @@ export default function SellerDashboardPage() {
           {listingError && <div className="text-destructive text-center py-8">{listingError}</div>}
           {!listingLoading && !listingError && sellerProducts.length === 0 && <p className="text-center text-muted-foreground py-8">You haven't listed any products yet.</p>}
           {!listingLoading && !listingError && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {sellerProducts.map(product => (
                 <Card key={product.id} className="flex flex-col">
-                  <img src={product.imageUrl} alt={product.name} className="w-full h-64 object-cover rounded-t-lg" onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/300x400.png`; }} />
+                  <Image src={product.imageUrl} alt={product.name} width={300} height={400} className="w-full h-64 object-cover rounded-t-lg" onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/300x400.png`; }} />
                   <CardContent className="p-4 flex-grow">
                     <h3 className="font-semibold truncate">{product.name}</h3>
                     <p className="text-xl font-bold text-primary mt-1">{formatPrice(product.price)}</p>
@@ -422,7 +449,3 @@ export default function SellerDashboardPage() {
     </div>
   );
 }
-
-    
-
-    
