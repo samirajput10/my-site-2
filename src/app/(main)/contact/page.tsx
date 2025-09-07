@@ -57,7 +57,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">Email Us</h3>
                     <a href="mailto:aqibbrand784@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">
-                      aqibbrand784@gmail.com
+                      brandboy553340@gmail.com
                     </a>
                   </div>
                 </div>
@@ -67,7 +67,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">Call Us</h3>
-                    <p className="text-muted-foreground">03204806331</p>
+                    <p className="text-muted-foreground">03174919129</p>
                   </div>
                 </div>
                  <div className="flex items-start space-x-4">
@@ -76,7 +76,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">Visit Us</h3>
-                    <p className="text-muted-foreground">Minhaj University, Lahore, Pakistan</p>
+                    <p className="text-muted-foreground">superior University, Lahore, Pakistan</p>
                   </div>
                 </div>
               </CardContent>
