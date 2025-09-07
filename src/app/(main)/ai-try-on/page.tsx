@@ -4,9 +4,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle, Shirt, User as UserIcon } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { getProductById } from '@/data/products';
 import { performVirtualTryOn } from '@/actions/tryOnActions';
@@ -88,56 +88,15 @@ export default function AiTryOnPage() {
     setIsGenerating(false);
   };
   
-  const UploadView = () => (
-    <Card className="shadow-lg rounded-xl text-center">
-        <CardHeader>
-            <CardTitle>Step 1: Upload Your Photo</CardTitle>
-            <CardDescription>Choose a clear, well-lit photo of yourself for the best result.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <div 
-              className="relative w-full max-w-md mx-auto aspect-video rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/50 flex flex-col items-center justify-center cursor-pointer hover:bg-muted transition-colors"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileChange} 
-                className="hidden" 
-                accept="image/*"
-              />
-              <Upload className="h-12 w-12 text-muted-foreground mb-2" />
-              <p className="font-semibold text-foreground">Click to upload an image</p>
-              <p className="text-sm text-muted-foreground">PNG, JPG, or WEBP</p>
-            </div>
-        </CardContent>
-    </Card>
-  );
-
-  const GenerationView = () => (
-     <Card className="shadow-lg rounded-xl">
-        <CardHeader>
-            <CardTitle>Step 2: Generate Your Try-On</CardTitle>
-            <CardDescription>You're all set! Click generate to see the magic happen.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-            <div className="text-center space-y-3">
-                <h3 className="font-semibold text-lg">Your Photo</h3>
-                {userImage && <Image src={userImage} alt="Your uploaded photo" width={400} height={300} className="rounded-lg mx-auto border object-cover" />}
-                <Button variant="outline" onClick={() => setUserImage(null)}>Choose Another</Button>
-            </div>
-            <div className="text-center space-y-3">
-                <h3 className="font-semibold text-lg">Product</h3>
-                {product && <ProductImage src={product.imageUrl} alt={product.name} width={400} height={300} className="rounded-lg mx-auto" />}
-            </div>
-        </CardContent>
-        <div className="p-6 pt-0 text-center">
-            <Button size="lg" onClick={handleGenerate} disabled={isGenerating}>
-                {isGenerating ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                {isGenerating ? 'Generating...' : 'Generate Try-On'}
-            </Button>
-        </div>
-    </Card>
+  const UploadPlaceholder = ({ icon: Icon, title, description, onClick }: { icon: React.ElementType, title: string, description: string, onClick?: () => void }) => (
+    <div 
+        className="relative w-full aspect-[3/4] max-w-sm mx-auto rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/50 flex flex-col items-center justify-center cursor-pointer hover:bg-muted transition-colors text-center p-4"
+        onClick={onClick}
+    >
+        <Icon className="h-12 w-12 text-muted-foreground mb-2" />
+        <h3 className="font-semibold text-foreground text-lg">{title}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
   );
 
   return (
@@ -145,10 +104,10 @@ export default function AiTryOnPage() {
         <div className="text-center mb-10">
             <Sparkles className="mx-auto h-16 w-16 text-primary mb-4" />
             <h1 className="text-4xl font-headline font-bold mb-3">AI Virtual Try-On</h1>
-            <p className="text-lg text-muted-foreground">See how our clothes look on you before you buy.</p>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">See how our clothes look on you before you buy. Upload a clear, front-facing photo of yourself for the best results.</p>
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-5xl mx-auto space-y-8">
             {productError ? (
                 <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
@@ -162,7 +121,64 @@ export default function AiTryOnPage() {
                 <div className="text-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : (
                 <>
-                  {!userImage ? <UploadView /> : <GenerationView />}
+                  <Card className="shadow-lg rounded-xl">
+                      <CardHeader>
+                          <CardTitle>Step 1: Prepare Your Images</CardTitle>
+                          <CardDescription>Upload your photo to see it with the selected product.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                          
+                          {/* User Image Uploader */}
+                          <div className="flex flex-col items-center gap-2">
+                              {userImage ? (
+                                <>
+                                  <Image src={userImage} alt="Your uploaded photo" width={400} height={533} className="rounded-lg border object-cover aspect-[3/4]" />
+                                  <Button variant="outline" onClick={() => setUserImage(null)}>Choose Another Photo</Button>
+                                </>
+                                
+                              ) : (
+                                <>
+                                  <input 
+                                    type="file" 
+                                    ref={fileInputRef} 
+                                    onChange={handleFileChange} 
+                                    className="hidden" 
+                                    accept="image/*"
+                                  />
+                                  <UploadPlaceholder 
+                                    icon={UserIcon}
+                                    title="Upload Your Photo"
+                                    description="Click here to upload an image of yourself."
+                                    onClick={() => fileInputRef.current?.click()}
+                                  />
+                                </>
+                              )}
+                          </div>
+                          
+                          {/* Product Image Display */}
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="relative w-full aspect-[3/4] max-w-sm mx-auto rounded-lg border-2 border-muted-foreground/30 bg-muted/50 flex flex-col items-center justify-center text-center p-4">
+                                <ProductImage src={product.imageUrl} alt={product.name} width={400} height={533} className="rounded-lg object-cover" />
+                            </div>
+                             <h3 className="font-semibold text-lg mt-2">{product.name}</h3>
+                          </div>
+                      </CardContent>
+                  </Card>
+
+                  <Card className="shadow-lg rounded-xl text-center">
+                    <CardHeader>
+                        <CardTitle>Step 2: Generate Your Try-On</CardTitle>
+                        <CardDescription>You're all set! Click generate to see the magic happen.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Button size="lg" onClick={handleGenerate} disabled={isGenerating || !userImage}>
+                            {isGenerating ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
+                            {isGenerating ? 'Generating...' : 'Generate Try-On'}
+                        </Button>
+                        {!userImage && <p className="text-sm text-muted-foreground mt-2">Please upload your photo to enable generation.</p>}
+                    </CardContent>
+                  </Card>
+
 
                   {error && (
                       <Alert variant="destructive" className="mt-8">
