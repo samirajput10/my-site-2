@@ -27,39 +27,10 @@ export function PersonalizedRecommendations() {
       }
       
       const allProducts = allProductsResult;
-      let searchHistory: string[] = [];
-      try {
-        searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      } catch (error) {
-        console.error("Could not parse search history", error);
-        searchHistory = [];
-      }
-
       let finalProducts: Product[] = [];
 
-      if (searchHistory.length > 0) {
-        setTitle("Based on Your Recent Searches");
-        const searchTerms = new Set(searchHistory);
-        const personalized = allProducts.filter(product => {
-          const productName = product.name.toLowerCase();
-          const productDescription = product.description ? product.description.toLowerCase() : '';
-          for (const term of searchTerms) {
-            if (productName.includes(term) || productDescription.includes(term)) {
-              return true;
-            }
-          }
-          return false;
-        });
-        
-        // Exclude products that are already in the list to avoid duplicates
-        const uniquePersonalized = personalized.filter((p, index, self) => 
-            index === self.findIndex((t) => (t.id === p.id))
-        );
-        finalProducts = uniquePersonalized.slice(0, 5);
-      }
-
-      // If no personalized results found OR no search history, show random products
-      if (finalProducts.length === 0 && allProducts.length > 0) {
+      // Show random products
+      if (allProducts.length > 0) {
         setTitle("Fresh Finds For You");
         const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
         finalProducts = shuffled.slice(0, 5);

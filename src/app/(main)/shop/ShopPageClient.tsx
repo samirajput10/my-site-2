@@ -11,16 +11,6 @@ import { getAllProductsFromDB } from '@/actions/productActions';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const addSearchTerm = (term: string) => {
-  try {
-    const existingTerms: string[] = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-    const updatedTerms = [term.toLowerCase(), ...existingTerms.filter(t => t !== term.toLowerCase())];
-    localStorage.setItem('searchHistory', JSON.stringify(updatedTerms.slice(0, 5)));
-  } catch (error) {
-    console.error("Could not save search term to localStorage", error);
-  }
-};
-
 export function ShopPageClient() {
   const searchParams = useSearchParams();
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -31,7 +21,6 @@ export function ShopPageClient() {
     categories: [],
     sizes: [],
     priceRange: { min: 0, max: 500 }, // Initial default, updated by maxProductPrice
-    searchQuery: '',
   });
 
   useEffect(() => {
@@ -58,30 +47,16 @@ export function ShopPageClient() {
   // Effect to update filters based on URL search parameters
   useEffect(() => {
     const categoryFromUrl = searchParams.get('category') as ProductCategory | null;
-    const searchQueryFromUrl = searchParams.get('search');
-
-    if (searchQueryFromUrl) {
-      addSearchTerm(searchQueryFromUrl);
-    }
 
     setFilters(prevFilters => {
-      let newSearchQuery = prevFilters.searchQuery || ''; 
-      if (searchQueryFromUrl !== null) { 
-        newSearchQuery = searchQueryFromUrl;
-      }
-
       let newCategories = prevFilters.categories || [];
       if (categoryFromUrl && ALL_CATEGORIES.includes(categoryFromUrl)) {
         newCategories = [categoryFromUrl];
-        if (searchQueryFromUrl === null) {
-          newSearchQuery = '';
-        }
       }
 
       return {
         ...prevFilters,
         categories: newCategories,
-        searchQuery: newSearchQuery,
       };
     });
   }, [searchParams]);

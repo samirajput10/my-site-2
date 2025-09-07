@@ -42,7 +42,6 @@ export type Filters = {
   categories: ProductCategory[];
   sizes: ProductSize[];
   priceRange: { min: number; max: number };
-  searchQuery?: string;
 };
 
 // Types for Virtual Try-On Flow

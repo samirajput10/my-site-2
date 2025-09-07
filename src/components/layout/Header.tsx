@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Heart, ShoppingCart, User, Menu, X, Search, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Sun, Moon, Camera } from 'lucide-react'; // Added icons
+import { Heart, ShoppingCart, User, Menu, X, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Sun, Moon, Camera } from 'lucide-react'; // Added icons
 import { Logo } from '@/components/icons/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,13 +45,11 @@ export function Header() {
   const { wishlistItems } = useWishlist();
   const { currency, setCurrency } = useCurrency();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const isMobile = useIsMobile();
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
   const { setTheme } = useTheme();
 
   useEffect(() => {
@@ -78,26 +76,6 @@ export function Header() {
         description: 'Could not log you out. Please try again.',
         variant: 'destructive',
       });
-    }
-  };
-
-  const addSearchTerm = (term: string) => {
-    try {
-      const existingTerms: string[] = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      const updatedTerms = [term.toLowerCase(), ...existingTerms.filter(t => t !== term.toLowerCase())];
-      localStorage.setItem('searchHistory', JSON.stringify(updatedTerms.slice(0, 5)));
-    } catch (error) {
-      console.error("Could not save search term to localStorage", error);
-    }
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      addSearchTerm(searchQuery.trim());
-      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
-      if (isMobile) setMobileSearchOpen(false);
-      setSearchQuery(''); 
     }
   };
 
@@ -160,23 +138,6 @@ export function Header() {
     </>
   );
 
-  const SearchBar = ({className}: {className?: string}) => (
-    <form onSubmit={handleSearchSubmit} className={`relative w-full ${className}`}>
-      <Input
-        type="text"
-        placeholder="Search for products, brands..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full pl-10 pr-4 py-2 rounded-full border-input bg-background focus:ring-primary focus:border-transparent text-sm"
-        aria-label="Search products"
-      />
-      <Button type="submit" variant="ghost" size="icon" className="absolute left-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-primary">
-        <Search className="h-4 w-4" />
-         <span className="sr-only">Submit search</span>
-      </Button>
-    </form>
-  );
-
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md dark:shadow-[0_4px_6px_-1px_rgba(255,255,255,0.08),_0_2px_4px_-2px_rgba(255,255,255,0.08)]">
       <div className="flex h-20 items-center justify-between px-6 md:px-10">
@@ -195,10 +156,6 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
-            <div className="hidden md:flex max-w-xs">
-              <SearchBar />
-            </div>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="hidden md:flex text-muted-foreground hover:text-primary">
@@ -216,25 +173,6 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {isMobile && (
-              <Sheet open={mobileSearchOpen} onOpenChange={setMobileSearchOpen}>
-                <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary md:hidden">
-                        <Search className="h-5 w-5"/>
-                        <span className="sr-only">Open Search</span>
-                    </Button>
-                </SheetTrigger>
-                <SheetContent side="top" className="p-4 pt-8 bg-card text-card-foreground">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-semibold sr-only">Search Products</h3>
-                      <SheetClose asChild>
-                          <Button variant="ghost" size="icon" className="absolute right-4 top-4"><X className="h-5 w-5"/></Button>
-                      </SheetClose>
-                    </div>
-                    <SearchBar />
-                </SheetContent>
-              </Sheet>
-            )}
             <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary relative">
               <Link href="/wishlist">
                 <Heart className="h-5 w-5" />
@@ -331,5 +269,3 @@ export function Header() {
     </header>
   );
 }
-
-    

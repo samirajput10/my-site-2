@@ -17,13 +17,6 @@ export function ProductList({ initialProducts, filters }: ProductListProps) {
   const filteredProducts = useMemo(() => {
     let tempProducts = initialProducts || [];
 
-    if (filters.searchQuery) {
-      tempProducts = tempProducts.filter(p =>
-        p.name.toLowerCase().includes(filters.searchQuery!.toLowerCase()) ||
-        (p.description && p.description.toLowerCase().includes(filters.searchQuery!.toLowerCase()))
-      );
-    }
-
     if (filters.categories && filters.categories.length > 0) {
       tempProducts = tempProducts.filter(p => filters.categories!.includes(p.category));
     }
@@ -46,7 +39,7 @@ export function ProductList({ initialProducts, filters }: ProductListProps) {
 
   // The parent component (ShopPage) now handles the main loading/error states for initialProducts.
   // This component just displays what it's given or the filtered result.
-  if (!initialProducts || initialProducts.length === 0 && !filters.searchQuery) { // Show message if initial list is empty AND no search is active
+  if (!initialProducts || initialProducts.length === 0) {
      return (
       <div className="text-center py-10">
         <h2 className="text-2xl font-semibold mb-2">No Products Available</h2>
@@ -59,7 +52,7 @@ export function ProductList({ initialProducts, filters }: ProductListProps) {
      return (
       <div className="text-center py-10">
         <h2 className="text-2xl font-semibold mb-2">No Products Found Matching Your Criteria</h2>
-        <p className="text-muted-foreground">Try adjusting your filters or search terms.</p>
+        <p className="text-muted-foreground">Try adjusting your filters.</p>
       </div>
     );
   }

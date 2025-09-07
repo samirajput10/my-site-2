@@ -3,7 +3,7 @@
 
 import { useEffect, useState }from 'react';
 import { useParams } from 'next/navigation';
-import { getProductById, mockProducts } from '@/data/products';
+import { mockProducts } from '@/data/products';
 import type { Product } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { ProductCard } from '@/components/products/ProductCard'; // For related products
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
+import { getAllProductsFromDB } from '@/actions/productActions';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -33,19 +34,31 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (id) {
-      const foundProduct = getProductById(id);
-      setProduct(foundProduct);
-      if (foundProduct?.sizes.length) {
-        setSelectedSize(foundProduct.sizes[0]);
-      }
+      const fetchProductData = async () => {
+        const allProductsResult = await getAllProductsFromDB();
+        if ('error' in allProductsResult) {
+          console.error(allProductsResult.error);
+          setProduct(null);
+          return;
+        }
+        
+        const foundProduct = allProductsResult.find(p => p.id === id);
+        setProduct(foundProduct || null);
 
-      // Fetch related products (simple logic: same category, not the current product)
-      if (foundProduct) {
-        const related = mockProducts
-          .filter(p => p.category === foundProduct.category && p.id !== foundProduct.id)
-          .slice(0, 4); // Show up to 4 related products
-        setRelatedProducts(related);
-      }
+        if (foundProduct?.sizes.length) {
+          setSelectedSize(foundProduct.sizes[0]);
+        }
+
+        // Fetch related products (simple logic: same category, not the current product)
+        if (foundProduct) {
+          const related = allProductsResult
+            .filter(p => p.category === foundProduct.category && p.id !== foundProduct.id)
+            .slice(0, 4); // Show up to 4 related products
+          setRelatedProducts(related);
+        }
+      };
+      
+      fetchProductData();
     }
   }, [id]);
 
@@ -173,4 +186,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-

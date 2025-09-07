@@ -84,7 +84,6 @@ export function FilterSidebar({
       categories: [],
       sizes: [],
       priceRange: { min: 0, max: effectiveMaxPrice },
-      searchQuery: initialFilters.searchQuery // Preserve search query unless also cleared
     });
   };
 
