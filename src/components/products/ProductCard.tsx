@@ -67,16 +67,17 @@ export function ProductCard({
 
   return (
     <Card className="group flex h-full flex-col overflow-hidden rounded-lg bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <Link href={`/products/${product.id}`} className="flex flex-col h-full">
         <CardHeader className="p-0 relative">
-          <ProductImage
-            src={product.imageUrl}
-            alt={product.name}
-            width={300}
-            height={400} 
-            className="w-full h-auto aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
-            aiHint={aiHintForImage}
-          />
+          <Link href={`/products/${product.id}`} aria-label={product.name}>
+            <ProductImage
+              src={product.imageUrl}
+              alt={product.name}
+              width={300}
+              height={400} 
+              className="w-full h-auto aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
+              aiHint={aiHintForImage}
+            />
+          </Link>
           {displayBadge}
           
           <div className="absolute top-2 right-2 flex flex-col gap-2">
@@ -94,7 +95,6 @@ export function ProductCard({
             </Button>
             <Link 
                 href={`/ai-try-on?productId=${product.id}`} 
-                onClick={(e) => e.stopPropagation()}
                 className={cn(
                     buttonVariants({ variant: 'ghost', size: 'icon' }),
                     "h-auto p-1.5 rounded-full bg-card/70 hover:bg-card text-muted-foreground hover:text-primary"
@@ -107,7 +107,9 @@ export function ProductCard({
 
         </CardHeader>
         <CardContent className="flex-grow p-4">
-          <h3 className="font-semibold text-foreground mb-1 text-base truncate" title={product.name}>{product.name}</h3>
+          <Link href={`/products/${product.id}`}>
+            <h3 className="font-semibold text-foreground mb-1 text-base truncate hover:text-primary transition-colors" title={product.name}>{product.name}</h3>
+          </Link>
           
           {rating > 0 && (
             <div className="flex items-center mb-2">
@@ -144,7 +146,6 @@ export function ProductCard({
               Add to Cart
             </Button>
         </CardFooter>
-      </Link>
     </Card>
   );
 }
