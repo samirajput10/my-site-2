@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle, Shirt, User as UserIcon } from 'lucide-react';
+import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle, Shirt, User as UserIcon, ShieldAlert } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { performVirtualTryOn } from '@/actions/tryOnActions';
 import type { Product, ProductCategory, ProductSize } from '@/types';
@@ -14,7 +14,8 @@ import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
 import Image from 'next/image';
 import { ref, get } from 'firebase/database';
-import { rtdb } from '@/lib/firebase/config';
+import { rtdb, auth } from '@/lib/firebase/config';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 
 
 export default function AiTryOnPage() {
@@ -31,8 +32,27 @@ export default function AiTryOnPage() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loadingAuth, setLoadingAuth] = useState(true);
   
   const productId = searchParams.get('productId');
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setLoadingAuth(false);
+      if (!user) {
+        toast({
+          title: "Please Sign Up",
+          description: "You need an account to use the AI Virtual Try-On.",
+          variant: 'destructive'
+        });
+        router.push('/signup');
+      }
+    });
+    return () => unsubscribe();
+  }, [router, toast]);
 
   useEffect(() => {
     if (!productId) {
@@ -47,6 +67,10 @@ export default function AiTryOnPage() {
         if (snapshot.exists()) {
           const data = snapshot.val();
           // Manually parse and validate to be more robust
+          const parsedSizes = Array.isArray(data.sizes) && data.sizes.length > 0
+                   ? data.sizes.filter((s: any): s is ProductSize => typeof s === 'string' && ALL_SIZES.includes(s.toUpperCase() as ProductSize)).map(s => s.toUpperCase() as ProductSize)
+                   : ['One Size'];
+
           const parsedProduct: Product = {
             id: snapshot.key as string,
             name: data.name || "Unnamed Product",
@@ -54,9 +78,7 @@ export default function AiTryOnPage() {
             price: typeof data.price === 'number' ? data.price : 0,
             imageUrl: data.imageUrl || `https://placehold.co/600x800.png`,
             category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
-            sizes: Array.isArray(data.sizes) && data.sizes.length > 0
-                   ? data.sizes.filter((s: any): s is ProductSize => typeof s === 'string' && ALL_SIZES.includes(s.toUpperCase() as ProductSize)).map(s => s.toUpperCase() as ProductSize)
-                   : ['One Size'],
+            sizes: parsedSizes,
             sellerId: data.sellerId || "unknown_seller",
             createdAt: data.createdAt ? new Date(data.createdAt).toISOString() : new Date().toISOString(),
           };
@@ -133,6 +155,27 @@ export default function AiTryOnPage() {
         <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   );
+
+  if (loadingAuth) {
+    return (
+      <div className="container mx-auto flex min-h-[calc(100vh-10rem)] items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="ml-4 text-lg text-muted-foreground">Verifying access...</p>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+       <div className="container mx-auto flex min-h-[calc(100vh-10rem)] items-center justify-center text-center">
+        <div>
+          <ShieldAlert className="h-16 w-16 text-destructive mx-auto mb-4" />
+          <h1 className="text-2xl font-bold">Access Denied</h1>
+          <p className="text-muted-foreground mt-2">Redirecting you to the signup page...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto py-8 md:py-12">
