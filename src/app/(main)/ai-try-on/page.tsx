@@ -67,26 +67,34 @@ export default function AiTryOnPage() {
         if (snapshot.exists()) {
           const data = snapshot.val();
           // Manually parse and validate to be more robust
-          const parsedSizes = Array.isArray(data.sizes) && data.sizes.length > 0
-                   ? data.sizes.filter((s: any): s is ProductSize => typeof s === 'string' && ALL_SIZES.includes(s.toUpperCase() as ProductSize)).map(s => s.toUpperCase() as ProductSize)
-                   : ['One Size'];
-
-          const parsedProduct: Product = {
+          let parsedSizes: ProductSize[] = [];
+            if (Array.isArray(data.sizes)) {
+                // Ensure sizes are uppercase and valid
+                parsedSizes = data.sizes
+                .map(s => String(s).trim().toUpperCase())
+                .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
+            } else if (typeof data.sizes === 'string' && data.sizes.length > 0) {
+                parsedSizes = data.sizes.split(',')
+                .map(s => s.trim().toUpperCase())
+                .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
+            }
+          
+          const mappedProduct: Product = {
             id: snapshot.key as string,
             name: data.name || "Unnamed Product",
             description: data.description || "",
             price: typeof data.price === 'number' ? data.price : 0,
             imageUrl: data.imageUrl || `https://placehold.co/600x800.png`,
             category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
-            sizes: parsedSizes,
+            sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
             sellerId: data.sellerId || "unknown_seller",
             createdAt: data.createdAt ? new Date(data.createdAt).toISOString() : new Date().toISOString(),
           };
 
-          if (parsedProduct.name === "Unnamed Product") {
+          if (mappedProduct.name === "Unnamed Product") {
               setProductError(`Product data for ID ${productId} is invalid or incomplete.`);
           } else {
-              setProduct(parsedProduct);
+              setProduct(mappedProduct);
           }
         } else {
           setProductError(`Could not find the product with ID: ${productId}.`);
@@ -169,8 +177,8 @@ export default function AiTryOnPage() {
     return (
        <div className="container mx-auto flex min-h-[calc(100vh-10rem)] items-center justify-center text-center">
         <div>
-          <ShieldAlert className="h-16 w-16 text-destructive mx-auto mb-4" />
-          <h1 className="text-2xl font-bold">Access Denied</h1>
+          <ShieldAlert className="h-16 w-16 text-primary mx-auto mb-4" />
+          <h1 className="text-2xl font-bold">Respected user, signup your account first.</h1>
           <p className="text-muted-foreground mt-2">Redirecting you to the signup page...</p>
         </div>
       </div>
