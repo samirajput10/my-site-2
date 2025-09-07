@@ -44,3 +44,27 @@ export type Filters = {
   priceRange: { min: number; max: number };
   searchQuery?: string;
 };
+
+// Types for Virtual Try-On Flow
+export const VirtualTryOnInputSchema = z.object({
+  userImage: z
+    .string()
+    .describe(
+      "A photo of the user, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
+  productImage: z.string().describe(
+      "A photo of the product (e.g., a shirt, dress), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+  ),
+  productName: z.string().describe("The name of the product."),
+  productCategory: z.string().describe("The category of the product (e.g., 'Tops', 'Dresses').")
+});
+export type VirtualTryOnInput = z.infer<typeof VirtualTryOnInputSchema>;
+
+export const VirtualTryOnOutputSchema = z.object({
+  generatedImage: z
+    .string()
+    .describe(
+      "The generated try-on image as a data URI, including MIME type and Base64 encoding."
+    ),
+});
+export type VirtualTryOnOutput = z.infer<typeof VirtualTryOnOutputSchema>;

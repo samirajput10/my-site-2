@@ -1,7 +1,8 @@
 
 "use server";
 
-import { virtualTryOn, type VirtualTryOnInput, type VirtualTryOnOutput } from "@/ai/flows/virtual-try-on-flow";
+import { virtualTryOn } from "@/ai/flows/virtual-try-on-flow";
+import type { VirtualTryOnInput, VirtualTryOnOutput } from "@/types";
 
 export async function performVirtualTryOn(input: VirtualTryOnInput): Promise<VirtualTryOnOutput | { error: string }> {
   try {
