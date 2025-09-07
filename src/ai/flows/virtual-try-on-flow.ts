@@ -4,8 +4,6 @@
  * @fileOverview AI agent that generates a virtual try-on image.
  *
  * - virtualTryOn - A function that generates an image of a person wearing a specified garment.
- * - VirtualTryOnInput - The input type for the function.
- * - VirtualTryOnOutput - The return type for the function.
  */
 
 import {ai} from '@/ai/genkit';
