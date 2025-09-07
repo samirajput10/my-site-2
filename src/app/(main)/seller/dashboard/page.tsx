@@ -86,9 +86,9 @@ export default function SellerDashboardPage() {
         
         let parsedSizes: ProductSize[] = [];
         if (Array.isArray(data.sizes)) {
-          parsedSizes = data.sizes.map(s => String(s).trim()).filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
+          parsedSizes = data.sizes.map(s => String(s).trim().toUpperCase()).filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
         } else if (typeof data.sizes === 'string' && data.sizes.length > 0) {
-          parsedSizes = data.sizes.split(',').map(s => s.trim()).filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
+          parsedSizes = data.sizes.split(',').map(s => s.trim().toUpperCase()).filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
         }
         
         const mappedProduct: Product = {
@@ -186,8 +186,6 @@ export default function SellerDashboardPage() {
     try {
       let finalImageUrl = formState.imageUrl;
 
-      // Step 1: Handle the image upload to Firebase Storage if a file is selected.
-      // This is the correct place to store large files like images.
       if (imageFile) {
         toast({ title: "Uploading Image...", description: "Your image is being uploaded to secure storage." });
         const sRef = storageRef(storage, `products/${currentUser.uid}/${Date.now()}_${imageFile.name}`);
@@ -205,15 +203,23 @@ export default function SellerDashboardPage() {
       const productsListRef = dbRef(rtdb, 'products');
       const newProductRef = push(productsListRef);
 
-      // Step 2: Save the product data, including the link to the image, in the Realtime Database.
-      // We store the URL, not the image itself, which is efficient and standard practice.
+      const parsedSizes = formState.sizes.split(',')
+        .map(s => s.trim().toUpperCase())
+        .filter(s => ALL_SIZES.includes(s as ProductSize));
+      
+      if (parsedSizes.length === 0 && formState.sizes.trim() !== '') {
+          toast({ title: "Invalid Sizes", description: `Please use valid, comma-separated sizes from: ${ALL_SIZES.join(', ')}`, variant: "destructive" });
+          setIsSubmitting(false);
+          return;
+      }
+
       const newProductData = {
         name: formState.name,
         description: formState.description,
         price: parseFloat(formState.price),
         imageUrl: finalImageUrl || 'https://placehold.co/300x400.png',
         category: formState.category as ProductCategory,
-        sizes: formState.sizes.split(',').map(s => s.trim()).filter(Boolean),
+        sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
         sellerId: currentUser.uid,
         createdAt: serverTimestamp(),
       };
@@ -383,7 +389,7 @@ export default function SellerDashboardPage() {
                 <datalist id="category-options">{ALL_CATEGORIES.map(cat => <option key={cat} value={cat} />)}</datalist>
               </div>
               <div>
-                <Label htmlFor="sizes">Sizes (comma-separated) *</Label>
+                <Label htmlFor="sizes">Sizes (comma-separated, uppercase) *</Label>
                 <Input id="sizes" name="sizes" value={formState.sizes} onChange={handleChange} required disabled={isSubmitting}/>
               </div>
             </div>

@@ -2,8 +2,8 @@
 "use server";
 
 import { rtdb } from '@/lib/firebase/config';
-import type { Product, ProductCategory } from '@/types';
-import { ALL_CATEGORIES } from '@/types';
+import type { Product, ProductCategory, ProductSize } from '@/types';
+import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
 import { ref, get, query, orderByChild } from 'firebase/database';
 
 export async function getAllProductsFromDB(): Promise<Product[] | { error: string }> {
@@ -21,6 +21,19 @@ export async function getAllProductsFromDB(): Promise<Product[] | { error: strin
     const productsData = snapshot.val();
     const products = Object.keys(productsData).map(key => {
       const data = productsData[key];
+      
+      let parsedSizes: ProductSize[] = [];
+      if (Array.isArray(data.sizes)) {
+        // Ensure sizes are uppercase and valid
+        parsedSizes = data.sizes
+          .map(s => String(s).trim().toUpperCase())
+          .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
+      } else if (typeof data.sizes === 'string' && data.sizes.length > 0) {
+        parsedSizes = data.sizes.split(',')
+          .map(s => s.trim().toUpperCase())
+          .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
+      }
+      
       const mappedProduct: Product = {
         id: key,
         name: data.name || "Unnamed Product",
@@ -28,13 +41,10 @@ export async function getAllProductsFromDB(): Promise<Product[] | { error: strin
         price: typeof data.price === 'number' ? data.price : 0,
         imageUrl: data.imageUrl || `https://placehold.co/300x450.png`,
         category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
-        sizes: Array.isArray(data.sizes) && data.sizes.length > 0
-               ? data.sizes.filter((s: any) => typeof s === 'string' && s.trim() !== '')
-               : (typeof data.sizes === 'string' && data.sizes.length > 0
-                  ? data.sizes.split(',').map((s: string) => s.trim()).filter(Boolean)
-                  : ['One Size']),
+        sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
         sellerId: data.sellerId || "unknown_seller",
-        createdAt: data.createdAt ? new Date(data.createdAt).toISOString() : undefined,
+        // Correctly handle the createdAt timestamp from Firebase
+        createdAt: data.createdAt ? new Date(data.createdAt).toISOString() : new Date().toISOString(),
       };
       return mappedProduct;
     }).filter(product => product.name !== "Unnamed Product" || product.price !== 0);

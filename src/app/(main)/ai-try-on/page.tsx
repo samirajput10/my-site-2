@@ -9,12 +9,12 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle, Shirt, User as UserIcon } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { performVirtualTryOn } from '@/actions/tryOnActions';
-import type { Product } from '@/types';
+import type { Product, ProductCategory, ProductSize } from '@/types';
+import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
 import Image from 'next/image';
 import { ref, get } from 'firebase/database';
 import { rtdb } from '@/lib/firebase/config';
-import { ProductSchema } from '@/types';
 
 
 export default function AiTryOnPage() {
@@ -45,13 +45,26 @@ export default function AiTryOnPage() {
         const productRef = ref(rtdb, `products/${productId}`);
         const snapshot = await get(productRef);
         if (snapshot.exists()) {
-          const rawData = snapshot.val();
-          // Validate and parse the data to ensure it matches the Product type
-          const parsedProduct = ProductSchema.safeParse({ id: snapshot.key, ...rawData });
-          if (parsedProduct.success) {
-            setProduct(parsedProduct.data);
+          const data = snapshot.val();
+          // Manually parse and validate to be more robust
+          const parsedProduct: Product = {
+            id: snapshot.key as string,
+            name: data.name || "Unnamed Product",
+            description: data.description || "",
+            price: typeof data.price === 'number' ? data.price : 0,
+            imageUrl: data.imageUrl || `https://placehold.co/600x800.png`,
+            category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
+            sizes: Array.isArray(data.sizes) && data.sizes.length > 0
+                   ? data.sizes.filter((s: any): s is ProductSize => typeof s === 'string' && ALL_SIZES.includes(s.toUpperCase() as ProductSize)).map(s => s.toUpperCase() as ProductSize)
+                   : ['One Size'],
+            sellerId: data.sellerId || "unknown_seller",
+            createdAt: data.createdAt ? new Date(data.createdAt).toISOString() : new Date().toISOString(),
+          };
+
+          if (parsedProduct.name === "Unnamed Product") {
+              setProductError(`Product data for ID ${productId} is invalid or incomplete.`);
           } else {
-             setProductError(`Product data for ID ${productId} is invalid: ${parsedProduct.error.message}`);
+              setProduct(parsedProduct);
           }
         } else {
           setProductError(`Could not find the product with ID: ${productId}.`);
