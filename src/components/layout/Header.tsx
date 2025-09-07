@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Heart, ShoppingCart, User, Menu, X, Search, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Sun, Moon } from 'lucide-react'; // Added icons
+import { Heart, ShoppingCart, User, Menu, X, Search, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Sun, Moon, Camera } from 'lucide-react'; // Added icons
 import { Logo } from '@/components/icons/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,6 +37,7 @@ const mainNavLinks = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
   { href: '/style-assistant', label: 'Style Assistant' },
+  { href: '/shop', label: 'AI Try-On', icon: Camera },
 ];
 
 export function Header() {
@@ -146,6 +147,10 @@ export function Header() {
             <Sparkles className="mr-2 h-4 w-4" />
             <span>AI Style Assistant</span>
           </DropdownMenuItem>
+           <DropdownMenuItem onClick={() => { router.push('/shop'); onItemClick?.(); }}>
+            <Camera className="mr-2 h-4 w-4" />
+            <span>AI Try-On</span>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
             <LayoutDashboard className="mr-2 h-4 w-4" />
             <span>Seller Dashboard</span>
@@ -180,7 +185,10 @@ export function Header() {
           <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
             {mainNavLinks.map((link) => (
               <Button key={link.label} variant="ghost" asChild className="text-foreground hover:text-primary">
-                <Link href={link.href}>{link.label}</Link>
+                <Link href={link.href}>
+                  {link.icon && <link.icon className="mr-2 h-4 w-4" />}
+                  {link.label}
+                </Link>
               </Button>
             ))}
           </nav>
@@ -304,7 +312,10 @@ export function Header() {
                     {mainNavLinks.map((link) => (
                       <SheetClose key={link.label} asChild>
                         <Button variant="ghost" asChild className="w-full justify-start text-lg py-3 text-foreground hover:text-primary">
-                          <Link href={link.href}>{link.label}</Link>
+                           <Link href={link.href}>
+                              {link.icon && <link.icon className="mr-2 h-4 w-4" />}
+                              {link.label}
+                           </Link>
                         </Button>
                       </SheetClose>
                     ))}
@@ -320,3 +331,5 @@ export function Header() {
     </header>
   );
 }
+
+    
