@@ -8,11 +8,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle, Shirt, User as UserIcon } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { getProductById } from '@/data/products';
 import { performVirtualTryOn } from '@/actions/tryOnActions';
 import type { Product } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
 import Image from 'next/image';
+import { ref, get } from 'firebase/database';
+import { rtdb } from '@/lib/firebase/config';
+import { ProductSchema } from '@/types';
+
 
 export default function AiTryOnPage() {
   const router = useRouter();
@@ -36,13 +39,32 @@ export default function AiTryOnPage() {
       setProductError("No product was selected. Please go back and choose a product to try on.");
       return;
     }
-    const foundProduct = getProductById(productId);
-    if (!foundProduct) {
-        setProductError(`Could not find the product with ID: ${productId}.`);
-    } else {
-        setProduct(foundProduct);
-    }
+    
+    const fetchProduct = async () => {
+      try {
+        const productRef = ref(rtdb, `products/${productId}`);
+        const snapshot = await get(productRef);
+        if (snapshot.exists()) {
+          const rawData = snapshot.val();
+          // Validate and parse the data to ensure it matches the Product type
+          const parsedProduct = ProductSchema.safeParse({ id: snapshot.key, ...rawData });
+          if (parsedProduct.success) {
+            setProduct(parsedProduct.data);
+          } else {
+             setProductError(`Product data for ID ${productId} is invalid: ${parsedProduct.error.message}`);
+          }
+        } else {
+          setProductError(`Could not find the product with ID: ${productId}.`);
+        }
+      } catch (err) {
+        console.error("Error fetching product from RTDB:", err);
+        setProductError("There was an error fetching the product details from the database.");
+      }
+    };
+    
+    fetchProduct();
   }, [productId]);
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
