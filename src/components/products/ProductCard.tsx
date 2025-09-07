@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Camera } from 'lucide-react';
 import { ProductImage } from './ProductImage';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -78,18 +78,33 @@ export function ProductCard({
             aiHint={aiHintForImage}
           />
           {displayBadge}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleWishlistToggle}
-            className={cn(
-              "absolute top-2 right-2 p-1.5 rounded-full bg-card/70 hover:bg-card text-muted-foreground hover:text-primary",
-              isWishlisted(product.id) && "text-primary bg-primary/10 hover:bg-primary/20"
-            )}
-            aria-label={isWishlisted(product.id) ? "Remove from wishlist" : "Add to wishlist"}
-          >
-            <Heart className="h-5 w-5" fill={isWishlisted(product.id) ? "currentColor" : "none"} />
-          </Button>
+          
+          <div className="absolute top-2 right-2 flex flex-col gap-2">
+            <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleWishlistToggle}
+                className={cn(
+                "h-auto p-1.5 rounded-full bg-card/70 hover:bg-card text-muted-foreground hover:text-primary",
+                isWishlisted(product.id) && "text-primary bg-primary/10 hover:bg-primary/20"
+                )}
+                aria-label={isWishlisted(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+            >
+                <Heart className="h-5 w-5" fill={isWishlisted(product.id) ? "currentColor" : "none"} />
+            </Button>
+            <Link href={`/ai-try-on?productId=${product.id}`} passHref legacyBehavior>
+                <a onClick={(e) => e.stopPropagation()}
+                    className={cn(
+                        buttonVariants({ variant: 'ghost', size: 'icon' }),
+                        "h-auto p-1.5 rounded-full bg-card/70 hover:bg-card text-muted-foreground hover:text-primary"
+                    )}
+                    aria-label="AI Virtual Try-On"
+                >
+                    <Camera className="h-5 w-5" />
+                </a>
+            </Link>
+          </div>
+
         </CardHeader>
         <CardContent className="flex-grow p-4">
           <h3 className="font-semibold text-foreground mb-1 text-base truncate" title={product.name}>{product.name}</h3>

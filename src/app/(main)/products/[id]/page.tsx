@@ -10,13 +10,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Heart, ShoppingCart, Loader2, AlertTriangle } from 'lucide-react';
+import { Heart, ShoppingCart, Loader2, AlertTriangle, Camera } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import Link from 'next/link';
 import { ProductCard } from '@/components/products/ProductCard'; // For related products
 import { cn } from '@/lib/utils';
+import { buttonVariants } from '@/components/ui/button';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -148,6 +149,12 @@ export default function ProductDetailPage() {
                   {isWishlisted(product.id) ? 'Wishlisted' : 'Add to Wishlist'}
                 </Button>
               </div>
+              <Link href={`/ai-try-on?productId=${product.id}`} passHref legacyBehavior>
+                <a className={cn(buttonVariants({ variant: 'outline', size: 'lg'}), "w-full mt-3")}>
+                  <Camera size={20} className="mr-2" />
+                  AI Virtual Try-On
+                </a>
+              </Link>
             </CardContent>
           </div>
         </div>
@@ -166,3 +173,4 @@ export default function ProductDetailPage() {
     </div>
   );
 }
+
