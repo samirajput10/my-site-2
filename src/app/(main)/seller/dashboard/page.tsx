@@ -87,32 +87,28 @@ export default function AdminPanelPage() {
   }, [toast]);
 
   useEffect(() => {
-    // First, check for the mock admin session from sessionStorage
     const mockAdminSession = sessionStorage.getItem('loggedInUser');
     if (mockAdminSession) {
         const adminUser = JSON.parse(mockAdminSession);
         setCurrentUser(adminUser);
         setIsAdmin(true);
         setLoadingAuth(false);
-        fetchAllProducts();
-        return; // Important: stop further execution
+        fetchAllProducts(); 
+        return;
     }
 
-    // If no mock admin, proceed with Firebase auth state
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (user) {
-        // Regular user, not an admin in this setup
-        setIsAdmin(false);
+        setIsAdmin(false); // Default users are not admins
       } else {
-        // No user logged in
         setIsAdmin(false);
-        router.push('/login'); // Redirect if not logged in
+        router.push('/login');
       }
       setLoadingAuth(false);
     });
 
-    return () => unsubscribe && unsubscribe();
+    return () => unsubscribe();
   }, [fetchAllProducts, router]);
 
 
@@ -418,3 +414,5 @@ export default function AdminPanelPage() {
     </div>
   );
 }
+
+    
