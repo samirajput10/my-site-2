@@ -220,7 +220,7 @@ export default function AiTryOnPage() {
        <div className="container mx-auto flex min-h-[calc(100vh-10rem)] items-center justify-center text-center">
         <div>
           <ShieldAlert className="h-16 w-16 text-primary mx-auto mb-4" />
-          <h1 className="text-2xl font-bold">Respected user, signup your account first.</h1>
+          <h1 className="text-2xl font-bold">You need to be logged in to use this feature.</h1>
           <p className="text-muted-foreground mt-2">Redirecting you to the signup page...</p>
         </div>
       </div>

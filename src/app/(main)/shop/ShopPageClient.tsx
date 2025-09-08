@@ -31,7 +31,7 @@ const recommendedDbRules = `{
 export function ShopPageClient() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | React.ReactNode | null>(null);
+  const [error, setError] = useState<React.ReactNode | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {

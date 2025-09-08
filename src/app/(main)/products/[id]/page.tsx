@@ -218,7 +218,7 @@ export default function ProductDetailPage() {
                     </Button>
                   ))}
                 </div>
-                {!selectedSize && product.sizes.length > 0 && (
+                {!selectedSize && product.sizes.length > 0 && product.sizes[0] !== 'One Size' && (
                   <p className="mt-2 text-sm text-destructive">Please select a size.</p>
                 )}
               </div>
