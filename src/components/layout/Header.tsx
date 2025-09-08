@@ -36,8 +36,7 @@ import { useTheme } from 'next-themes';
 const mainNavLinks = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
-  { href: '/style-assistant', label: 'Style Assistant' },
-  { href: '/shop', label: 'AI Try-On', icon: Camera },
+  { href: '/ai-try-on', label: 'AI Try-On', icon: Camera },
 ];
 
 export function Header() {
@@ -96,9 +95,9 @@ export function Header() {
             <Heart className="mr-2 h-4 w-4" />
             <span>Wishlist</span>
           </DropdownMenuItem>
-           <DropdownMenuItem onClick={() => { router.push('/style-assistant'); onItemClick?.(); }}>
-            <Sparkles className="mr-2 h-4 w-4" />
-            <span>AI Style Assistant</span>
+           <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
+            <Camera className="mr-2 h-4 w-4" />
+            <span>AI Try-On</span>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
             <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -121,11 +120,7 @@ export function Header() {
             <span>Sign Up</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-           <DropdownMenuItem onClick={() => { router.push('/style-assistant'); onItemClick?.(); }}>
-            <Sparkles className="mr-2 h-4 w-4" />
-            <span>AI Style Assistant</span>
-          </DropdownMenuItem>
-           <DropdownMenuItem onClick={() => { router.push('/shop'); onItemClick?.(); }}>
+           <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
             <Camera className="mr-2 h-4 w-4" />
             <span>AI Try-On</span>
           </DropdownMenuItem>

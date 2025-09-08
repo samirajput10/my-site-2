@@ -12,7 +12,7 @@ import { getAllProductsFromDB } from '@/actions/productActions';
 export function PersonalizedRecommendations() {
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [title, setTitle] = useState("Recommended For You");
+  const [title, setTitle] = useState("Fresh Finds For You");
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -31,7 +31,6 @@ export function PersonalizedRecommendations() {
 
       // Show random products
       if (allProducts.length > 0) {
-        setTitle("Fresh Finds For You");
         const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
         finalProducts = shuffled.slice(0, 5);
       }
