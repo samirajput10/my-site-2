@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle, Shirt, User as UserIcon, ShieldAlert } from 'lucide-react';
+import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle, Shirt, User as UserIcon, ShieldAlert, ServerCrash } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { performVirtualTryOn } from '@/actions/tryOnActions';
 import type { Product, ProductCategory, ProductSize } from '@/types';
@@ -20,6 +20,23 @@ import { Progress } from '@/components/ui/progress';
 
 const TRY_ON_LIMIT = 4;
 
+const recommendedDbRules = `{
+  "rules": {
+    "products": {
+      ".read": "true",
+      ".write": "auth != null",
+      ".indexOn": "createdAt"
+    },
+    "userTryOnCounts": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 4"
+      }
+    }
+  }
+}`;
+
 export default function AiTryOnPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,7 +45,7 @@ export default function AiTryOnPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [product, setProduct] = useState<Product | null>(null);
-  const [productError, setProductError] = useState<string | null>(null);
+  const [productError, setProductError] = useState<React.ReactNode | null>(null);
   
   const [userImage, setUserImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
@@ -117,9 +134,21 @@ export default function AiTryOnPage() {
         } else {
           setProductError(`Could not find the product with ID: ${productId}.`);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching product from RTDB:", err);
-        setProductError("There was an error fetching the product details from the database.");
+         if (err.message.includes('permission-denied') || err.message.includes('PERMISSION_DENIED')) {
+            const permissionError = (
+                <>
+                    Your database security rules are blocking access. Update your <strong>Realtime Database rules</strong> in Firebase to allow public read access for products.
+                    <br /><br />
+                    <strong>Recommended rules:</strong>
+                    <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-xs whitespace-pre-wrap">{recommendedDbRules}</pre>
+                </>
+            );
+            setProductError(permissionError);
+        } else {
+             setProductError("There was an error fetching the product details from the database.");
+        }
       }
     };
     
@@ -255,9 +284,9 @@ export default function AiTryOnPage() {
             </Card>
 
             {productError ? (
-                <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
+                <Alert variant="destructive" className="text-left">
+                    <ServerCrash className="h-4 w-4" />
+                    <AlertTitle>Error Loading Product</AlertTitle>
                     <AlertDescription>
                         {productError} 
                         <Button variant="link" onClick={() => router.back()} className="p-0 h-auto ml-2">Go Back</Button>

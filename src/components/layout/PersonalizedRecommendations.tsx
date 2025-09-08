@@ -20,7 +20,8 @@ export function PersonalizedRecommendations() {
 
       const allProductsResult = await getAllProductsFromDB();
       if ('error' in allProductsResult) {
-        console.error(allProductsResult.error);
+        console.error("PersonalizedRecommendations Error:", allProductsResult.error);
+        // Fail silently on the homepage
         setRecommendedProducts([]);
         setIsLoading(false);
         return;
@@ -61,7 +62,7 @@ export function PersonalizedRecommendations() {
   }
 
   if (!recommendedProducts || recommendedProducts.length === 0) {
-    return null; // Don't show the section if no products could be recommended
+    return null; // Don't show the section if no products could be recommended or if loading failed
   }
 
   return (

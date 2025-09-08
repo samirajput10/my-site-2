@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
@@ -29,7 +30,8 @@ export function NewArrivals() {
 
       const allProductsResult = await getAllProductsFromDB();
       if ('error' in allProductsResult) {
-        console.error(allProductsResult.error);
+        console.error("NewArrivals Error:", allProductsResult.error);
+        // Fail silently on the homepage to avoid showing a big error for a single component
         setProducts([]);
       } else {
         // Sort by creation date and take the latest 12 for the carousel
@@ -61,7 +63,7 @@ export function NewArrivals() {
   }
 
   if (products.length === 0) {
-    return null; // Don't show if there are no products
+    return null; // Don't show if there are no products or if loading failed
   }
 
   return (
