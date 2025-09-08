@@ -54,7 +54,7 @@ export default function SignupPage() {
 
       toast({
         title: 'Signup Successful',
-        description: `Welcome! Please login to continue.`,
+        description: `Welcome! Your account is ready and pre-loaded with 4 AI try-on credits.`,
       });
       router.push('/login'); 
     } catch (err: any) {
@@ -177,3 +177,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    

@@ -71,7 +71,7 @@ export default function AiTryOnPage() {
             if (docSnap.exists()) {
                 setAvailableCredits(docSnap.data().credits || 0);
             } else {
-                // If user has no record, they are new. Give them credits.
+                // If user has no record, they are new or have no entry. Give them credits.
                 await setDoc(userCreditsRef, { credits: TRY_ON_LIMIT });
                 setAvailableCredits(TRY_ON_LIMIT);
             }
@@ -360,3 +360,5 @@ export default function AiTryOnPage() {
     </div>
   );
 }
+
+    

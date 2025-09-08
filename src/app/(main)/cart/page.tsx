@@ -52,7 +52,8 @@ export default function CartPage() {
     if (currentUser) {
       try {
         const userCreditsRef = doc(db, `userCredits/${currentUser.uid}`);
-        await setDoc(userCreditsRef, { credits: 4 }); // Reset available credits to 4
+        // Use setDoc with merge:true to create or update the document.
+        await setDoc(userCreditsRef, { credits: 4 }, { merge: true }); 
         toast({
           title: "Order Placed!",
           description: "Your AI credits have been reset. Please finalize your order details on WhatsApp.",
@@ -166,3 +167,5 @@ export default function CartPage() {
     </div>
   );
 }
+
+    
