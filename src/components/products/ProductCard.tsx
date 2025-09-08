@@ -12,6 +12,7 @@ import { useWishlist } from '@/contexts/WishlistContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge'; // For discount/status badges
+import { useRouter } from 'next/navigation';
 
 interface ProductCardProps {
   product: Product;
@@ -36,6 +37,7 @@ export function ProductCard({
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isWishlisted } = useWishlist();
   const { formatPrice } = useCurrency();
+  const router = useRouter();
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault(); 
@@ -53,6 +55,12 @@ export function ProductCard({
     addToCart(product);
   };
   
+  const handleTryOn = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/ai-try-on?productId=${product.id}`);
+  };
+
   const aiHintForImage = `${product.category.toLowerCase()} ${product.name.split(' ').slice(0,1).join(' ').toLowerCase()}`;
 
   let displayBadge: React.ReactNode = null;
@@ -130,10 +138,14 @@ export function ProductCard({
             </div>
           )}
         </CardContent>
-        <CardFooter className="mt-auto p-4 pt-0">
+        <CardFooter className="mt-auto p-4 pt-0 grid grid-cols-2 gap-2">
            <Button size="sm" onClick={handleAddToCart} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
               <ShoppingCart size={16} className="mr-2" />
               Add to Cart
+            </Button>
+            <Button size="sm" onClick={handleTryOn} className="w-full" variant="outline">
+                <Camera size={16} className="mr-2" />
+                Try On
             </Button>
         </CardFooter>
     </Card>
