@@ -36,10 +36,13 @@ export function FilterSidebar({
       : [0, effectiveMaxPrice]
   );
 
-  // Effect to synchronize internal state with initialFilters prop changes
+  // Effect to synchronize internal state with initialFilters prop changes from URL
   useEffect(() => {
     setCategories(initialFilters.categories || []);
-    setSizes(initialFilters.sizes || []);
+  }, [initialFilters.categories]);
+
+  // Effect to synchronize internal price state when max price changes
+  useEffect(() => {
     if (initialFilters.priceRange) {
       setPriceRange([
         Math.max(0, initialFilters.priceRange.min),
@@ -49,7 +52,21 @@ export function FilterSidebar({
       // If parent doesn't provide priceRange, reset to full based on effectiveMaxPrice
       setPriceRange([0, effectiveMaxPrice]);
     }
-  }, [initialFilters, effectiveMaxPrice]);
+  }, [initialFilters.priceRange, effectiveMaxPrice]);
+
+
+  // Effect to apply filters automatically whenever they change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+        onFilterChange({
+            categories,
+            sizes,
+            priceRange: { min: priceRange[0], max: priceRange[1] },
+        });
+    }, 300); // Debounce to avoid rapid updates, especially for the slider
+
+    return () => clearTimeout(timeoutId);
+  }, [categories, sizes, priceRange, onFilterChange]);
 
 
   const handleCategoryChange = (category: ProductCategory) => {
@@ -68,23 +85,11 @@ export function FilterSidebar({
     setPriceRange(newRange);
   };
   
-  const applyFilters = () => {
-    onFilterChange({
-      categories,
-      sizes,
-      priceRange: { min: priceRange[0], max: priceRange[1] },
-    });
-  };
-
   const clearFilters = () => {
     setCategories([]);
     setSizes([]);
     setPriceRange([0, effectiveMaxPrice]);
-    onFilterChange({ // Also inform parent to clear its filter state for these
-      categories: [],
-      sizes: [],
-      priceRange: { min: 0, max: effectiveMaxPrice },
-    });
+    // The useEffect will trigger the onFilterChange call
   };
 
   return (
@@ -150,10 +155,6 @@ export function FilterSidebar({
             <span>${priceRange[1]}</span>
           </div>
         </div>
-        
-        <Button onClick={applyFilters} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-          Apply Filters
-        </Button>
       </CardContent>
     </Card>
   );
