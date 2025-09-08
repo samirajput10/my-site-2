@@ -15,7 +15,7 @@ const reviews = [
     review: "Absolutely in love with this necklace! The craftsmanship is exquisite and it sits perfectly. I get so many compliments.",
     productName: 'Elegant Silver Locket',
     productUrl: '/products/1',
-    imageUrl: 'https://placehold.co/400x550.png',
+    imageUrl: 'https://placehold.co/400x500.png',
     imageAiHint: 'woman wearing necklace'
   },
   {
@@ -27,7 +27,7 @@ const reviews = [
     review: "This ring is my new favorite. It's stylish, comfortable, and great for daily wear. Quality is top-notch.",
     productName: 'Titanium Explorer Ring',
     productUrl: '/products/12',
-    imageUrl: 'https://placehold.co/400x450.png',
+    imageUrl: 'https://placehold.co/400x400.png',
     imageAiHint: 'man hand with ring'
   },
   {
@@ -39,7 +39,7 @@ const reviews = [
     review: "The perfect pair of earrings. They have just the right amount of sparkle. I've been wearing them constantly!",
     productName: 'Starlight Stud Earrings',
     productUrl: '/products/3',
-    imageUrl: 'https://placehold.co/400x600.png',
+    imageUrl: 'https://placehold.co/400x550.png',
     imageAiHint: 'woman wearing earrings'
   },
   {
@@ -51,7 +51,7 @@ const reviews = [
     review: "Great quality bracelet. It has held up so well. Worth every penny for a piece this timeless.",
     productName: 'Classic Leather Weave Bracelet',
     productUrl: '/products/2',
-    imageUrl: 'https://placehold.co/400x500.png',
+    imageUrl: 'https://placehold.co/400x450.png',
     imageAiHint: 'man wearing bracelet'
   },
 ];
@@ -64,29 +64,29 @@ const ReviewCard = ({ review }: { review: (typeof reviews)[0] }) => (
           src={review.imageUrl}
           alt={`Customer photo for ${review.productName}`}
           width={400}
-          height={550}
+          height={500}
           className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
           data-ai-hint={review.imageAiHint}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
     </Link>
-    <CardContent className="p-4 bg-card">
+    <CardContent className="p-3 bg-card">
       <div className="flex items-center mb-2">
-        <Avatar className="h-10 w-10 mr-3">
+        <Avatar className="h-8 w-8 mr-2">
           <AvatarImage src={review.avatarUrl} alt={review.customerName} data-ai-hint={review.avatarAiHint} />
           <AvatarFallback>{review.customerInitial}</AvatarFallback>
         </Avatar>
         <div>
-          <p className="font-semibold text-sm text-foreground">{review.customerName}</p>
+          <p className="font-semibold text-xs text-foreground">{review.customerName}</p>
           <div className="flex text-yellow-400">
-            {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
+            {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}
           </div>
         </div>
       </div>
-      <p className="text-sm text-muted-foreground italic">"{review.review}"</p>
+      <p className="text-xs text-muted-foreground italic">"{review.review}"</p>
       <Link href={review.productUrl}>
-        <p className="text-xs text-primary hover:underline mt-2">
+        <p className="text-xs text-primary hover:underline mt-1 truncate">
           on: {review.productName}
         </p>
       </Link>
@@ -107,7 +107,7 @@ export function CustomerReviewGallery() {
           </p>
         </div>
 
-        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-6 space-y-4 sm:space-y-6">
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 sm:gap-6 space-y-4 sm:space-y-6">
           {reviews.map((review) => (
             <ReviewCard key={review.id} review={review} />
           ))}
