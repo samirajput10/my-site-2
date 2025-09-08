@@ -1,30 +1,27 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 import { ProductList } from '@/components/products/ProductList';
 import type { Product } from '@/types';
 import { getAllProductsFromDB } from '@/actions/productActions';
-import { Loader2, AlertTriangle, ServerCrash } from 'lucide-react';
+import { Loader2, ServerCrash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const recommendedDbRules = `{
   "rules": {
-    "products": {
-      ".read": "true",
-      // Only authenticated users (admins) can write
-      ".write": "auth != null",
-       // Index for efficient querying by creation date
-      ".indexOn": "createdAt"
-    },
-    "userTryOnCounts": {
-      "$uid": {
-        // Users can only read/write their own try-on count
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid",
-        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 4"
+    "service cloud.firestore": {
+      "match /databases/{database}/documents": {
+        // Allow public read access to products
+        "match /products/{productId}": {
+          "allow read": true;
+          "allow write": if request.auth != null; // Or more specific admin logic
+        },
+        // Allow users to manage their own credits
+        "match /userCredits/{userId}": {
+           "allow read, write": if request.auth != null && request.auth.uid == userId;
+        }
       }
     }
   }
@@ -42,12 +39,12 @@ export function ShopPageClient() {
       setError(null);
       const result = await getAllProductsFromDB();
       if ('error' in result) {
-         if (result.error.includes('permission-denied') || result.error.includes('PERMISSION_DENIED')) {
+         if (result.error.includes('permission-denied') || result.error.includes('PERMISSION_DENIED') || result.error.includes('firestore/permission-denied')) {
             const permissionError = (
                 <>
                     Your database security rules are blocking access, which is preventing products from loading.
                     <br />
-                    Please update your <strong>Realtime Database rules</strong> in the Firebase Console to allow public read access.
+                    Please update your <strong>Firestore rules</strong> in the Firebase Console to allow public read access.
                     <br /><br />
                     <strong>Recommended rules for this app:</strong>
                     <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-xs whitespace-pre-wrap">{recommendedDbRules}</pre>

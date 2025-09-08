@@ -17,25 +17,26 @@ import Link from 'next/link';
 import { ProductCard } from '@/components/products/ProductCard'; // For related products
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
-import { getAllProductsFromDB } from '@/actions/productActions';
+import { getAllProductsFromDB, getProductFromDB } from '@/actions/productActions';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { ref, onValue } from 'firebase/database';
-import { auth, rtdb } from '@/lib/firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase/config';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 const recommendedDbRules = `{
   "rules": {
-    "products": {
-      ".read": "true",
-      ".write": "auth != null",
-      ".indexOn": "createdAt"
-    },
-    "userTryOnCounts": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid",
-        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 4"
+    "service cloud.firestore": {
+      "match /databases/{database}/documents": {
+        // Products can be read by anyone, but only written by authenticated users (admins)
+        "match /products/{productId}": {
+          "allow read": true;
+          "allow write": if request.auth != null;
+        },
+        // Users can only read/write their own credits document
+        "match /userCredits/{userId}": {
+          "allow read, write": if request.auth != null && request.auth.uid == userId;
+        }
       }
     }
   }
@@ -62,12 +63,16 @@ export default function ProductDetailPage() {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (user) {
-        const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
-        const unsubscribeCount = onValue(userTryOnRef, (snapshot) => {
-          const credits = snapshot.val();
-          setAvailableCredits(credits === null || credits === undefined ? 0 : credits);
-        });
-        return () => unsubscribeCount();
+        const fetchCredits = async () => {
+            const userCreditsRef = doc(db, `userCredits/${user.uid}`);
+            const docSnap = await getDoc(userCreditsRef);
+            if (docSnap.exists()) {
+                setAvailableCredits(docSnap.data().credits || 0);
+            } else {
+                setAvailableCredits(0);
+            }
+        };
+        fetchCredits();
       }
     });
     return () => unsubscribeAuth();
@@ -79,13 +84,13 @@ export default function ProductDetailPage() {
         setError(null);
         setProduct(undefined);
 
-        const allProductsResult = await getAllProductsFromDB();
+        const productResult = await getProductFromDB(id);
 
-        if ('error' in allProductsResult) {
-            if (allProductsResult.error.includes('permission-denied') || allProductsResult.error.includes('PERMISSION_DENIED')) {
+        if (productResult && 'error' in productResult) {
+            if (productResult.error.includes('permission-denied') || productResult.error.includes('PERMISSION_DENIED')) {
                 const permissionError = (
                     <>
-                        Your database security rules are blocking access. Update your <strong>Realtime Database rules</strong> in Firebase to allow public read access.
+                        Your database security rules are blocking access. Update your <strong>Firestore rules</strong> in Firebase to allow public read access.
                         <br /><br />
                         <strong>Recommended rules:</strong>
                         <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-xs whitespace-pre-wrap">{recommendedDbRules}</pre>
@@ -93,28 +98,31 @@ export default function ProductDetailPage() {
                 );
                 setError(permissionError);
             } else {
-                setError(allProductsResult.error);
+                setError(productResult.error);
             }
           setProduct(null);
           return;
         }
         
-        const foundProduct = allProductsResult.find(p => p.id === id);
+        const foundProduct = productResult as Product | null;
         setProduct(foundProduct || null);
 
         if (!foundProduct) {
           setError("This product could not be found.");
+          return;
         }
 
-        if (foundProduct?.sizes.length) {
+        if (foundProduct.sizes.length) {
           setSelectedSize(foundProduct.sizes[0]);
         }
 
-        if (foundProduct) {
-          const related = allProductsResult
-            .filter(p => p.category === foundProduct.category && p.id !== foundProduct.id)
-            .slice(0, 4);
-          setRelatedProducts(related);
+        // Fetch related products
+        const allProductsResult = await getAllProductsFromDB();
+         if (allProductsResult && !('error' in allProductsResult)) {
+            const related = allProductsResult
+                .filter(p => p.category === foundProduct.category && p.id !== foundProduct.id)
+                .slice(0, 4);
+            setRelatedProducts(related);
         }
       };
       
@@ -223,7 +231,7 @@ export default function ProductDetailPage() {
                     size="lg" 
                     onClick={() => addToCart(product)} 
                     className="flex-grow bg-primary hover:bg-primary/90 text-primary-foreground"
-                    disabled={!selectedSize && product.sizes.length > 0}
+                    disabled={!selectedSize && product.sizes.length > 0 && product.sizes[0] !== 'One Size'}
                   >
                     <ShoppingCart size={20} className="mr-2" />
                     Add to Cart

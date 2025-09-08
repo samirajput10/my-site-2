@@ -9,9 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { auth, rtdb } from '@/lib/firebase/config';
+import { auth, db } from '@/lib/firebase/config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { ref, set } from 'firebase/database';
+import { doc, setDoc } from 'firebase/firestore';
 import { UserPlus, Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function SignupPage() {
@@ -48,9 +48,9 @@ export default function SignupPage() {
       // By default, new signups are buyers. Admin role is assigned on login.
       localStorage.setItem(`userProfile_${user.uid}`, JSON.stringify({ role: 'buyer' }));
       
-      // Initialize their AI try-on credits to 4
-      const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
-      await set(userTryOnRef, 4);
+      // Initialize their AI try-on credits to 4 in Firestore
+      const userCreditsRef = doc(db, `userCredits/${user.uid}`);
+      await setDoc(userCreditsRef, { credits: 4 });
 
       toast({
         title: 'Signup Successful',

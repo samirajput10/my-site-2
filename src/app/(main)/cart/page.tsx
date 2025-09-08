@@ -13,8 +13,8 @@ import { Trash2, ShoppingBag } from 'lucide-react';
 import { FaWhatsapp as WhatsAppIcon } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { auth, rtdb } from '@/lib/firebase/config';
-import { ref, set } from 'firebase/database';
+import { auth, db } from '@/lib/firebase/config';
+import { doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CartPage() {
@@ -51,8 +51,8 @@ export default function CartPage() {
     // Reset try-on credits if user is logged in
     if (currentUser) {
       try {
-        const userTryOnRef = ref(rtdb, `userTryOnCounts/${currentUser.uid}`);
-        await set(userTryOnRef, 4); // Reset available credits to 4
+        const userCreditsRef = doc(db, `userCredits/${currentUser.uid}`);
+        await setDoc(userCreditsRef, { credits: 4 }); // Reset available credits to 4
         toast({
           title: "Order Placed!",
           description: "Your AI credits have been reset. Please finalize your order details on WhatsApp.",

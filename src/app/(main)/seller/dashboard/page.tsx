@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
-import { ref as dbRef, set, serverTimestamp, query, orderByChild, get, remove, push } from 'firebase/database';
+import { collection, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2, ServerCrash } from 'lucide-react';
 
@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { auth, rtdb, storage } from '@/lib/firebase/config';
+import { auth, db, storage } from '@/lib/firebase/config';
 import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -44,19 +44,17 @@ interface NewProductForm {
 
 const recommendedDbRules = `{
   "rules": {
-    "products": {
-      ".read": "true",
-      // Only authenticated users (admins) can write
-      ".write": "auth != null",
-       // Index for efficient querying by creation date
-      ".indexOn": "createdAt"
-    },
-    "userTryOnCounts": {
-      "$uid": {
-        // Users can only read/write their own try-on count
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid",
-        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 4"
+    "service cloud.firestore": {
+      "match /databases/{database}/documents": {
+        // Products can be read by anyone, but only written by authenticated users (admins)
+        "match /products/{productId}": {
+          "allow read": true;
+          "allow create, update, delete": if request.auth != null;
+        },
+        // Users can only read/write their own credits document
+        "match /userCredits/{userId}": {
+          "allow read, write": if request.auth != null && request.auth.uid == userId;
+        }
       }
     }
   }
@@ -97,9 +95,9 @@ export default function AdminPanelPage() {
                 <>
                     Your database security rules are blocking access.
                     <br />
-                    Please update your Realtime Database rules in the Firebase Console to allow access.
+                    Please update your <strong>Firestore rules</strong> in the Firebase Console to allow access.
                     <br />
-                    <strong>Recommended rules for development:</strong>
+                    <strong>Recommended rules:</strong>
                     <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-xs whitespace-pre-wrap">{recommendedDbRules}</pre>
                 </>
             );
@@ -135,8 +133,6 @@ export default function AdminPanelPage() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (user) {
-        // For this demo, we assume the logged in user via Firebase is a regular user, not admin
-        // The admin flow is handled by the mock session logic above.
         setIsAdmin(false); 
       } else {
         setIsAdmin(false);
@@ -206,14 +202,13 @@ export default function AdminPanelPage() {
         return;
       }
 
-      const productsListRef = dbRef(rtdb, 'products');
-      const newProductRef = push(productsListRef);
+      const productsCollectionRef = collection(db, 'products');
 
       const parsedSizes = formState.sizes.split(',')
         .map(s => s.trim())
         .filter(s => ALL_SIZES.includes(s as ProductSize));
       
-      if (parsedSizes.length === 0 && formState.sizes.trim() !== '') {
+      if (parsedSizes.length === 0 && formState.sizes.trim() !== '' && formState.sizes.trim().toLowerCase() !== 'one size') {
           toast({ title: "Invalid Sizes", description: `Please use valid, comma-separated sizes from: ${ALL_SIZES.join(', ')}`, variant: "destructive" });
           setIsSubmitting(false);
           return;
@@ -230,7 +225,7 @@ export default function AdminPanelPage() {
         createdAt: serverTimestamp(),
       };
 
-      await set(newProductRef, newProductData);
+      await addDoc(productsCollectionRef, newProductData);
       
       toast({ title: "Product Added", description: `Your product has been successfully listed.` });
       setFormState({ name: '', description: '', price: '', imageUrl: '', category: '', sizes: '' });
@@ -254,7 +249,7 @@ export default function AdminPanelPage() {
             errorMessage = "An unknown error occurred during image upload. Please check your network and Firebase configuration.";
             break;
           case 'permission-denied':
-             errorMessage = "Permission denied. Check your Realtime Database security rules to ensure you have write access.";
+             errorMessage = "Permission denied. Check your Firestore security rules to ensure you have write access.";
              break;
         }
       }
@@ -268,12 +263,16 @@ export default function AdminPanelPage() {
     if (!currentUser) return;
     setIsDeleting(true);
     try {
-      await remove(dbRef(rtdb, `products/${productId}`));
+      await deleteDoc(doc(db, "products", productId));
       toast({ title: "Product Deleted" });
       setAllProducts(prev => prev.filter(p => p.id !== productId));
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting product:", error);
-      toast({ title: "Deletion Failed", description: "Could not delete product. Check database rules.", variant: "destructive" });
+      let errMsg = "Could not delete product. Check Firestore rules.";
+      if (error.code === 'permission-denied') {
+          errMsg = "Permission denied. You do not have the necessary rights to delete this product.";
+      }
+      toast({ title: "Deletion Failed", description: errMsg, variant: "destructive" });
     } finally {
       setIsDeleting(false);
       setProductToDeleteId(null);
@@ -385,7 +384,7 @@ export default function AdminPanelPage() {
                 <datalist id="category-options">{ALL_CATEGORIES.map(cat => <option key={cat} value={cat} />)}</datalist>
               </div>
               <div>
-                <Label htmlFor="sizes">Sizes (comma-separated, e.g., 6, 7, 8) *</Label>
+                <Label htmlFor="sizes">Sizes (comma-separated, or "One Size") *</Label>
                 <Input id="sizes" name="sizes" value={formState.sizes} onChange={handleChange} required disabled={isSubmitting}/>
               </div>
             </div>

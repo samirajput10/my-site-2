@@ -15,8 +15,8 @@ import { Badge } from '@/components/ui/badge'; // For discount/status badges
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { ref, onValue } from 'firebase/database';
-import { auth, rtdb } from '@/lib/firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase/config';
 
 interface ProductCardProps {
   product: Product;
@@ -52,12 +52,16 @@ export function ProductCard({
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (user) {
-        const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
-        const unsubscribeCount = onValue(userTryOnRef, (snapshot) => {
-          const credits = snapshot.val();
-          setAvailableCredits(credits === null || credits === undefined ? 0 : credits);
-        });
-        return () => unsubscribeCount();
+        const fetchCredits = async () => {
+            const userCreditsRef = doc(db, `userCredits/${user.uid}`);
+            const docSnap = await getDoc(userCreditsRef);
+            if (docSnap.exists()) {
+                setAvailableCredits(docSnap.data().credits || 0);
+            } else {
+                setAvailableCredits(0);
+            }
+        };
+        fetchCredits();
       } else {
         setAvailableCredits(0);
       }

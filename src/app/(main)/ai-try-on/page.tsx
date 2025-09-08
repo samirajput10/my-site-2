@@ -9,29 +9,30 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle, User as UserIcon, ShieldAlert, ServerCrash, Gem } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { performVirtualTryOn } from '@/actions/tryOnActions';
-import type { Product, ProductCategory, ProductSize } from '@/types';
-import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
+import type { Product } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
 import Image from 'next/image';
-import { ref, get, set, onValue, runTransaction } from 'firebase/database';
-import { rtdb, auth } from '@/lib/firebase/config';
+import { doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase/config';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { Progress } from '@/components/ui/progress';
+import { getProductFromDB } from '@/actions/productActions';
 
 const TRY_ON_LIMIT = 4;
 
 const recommendedDbRules = `{
   "rules": {
-    "products": {
-      ".read": "true",
-      ".write": "auth != null",
-      ".indexOn": "createdAt"
-    },
-    "userTryOnCounts": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid",
-        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 4"
+    "service cloud.firestore": {
+      "match /databases/{database}/documents": {
+        // Products can be read by anyone, but only written by authenticated users (admins)
+        "match /products/{productId}": {
+          "allow read": true;
+          "allow write": if request.auth != null;
+        },
+        // Users can only read/write their own credits document
+        "match /userCredits/{userId}": {
+          "allow read, write": if request.auth != null && request.auth.uid == userId;
+        }
       }
     }
   }
@@ -71,19 +72,18 @@ export default function AiTryOnPage() {
         });
         router.push('/signup');
       } else {
-        // Fetch try-on credits for the logged-in user
-        const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
-        const unsubscribeCount = onValue(userTryOnRef, (snapshot) => {
-          const credits = snapshot.val();
-           // If user has no record, they are new. Give them credits.
-           if (credits === null || credits === undefined) {
-             set(userTryOnRef, TRY_ON_LIMIT); // Set initial credits
-             setAvailableCredits(TRY_ON_LIMIT);
-           } else {
-             setAvailableCredits(credits);
-           }
-        });
-        return () => unsubscribeCount();
+        const fetchCredits = async () => {
+            const userCreditsRef = doc(db, `userCredits/${user.uid}`);
+            const docSnap = await getDoc(userCreditsRef);
+            if (docSnap.exists()) {
+                setAvailableCredits(docSnap.data().credits || 0);
+            } else {
+                // If user has no record, they are new. Give them credits.
+                await setDoc(userCreditsRef, { credits: TRY_ON_LIMIT });
+                setAvailableCredits(TRY_ON_LIMIT);
+            }
+        };
+        fetchCredits();
       }
     });
     return () => unsubscribe();
@@ -97,58 +97,33 @@ export default function AiTryOnPage() {
     
     const fetchProduct = async () => {
       try {
-        const productRef = ref(rtdb, `products/${productId}`);
-        const snapshot = await get(productRef);
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          // Manually parse and validate to be more robust
-          let parsedSizes: ProductSize[] = [];
-            if (Array.isArray(data.sizes)) {
-                // Ensure sizes are uppercase and valid
-                parsedSizes = data.sizes
-                .map(s => String(s).trim())
-                .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
-            } else if (typeof data.sizes === 'string' && data.sizes.length > 0) {
-                parsedSizes = data.sizes.split(',')
-                .map(s => s.trim())
-                .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
+        const result = await getProductFromDB(productId);
+        if (result && 'error' in result) {
+            if (result.error.includes('permission-denied') || result.error.includes('PERMISSION_DENIED')) {
+                const permissionError = (
+                    <>
+                        Your database security rules are blocking access. Update your <strong>Firestore rules</strong> in Firebase to allow public read access for products.
+                        <br /><br />
+                        <strong>Recommended rules:</strong>
+                        <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-xs whitespace-pre-wrap">{recommendedDbRules}</pre>
+                    </>
+                );
+                setProductError(permissionError);
+            } else {
+                 setProductError("There was an error fetching the product details from the database.");
             }
-          
-          const mappedProduct: Product = {
-            id: snapshot.key as string,
-            name: data.name || "Unnamed Product",
-            description: data.description || "",
-            price: typeof data.price === 'number' ? data.price : 0,
-            imageUrl: data.imageUrl || `https://placehold.co/600x800.png`,
-            category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
-            sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
-            sellerId: data.sellerId || "unknown_seller",
-            createdAt: data.createdAt ? new Date(data.createdAt).toISOString() : new Date().toISOString(),
-          };
-
-          if (mappedProduct.name === "Unnamed Product") {
+        } else if (result) {
+            if ((result as Product).name === "Unnamed Product") {
               setProductError(`Product data for ID ${productId} is invalid or incomplete.`);
-          } else {
-              setProduct(mappedProduct);
-          }
+            } else {
+              setProduct(result as Product);
+            }
         } else {
-          setProductError(`Could not find the product with ID: ${productId}.`);
+            setProductError(`Could not find the product with ID: ${productId}.`);
         }
       } catch (err: any) {
-        console.error("Error fetching product from RTDB:", err);
-         if (err.message.includes('permission-denied') || err.message.includes('PERMISSION_DENIED')) {
-            const permissionError = (
-                <>
-                    Your database security rules are blocking access. Update your <strong>Realtime Database rules</strong> in Firebase to allow public read access for products.
-                    <br /><br />
-                    <strong>Recommended rules:</strong>
-                    <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-xs whitespace-pre-wrap">{recommendedDbRules}</pre>
-                </>
-            );
-            setProductError(permissionError);
-        } else {
-             setProductError("There was an error fetching the product details from the database.");
-        }
+        console.error("Error fetching product:", err);
+        setProductError("An unexpected error occurred while fetching product details.");
       }
     };
     
@@ -189,10 +164,6 @@ export default function AiTryOnPage() {
     
     toast({ title: "AI Generation In Progress...", description: "Our AI is creating your virtual try-on. This might take a moment!" });
 
-    // Use transaction to safely decrement credits
-    const userTryOnRef = ref(rtdb, `userTryOnCounts/${currentUser.uid}`);
-    let generationSucceeded = false;
-
     try {
         const result = await performVirtualTryOn({
             userImage: userImage,
@@ -207,22 +178,17 @@ export default function AiTryOnPage() {
         } else {
             setGeneratedImage(result.generatedImage);
             toast({ title: "Success!", description: "Your virtual try-on is ready." });
-            generationSucceeded = true;
+
+            // Decrement credits on success
+            const userCreditsRef = doc(db, `userCredits/${currentUser.uid}`);
+            await updateDoc(userCreditsRef, { credits: increment(-1) });
+            setAvailableCredits(prev => Math.max(0, prev - 1));
         }
 
     } catch(e) {
         setError("An unexpected error occurred during generation.");
         toast({ title: "Generation Failed", description: "Please try again later.", variant: 'destructive' });
     } finally {
-        if(generationSucceeded) {
-            // Decrement credits only on success
-            await runTransaction(userTryOnRef, (currentCredits) => {
-                if (currentCredits === null || currentCredits === undefined || currentCredits <= 0) {
-                    return 0;
-                }
-                return currentCredits - 1;
-            });
-        }
         setIsGenerating(false);
     }
   };
@@ -398,5 +364,3 @@ export default function AiTryOnPage() {
     </div>
   );
 }
-
-    
