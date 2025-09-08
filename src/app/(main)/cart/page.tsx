@@ -9,13 +9,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingBag, FaWhatsapp } from 'lucide-react';
+import { Trash2, ShoppingBag } from 'lucide-react';
 import { FaWhatsapp as WhatsAppIcon } from 'react-icons/fa';
+import { useEffect, useState } from 'react';
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import { auth, rtdb } from '@/lib/firebase/config';
+import { ref, set } from 'firebase/database';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CartPage() {
   const { cartItems, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
-  const { formatPrice, currency } = useCurrency();
+  const { formatPrice } = useCurrency();
+  const { toast } = useToast();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
   const WHATSAPP_NUMBER = "923174919129"; // Should match the number in ChatButton.tsx
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity >= 0) {
@@ -23,7 +38,7 @@ export default function CartPage() {
     }
   };
 
-  const handleOrderOnWhatsApp = () => {
+  const handleOrderOnWhatsApp = async () => {
     const orderDetails = cartItems.map(item => 
       `- ${item.name} (x${item.quantity})`
     ).join('\n');
@@ -31,6 +46,21 @@ export default function CartPage() {
     const message = `Hello Fashion Frenzy! I'd like to place an order for the following items:\n\n${orderDetails}\n\n*Total: ${formatPrice(totalPrice)}*\n\nThank you!`;
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     
+    // Reset try-on credits if user is logged in
+    if (currentUser) {
+      try {
+        const userTryOnRef = ref(rtdb, `userTryOnCounts/${currentUser.uid}`);
+        await set(userTryOnRef, 0); // Reset used count to 0
+        toast({
+          title: "AI Credits Reset!",
+          description: "Your AI Virtual Try-On credits have been reset to 4 as a thank you for your order!",
+        });
+      } catch (error) {
+        console.error("Failed to reset try-on credits:", error);
+        // Don't block the user from ordering, just log the error.
+      }
+    }
+
     window.open(whatsappUrl, '_blank');
   };
   
