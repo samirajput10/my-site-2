@@ -9,16 +9,29 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, ShoppingBag } from 'lucide-react';
+import { Trash2, ShoppingBag, FaWhatsapp } from 'lucide-react';
+import { FaWhatsapp as WhatsAppIcon } from 'react-icons/fa';
 
 export default function CartPage() {
   const { cartItems, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, currency } = useCurrency();
+  const WHATSAPP_NUMBER = "923174919129"; // Should match the number in ChatButton.tsx
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity >= 0) {
       updateQuantity(productId, newQuantity);
     }
+  };
+
+  const handleOrderOnWhatsApp = () => {
+    const orderDetails = cartItems.map(item => 
+      `- ${item.name} (x${item.quantity})`
+    ).join('\n');
+
+    const message = `Hello Fashion Frenzy! I'd like to place an order for the following items:\n\n${orderDetails}\n\n*Total: ${formatPrice(totalPrice)}*\n\nThank you!`;
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank');
   };
   
   if (cartItems.length === 0) {
@@ -28,7 +41,7 @@ export default function CartPage() {
         <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
         <p className="text-muted-foreground mb-8">Add some fabulous items to your cart and let the fashion journey begin!</p>
         <Button asChild size="lg">
-          <Link href="/">Continue Shopping</Link>
+          <Link href="/shop">Continue Shopping</Link>
         </Button>
       </div>
     );
@@ -89,15 +102,16 @@ export default function CartPage() {
               </div>
               <div className="flex justify-between">
                 <p>Shipping</p>
-                <p>Free</p> 
+                <p>To be discussed</p> 
               </div>
               <Separator />
               <div className="flex justify-between font-bold text-xl">
                 <p>Total</p>
                 <p>{formatPrice(totalPrice)}</p>
               </div>
-              <Button asChild size="lg" className="w-full mt-6 bg-accent hover:bg-accent/90 text-accent-foreground">
-                 <Link href="/checkout">Proceed to Checkout</Link>
+               <Button onClick={handleOrderOnWhatsApp} size="lg" className="w-full mt-6 bg-green-500 hover:bg-green-600 text-white">
+                 <WhatsAppIcon className="mr-2 h-5 w-5" />
+                 Order on WhatsApp
               </Button>
             </CardContent>
           </Card>
