@@ -53,21 +53,30 @@ export default function CartPage() {
       try {
         const userTryOnRef = ref(rtdb, `userTryOnCounts/${currentUser.uid}`);
         await set(userTryOnRef, 4); // Reset available credits to 4
+        toast({
+          title: "Order Placed!",
+          description: "Your AI credits have been reset. Please finalize your order details on WhatsApp.",
+        });
       } catch (error) {
         console.error("Failed to reset try-on credits:", error);
+        toast({
+            title: "Order Placed!",
+            description: "Please finalize your order details on WhatsApp.",
+        });
         // Don't block the user from ordering, just log the error.
       }
+    } else {
+         toast({
+            title: "Order Placed!",
+            description: "Please finalize your order details on WhatsApp.",
+        });
     }
 
     // Open WhatsApp link
     window.open(whatsappUrl, '_blank');
     
-    // Clear cart and show confirmation toast
+    // Clear cart after placing order
     clearCart();
-    toast({
-        title: "Order Placed!",
-        description: "Your AI credits have been reset. Please finalize your order details on WhatsApp.",
-    });
 
   };
   
@@ -76,7 +85,7 @@ export default function CartPage() {
       <div className="container mx-auto py-12 text-center min-h-[calc(100vh-10rem)] flex flex-col items-center justify-center">
         <ShoppingBag className="h-24 w-24 text-muted-foreground mb-6" />
         <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
-        <p className="text-muted-foreground mb-8">Add some fabulous items to your cart and let the fashion journey begin!</p>
+        <p className="text-muted-foreground mb-8">Add some beautiful jewelry to your cart and let the journey begin!</p>
         <Button asChild size="lg">
           <Link href="/shop">Continue Shopping</Link>
         </Button>

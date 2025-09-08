@@ -11,19 +11,19 @@ import { HelpCircle } from 'lucide-react';
 const faqData = [
   {
     question: "What is your return policy?",
-    answer: "We accept returns within 30 days of purchase, provided the item is unworn, unwashed, and in its original condition with all tags attached. To initiate a return, please visit our Shipping & Returns page for detailed instructions."
+    answer: "We accept returns within 30 days of purchase, provided the item is unworn and in its original condition with all packaging. To initiate a return, please visit our Shipping & Returns page for detailed instructions."
   },
   {
     question: "How long does shipping take?",
     answer: "Standard shipping typically takes 5-7 business days within the continental US. Expedited shipping options are available at checkout. You will receive a tracking number via email once your order has shipped."
   },
   {
-    question: "How does Fashion Frenzy support independent designers?",
+    question: "How does Dazelle support independent designers?",
     answer: "Our entire business model is built around supporting small brands and independent creators. We provide a platform for them to reach a wider audience, and a significant portion of every sale goes directly to the designer of the product you purchase."
   },
   {
-    question: "Are the clothes true to size?",
-    answer: "Sizing can vary slightly between our independent brands. We provide detailed size charts on each product page with measurements. If you're between sizes, we generally recommend sizing up. For specific sizing questions, feel free to contact our support team!"
+    question: "How do I find my ring size?",
+    answer: "We provide detailed size charts on each product page with measurements for rings and bracelets. We recommend using a ring sizer or measuring the circumference of your finger for the most accurate fit. For specific sizing questions, feel free to contact our support team!"
   },
   {
     question: "How can I track my order?",

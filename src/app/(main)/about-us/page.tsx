@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users } from 'lucide-react';
+import { Users, Gem } from 'lucide-react';
 
 export default function AboutUsPage() {
   return (
@@ -12,16 +12,16 @@ export default function AboutUsPage() {
             <Users className="mx-auto h-12 w-12 text-primary mb-4" />
             <CardTitle className="text-3xl md:text-4xl font-headline">About Dazelle</CardTitle>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              We believe fashion is more than just clothing — it's a form of self-expression, creativity, and a way to support independent art.
+              We believe jewelry is more than just an accessory — it's a form of self-expression, creativity, and a way to support independent art.
             </p>
           </CardHeader>
           <CardContent className="p-8 md:p-12 space-y-12">
             <div className="prose dark:prose-invert max-w-none text-lg text-foreground/90 text-justify leading-relaxed">
               <p>
-                At Dazelle, our mission is to build a vibrant community where independent fashion designers and small brands can thrive. We are driven by a passion for unique designs and high-quality craftsmanship that stands apart from mass-produced trends. We provide a platform for creators to share their stories and for you to discover pieces that are as unique as you are.
+                At Dazelle, our mission is to build a vibrant community where independent jewelry designers and small brands can thrive. We are driven by a passion for unique designs and high-quality craftsmanship that stands apart from mass-produced trends. We provide a platform for creators to share their stories and for you to discover pieces that are as unique as you are.
               </p>
               <p>
-                Every stitch, fabric, and design in our collection is a testament to the creativity and dedication of our partner brands. By choosing to shop with us, you are not just buying a piece of clothing; you are supporting a dream, empowering an artist, and investing in a more sustainable and diverse fashion industry. Thank you for joining us on this stylish journey.
+                Every stone, metal, and design in our collection is a testament to the creativity and dedication of our partner brands. By choosing to shop with us, you are not just buying a piece of jewelry; you are supporting a dream, empowering an artist, and investing in a more sustainable and diverse jewelry industry. Thank you for joining us on this sparkling journey.
               </p>
             </div>
             

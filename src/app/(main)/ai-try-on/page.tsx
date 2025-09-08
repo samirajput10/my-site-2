@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle, Shirt, User as UserIcon, ShieldAlert, ServerCrash } from 'lucide-react';
+import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle, User as UserIcon, ShieldAlert, ServerCrash, Gem } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { performVirtualTryOn } from '@/actions/tryOnActions';
 import type { Product, ProductCategory, ProductSize } from '@/types';
@@ -75,7 +75,7 @@ export default function AiTryOnPage() {
         const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
         const unsubscribeCount = onValue(userTryOnRef, (snapshot) => {
           const credits = snapshot.val();
-           // If user has no record, they might be new from an old system. Give them credits.
+           // If user has no record, they are new. Give them credits.
            if (credits === null || credits === undefined) {
              set(userTryOnRef, TRY_ON_LIMIT); // Set initial credits
              setAvailableCredits(TRY_ON_LIMIT);
@@ -106,11 +106,11 @@ export default function AiTryOnPage() {
             if (Array.isArray(data.sizes)) {
                 // Ensure sizes are uppercase and valid
                 parsedSizes = data.sizes
-                .map(s => String(s).trim().toUpperCase())
+                .map(s => String(s).trim())
                 .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
             } else if (typeof data.sizes === 'string' && data.sizes.length > 0) {
                 parsedSizes = data.sizes.split(',')
-                .map(s => s.trim().toUpperCase())
+                .map(s => s.trim())
                 .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
             }
           
@@ -189,40 +189,42 @@ export default function AiTryOnPage() {
     
     toast({ title: "AI Generation In Progress...", description: "Our AI is creating your virtual try-on. This might take a moment!" });
 
-    // Decrement credits in a transaction for safety
+    // Use transaction to safely decrement credits
     const userTryOnRef = ref(rtdb, `userTryOnCounts/${currentUser.uid}`);
+    let generationSucceeded = false;
+
     try {
-        await runTransaction(userTryOnRef, (currentCredits) => {
-            if (currentCredits === null || currentCredits === undefined || currentCredits <= 0) {
-                // Abort transaction if no credits are left
-                return;
-            }
-            return currentCredits - 1;
+        const result = await performVirtualTryOn({
+            userImage: userImage,
+            productImage: product.imageUrl,
+            productName: product.name,
+            productCategory: product.category,
         });
-    } catch (e) {
-        setError("Could not update your credits. Please try again.");
+
+        if ('error' in result) {
+            setError(result.error);
+            toast({ title: "Generation Failed", description: result.error, variant: 'destructive' });
+        } else {
+            setGeneratedImage(result.generatedImage);
+            toast({ title: "Success!", description: "Your virtual try-on is ready." });
+            generationSucceeded = true;
+        }
+
+    } catch(e) {
+        setError("An unexpected error occurred during generation.");
+        toast({ title: "Generation Failed", description: "Please try again later.", variant: 'destructive' });
+    } finally {
+        if(generationSucceeded) {
+            // Decrement credits only on success
+            await runTransaction(userTryOnRef, (currentCredits) => {
+                if (currentCredits === null || currentCredits === undefined || currentCredits <= 0) {
+                    return 0;
+                }
+                return currentCredits - 1;
+            });
+        }
         setIsGenerating(false);
-        return;
     }
-
-
-    const result = await performVirtualTryOn({
-      userImage: userImage,
-      productImage: product.imageUrl,
-      productName: product.name,
-      productCategory: product.category,
-    });
-
-    if ('error' in result) {
-      setError(result.error);
-      toast({ title: "Generation Failed", description: result.error, variant: 'destructive' });
-       // Re-increment credits if generation fails
-       await runTransaction(userTryOnRef, (currentCredits) => (currentCredits || 0) + 1);
-    } else {
-      setGeneratedImage(result.generatedImage);
-       toast({ title: "Success!", description: "Your virtual try-on is ready." });
-    }
-    setIsGenerating(false);
   };
   
   const UploadPlaceholder = ({ icon: Icon, title, description, onClick }: { icon: React.ElementType, title: string, description: string, onClick?: () => void }) => (
@@ -264,7 +266,7 @@ export default function AiTryOnPage() {
         <div className="text-center mb-10">
             <Sparkles className="mx-auto h-16 w-16 text-primary mb-4" />
             <h1 className="text-4xl font-headline font-bold mb-3">AI Virtual Try-On</h1>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">See how our clothes look on you before you buy. Upload a clear, front-facing photo of yourself for the best results.</p>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">See how our jewelry looks on you before you buy. Upload a clear, front-facing photo of yourself for the best results.</p>
         </div>
 
         <div className="max-w-5xl mx-auto space-y-8">
@@ -299,7 +301,7 @@ export default function AiTryOnPage() {
                   <Card className="shadow-lg rounded-xl">
                       <CardHeader>
                           <CardTitle>Step 1: Prepare Your Images</CardTitle>
-                          <CardDescription>Upload your photo to see it with the selected product.</CardDescription>
+                          <CardDescription>Upload your photo to see it with the selected piece.</CardDescription>
                       </CardHeader>
                       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                           
@@ -377,7 +379,7 @@ export default function AiTryOnPage() {
                                     Start Over
                                   </Button>
                                   <Button size="lg" variant="outline" asChild>
-                                      <a href={generatedImage} download="fashion-frenzy-try-on.png">Download Image</a>
+                                      <a href={generatedImage} download="dazelle-try-on.png">Download Image</a>
                                   </Button>
                               </div>
                           </CardContent>

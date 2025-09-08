@@ -12,11 +12,11 @@ const reviews = [
     customerInitial: 'JL',
     avatarUrl: 'https://placehold.co/100x100.png',
     avatarAiHint: 'woman portrait',
-    review: "Absolutely in love with this dress! The fabric is so soft and it fits perfectly. I got so many compliments.",
-    productName: 'Elegant Summer Maxi Dress',
+    review: "Absolutely in love with this necklace! The craftsmanship is exquisite and it sits perfectly. I get so many compliments.",
+    productName: 'Elegant Silver Locket',
     productUrl: '/products/1',
     imageUrl: 'https://placehold.co/400x550.png',
-    imageAiHint: 'woman dress fashion'
+    imageAiHint: 'woman wearing necklace'
   },
   {
     id: 2,
@@ -24,11 +24,11 @@ const reviews = [
     customerInitial: 'BR',
     avatarUrl: 'https://placehold.co/100x100.png',
     avatarAiHint: 'man portrait',
-    review: "This jacket is my new favorite. It's stylish, comfortable, and great for city life. Quality is top-notch.",
-    productName: 'Urban Explorer Jacket',
+    review: "This ring is my new favorite. It's stylish, comfortable, and great for daily wear. Quality is top-notch.",
+    productName: 'Titanium Explorer Ring',
     productUrl: '/products/12',
     imageUrl: 'https://placehold.co/400x450.png',
-    imageAiHint: 'man jacket fashion'
+    imageAiHint: 'man hand with ring'
   },
   {
     id: 3,
@@ -36,11 +36,11 @@ const reviews = [
     customerInitial: 'CT',
     avatarUrl: 'https://placehold.co/100x100.png',
     avatarAiHint: 'woman portrait smiling',
-    review: "The perfect pair of jeans. They have just the right amount of stretch. I've been living in them!",
-    productName: 'Slim Fit Denim Jeans',
+    review: "The perfect pair of earrings. They have just the right amount of sparkle. I've been wearing them constantly!",
+    productName: 'Starlight Stud Earrings',
     productUrl: '/products/3',
     imageUrl: 'https://placehold.co/400x600.png',
-    imageAiHint: 'woman jeans fashion'
+    imageAiHint: 'woman wearing earrings'
   },
   {
     id: 4,
@@ -48,11 +48,11 @@ const reviews = [
     customerInitial: 'MW',
     avatarUrl: 'https://placehold.co/100x100.png',
     avatarAiHint: 'man smiling portrait',
-    review: "Great quality tee. It's held up so well after multiple washes. Worth every penny.",
-    productName: 'Classic Cotton Tee',
+    review: "Great quality bracelet. It has held up so well. Worth every penny for a piece this timeless.",
+    productName: 'Classic Leather Weave Bracelet',
     productUrl: '/products/2',
     imageUrl: 'https://placehold.co/400x500.png',
-    imageAiHint: 'man t-shirt'
+    imageAiHint: 'man wearing bracelet'
   },
 ];
 
@@ -100,7 +100,7 @@ export function CustomerReviewGallery() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-headline font-bold text-foreground">
-            How You Wear It
+            How You Sparkle
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
             See how our community brings their Dazelle pieces to life. Tag us @Dazelle to be featured!

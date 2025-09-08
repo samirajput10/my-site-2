@@ -53,7 +53,7 @@ export function NewArrivals() {
     return (
       <section className="py-12">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-foreground mb-6 text-center">Fresh Off The Hanger</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-6 text-center">Newly Minted</h2>
           <div className="flex items-center justify-center min-h-[200px]">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
@@ -70,7 +70,7 @@ export function NewArrivals() {
     <section className="py-12">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-foreground">Fresh Off The Hanger</h2>
+          <h2 className="text-2xl font-bold text-foreground">Newly Minted</h2>
           <Button variant="link" asChild className="text-primary hover:underline">
             <Link href="/shop">View All <ArrowRight className="ml-1 h-4 w-4" /></Link>
           </Button>

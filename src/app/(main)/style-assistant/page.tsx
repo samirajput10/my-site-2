@@ -54,7 +54,7 @@ export default function StyleAssistantPage() {
             <Sparkles className="mx-auto h-16 w-16 text-primary mb-4" />
             <h1 className="text-4xl font-headline font-bold mb-3">AI Style Assistant</h1>
             <p className="text-lg text-muted-foreground">
-                Describe your fashion needs, an upcoming event, or a style you're curious about, and get personalized advice and product recommendations!
+                Describe an event, a style you're curious about, or pieces you want to pair, and get personalized jewelry recommendations!
             </p>
             </div>
 
@@ -62,10 +62,10 @@ export default function StyleAssistantPage() {
             <CardHeader>
                 <CardTitle className="text-2xl flex items-center">
                 <Sparkles className="h-6 w-6 mr-2 text-primary" />
-                Get Personalized Style Advice
+                Get Personalized Jewelry Advice
                 </CardTitle>
                 <CardDescription>
-                For example: "I need an outfit for a beach wedding" or "Help me find a casual chic look for fall."
+                For example: "What necklace would go with a black-tie dress?" or "Help me find a bohemian-style ring stack."
                 </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
@@ -76,7 +76,7 @@ export default function StyleAssistantPage() {
                     id="style-prompt"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Tell me about your style needs..."
+                    placeholder="Tell me about your jewelry needs..."
                     rows={5}
                     className="mt-1 text-base"
                     disabled={isPending}
@@ -128,7 +128,7 @@ export default function StyleAssistantPage() {
               <Card className="shadow-lg rounded-xl h-full">
                 <CardHeader>
                   <CardTitle className="text-2xl flex items-center">
-                    <Image src="https://placehold.co/40x40.png" alt="AI Stylist" width={40} height={40} className="rounded-full mr-3" data-ai-hint="avatar fashion" />
+                    <Image src="https://placehold.co/40x40.png" alt="AI Stylist" width={40} height={40} className="rounded-full mr-3" data-ai-hint="avatar elegant" />
                     Your Style Suggestions
                   </CardTitle>
                 </CardHeader>

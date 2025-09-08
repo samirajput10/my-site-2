@@ -210,7 +210,7 @@ export default function AdminPanelPage() {
       const newProductRef = push(productsListRef);
 
       const parsedSizes = formState.sizes.split(',')
-        .map(s => s.trim().toUpperCase())
+        .map(s => s.trim())
         .filter(s => ALL_SIZES.includes(s as ProductSize));
       
       if (parsedSizes.length === 0 && formState.sizes.trim() !== '') {
@@ -385,7 +385,7 @@ export default function AdminPanelPage() {
                 <datalist id="category-options">{ALL_CATEGORIES.map(cat => <option key={cat} value={cat} />)}</datalist>
               </div>
               <div>
-                <Label htmlFor="sizes">Sizes (comma-separated, uppercase) *</Label>
+                <Label htmlFor="sizes">Sizes (comma-separated, e.g., 6, 7, 8) *</Label>
                 <Input id="sizes" name="sizes" value={formState.sizes} onChange={handleChange} required disabled={isSubmitting}/>
               </div>
             </div>

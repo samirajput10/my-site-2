@@ -8,8 +8,8 @@ import { FirebaseErrorOverlay } from '@/components/layout/FirebaseErrorOverlay';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
 
 export const metadata: Metadata = {
-  title: 'Dazelle - Support Small Fashion Brands',
-  description: 'Shop from hundreds of small fashion brands. Each purchase supports an independent creator.',
+  title: 'Dazelle - Discover Unique Jewelry',
+  description: 'Shop from hundreds of small jewelry designers. Each purchase supports an independent creator.',
 };
 
 export default function RootLayout({

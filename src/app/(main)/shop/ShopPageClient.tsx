@@ -23,7 +23,8 @@ const recommendedDbRules = `{
       "$uid": {
         // Users can only read/write their own try-on count
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 4"
       }
     }
   }
@@ -69,7 +70,7 @@ export function ShopPageClient() {
     <div className="container mx-auto py-8 md:py-12">
       <div className="text-center mb-10">
         <h1 className="text-4xl font-headline font-bold mb-3">Shop Our Collection</h1>
-        <p className="text-lg text-muted-foreground">Discover unique pieces from independent brands.</p>
+        <p className="text-lg text-muted-foreground">Discover unique pieces from independent designers.</p>
       </div>
       <div>
         {isLoading && (

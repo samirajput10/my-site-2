@@ -2,9 +2,9 @@
 'use server';
 
 /**
- * @fileOverview AI agent that generates personalized fashion suggestions and recommends products.
+ * @fileOverview AI agent that generates personalized jewelry suggestions and recommends products.
  *
- * - generateStyleSuggestions - A function that generates fashion suggestions and product recommendations.
+ * - generateStyleSuggestions - A function that generates jewelry suggestions and product recommendations.
  * - GenerateStyleSuggestionsInput - The input type for the function.
  * - GenerateStyleSuggestionsOutput - The return type for the function.
  */
@@ -18,7 +18,7 @@ const GenerateStyleSuggestionsInputSchema = z.object({
   prompt: z
     .string()
     .describe(
-      'A text prompt describing the desired style or occasion for the fashion suggestions.'
+      'A text prompt describing the desired style or occasion for the jewelry suggestions.'
     ),
 });
 export type GenerateStyleSuggestionsInput = z.infer<
@@ -28,7 +28,7 @@ export type GenerateStyleSuggestionsInput = z.infer<
 const GenerateStyleSuggestionsOutputSchema = z.object({
   suggestions: z
     .string()
-    .describe('Personalized fashion suggestions based on the input prompt.'),
+    .describe('Personalized jewelry suggestions based on the input prompt.'),
   recommendedProducts: z.array(ProductSchema).optional().describe('A list of up to 4 recommended products from the store that match the style advice.'),
 });
 export type GenerateStyleSuggestionsOutput = z.infer<
@@ -42,9 +42,9 @@ export type GenerateStyleSuggestionsOutput = z.infer<
 const findProductsTool = ai.defineTool(
   {
     name: 'findProducts',
-    description: 'Finds relevant products from the store catalog based on a description or category.',
+    description: 'Finds relevant jewelry from the store catalog based on a description or category.',
     inputSchema: z.object({
-      query: z.string().describe('A search query describing the products to find, like "blue denim jacket" or "summer dresses".'),
+      query: z.string().describe('A search query describing the products to find, like "gold hoop earrings" or "delicate silver necklaces".'),
     }),
     outputSchema: z.object({
         products: z.array(ProductSchema).describe('A list of products that match the query.'),
@@ -84,7 +84,7 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateStyleSuggestionsInputSchema},
   output: {schema: GenerateStyleSuggestionsOutputSchema},
   tools: [findProductsTool],
-  prompt: `You are a personal fashion stylist for an e-commerce store called Dazelle. Based on the user's prompt, generate personalized fashion suggestions.
+  prompt: `You are a personal stylist for an e-commerce jewelry store called Dazelle. Based on the user's prompt, generate personalized jewelry suggestions.
 
 After giving the style advice, you MUST use the findProducts tool to find relevant products from the store catalog to recommend to the user. Include these products in the 'recommendedProducts' field of your response.
 

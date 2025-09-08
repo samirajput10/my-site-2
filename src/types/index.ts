@@ -1,11 +1,11 @@
 
 import { z } from 'zod';
 
-export type ProductCategory = "Tops" | "Dresses" | "Pants" | "Accessories" | "Shoes" | "Outerwear";
-export const ALL_CATEGORIES: ProductCategory[] = ["Tops", "Dresses", "Pants", "Accessories", "Shoes", "Outerwear"];
+export type ProductCategory = "Necklaces" | "Rings" | "Bracelets" | "Earrings" | "Anklets" | "Body Jewelry";
+export const ALL_CATEGORIES: ProductCategory[] = ["Necklaces", "Rings", "Bracelets", "Earrings", "Anklets", "Body Jewelry"];
 
-export type ProductSize = "XS" | "S" | "M" | "L" | "XL" | "One Size";
-export const ALL_SIZES: ProductSize[] = ["XS", "S", "M", "L", "XL", "One Size"];
+export type ProductSize = "6" | "7" | "8" | "9" | "Adjustable" | "One Size";
+export const ALL_SIZES: ProductSize[] = ["6", "7", "8", "9", "Adjustable", "One Size"];
 
 export type Product = {
   id: string; // Firestore document ID when fetched
@@ -46,10 +46,10 @@ export const VirtualTryOnInputSchema = z.object({
       "A photo of the user, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
   productImage: z.string().describe(
-      "A photo of the product (e.g., a shirt, dress), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A photo of the product (e.g., a necklace, ring), as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
   ),
   productName: z.string().describe("The name of the product."),
-  productCategory: z.string().describe("The category of the product (e.g., 'Tops', 'Dresses').")
+  productCategory: z.string().describe("The category of the product (e.g., 'Necklaces', 'Rings').")
 });
 export type VirtualTryOnInput = z.infer<typeof VirtualTryOnInputSchema>;
 

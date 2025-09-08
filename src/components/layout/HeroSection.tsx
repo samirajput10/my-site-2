@@ -11,17 +11,17 @@ export function HeroSection() {
       <div 
         className="absolute inset-0 bg-cover bg-center z-0" 
         style={{ backgroundImage: 'url(https://i.postimg.cc/7Y97KXHx/Chat-GPT-Image-Jun-25-2025-07-22-28-AM.png)' }}
-        data-ai-hint="fashion runway model"
+        data-ai-hint="jewelry model elegant"
       >
         <div className="absolute inset-0 bg-black/50"></div>
       </div>
       
       <div className="relative z-10 container mx-auto px-4">
         <h1 className="text-4xl md:text-6xl font-headline font-bold mb-4 drop-shadow-2xl">
-          Discover Unique Fashion
+          Discover Unique Jewelry
         </h1>
         <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto drop-shadow-2xl">
-          Shop from hundreds of small fashion brands. Each purchase supports an independent creator and brings a unique story to your wardrobe.
+          Shop from hundreds of small jewelry designers. Each purchase supports an independent creator and brings a unique story to your collection.
         </p>
         <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground drop-shadow-lg">
           <Link href="/shop">
