@@ -7,7 +7,7 @@ import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref as dbRef, set, serverTimestamp, query, orderByChild, get, remove, push } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2, ServerCrash } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { auth, rtdb, storage } from '@/lib/firebase/config';
 import type { Product, ProductCategory, ProductSize } from '@/types';
@@ -40,6 +41,25 @@ interface NewProductForm {
   category: string;
   sizes: string;
 }
+
+const recommendedDbRules = `{
+  "rules": {
+    "products": {
+      ".read": "true",
+      // Only authenticated users (admins) can write
+      ".write": "auth != null",
+       // Index for efficient querying by creation date
+      ".indexOn": "createdAt"
+    },
+    "userTryOnCounts": {
+      "$uid": {
+        // Users can only read/write their own try-on count
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    }
+  }
+}`;
 
 export default function AdminPanelPage() {
   const { toast } = useToast();
@@ -71,14 +91,28 @@ export default function AdminPanelPage() {
     try {
       const result = await getAllProductsFromDB();
       if ('error' in result) {
-        setListingError(result.error);
+         if (result.error.includes('permission-denied') || result.error.includes('PERMISSION_DENIED')) {
+            const permissionError = (
+                <>
+                    Your database security rules are blocking access.
+                    <br />
+                    Please update your Realtime Database rules in the Firebase Console to allow access.
+                    <br />
+                    <strong>Recommended rules for development:</strong>
+                    <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-xs whitespace-pre-wrap">{recommendedDbRules}</pre>
+                </>
+            );
+             setListingError(permissionError as any);
+        } else {
+            setListingError(result.error);
+        }
         setAllProducts([]);
       } else {
         setAllProducts(result);
       }
     } catch (error: any) {
       console.error("Error fetching all products:", error);
-      const userMessage = "Failed to load products. Check Realtime Database security rules & indexes.";
+      const userMessage = "Failed to load products. Check your network or Firebase configuration.";
       setListingError(userMessage);
       toast({ title: "Error", description: userMessage, variant: "destructive" });
     } finally {
@@ -100,7 +134,9 @@ export default function AdminPanelPage() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (user) {
-        setIsAdmin(false); // Default users are not admins
+        // For this demo, we assume the logged in user via Firebase is a regular user, not admin
+        // The admin flow is handled by the mock session logic above.
+        setIsAdmin(false); 
       } else {
         setIsAdmin(false);
         router.push('/login');
@@ -163,8 +199,8 @@ export default function AdminPanelPage() {
         toast({ title: "Image Upload Complete!", description: "A link to your image has been generated." });
       }
       
-      if ((imageFile || formState.imageUrl) && !finalImageUrl) {
-        toast({ title: "Image Error", description: "Could not get a valid image URL. Please try uploading again or use a different URL.", variant: "destructive" });
+      if (!finalImageUrl) {
+        toast({ title: "Image Error", description: "Please provide an image by uploading or entering a URL.", variant: "destructive" });
         setIsSubmitting(false);
         return;
       }
@@ -186,16 +222,16 @@ export default function AdminPanelPage() {
         name: formState.name,
         description: formState.description,
         price: parseFloat(formState.price),
-        imageUrl: finalImageUrl || 'https://placehold.co/300x400.png',
+        imageUrl: finalImageUrl,
         category: formState.category as ProductCategory,
         sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
-        sellerId: currentUser.uid, // Keep sellerId as admin's UID
+        sellerId: currentUser.uid,
         createdAt: serverTimestamp(),
       };
 
       await set(newProductRef, newProductData);
       
-      toast({ title: "Product Added", description: `Your product data has been saved to the database.` });
+      toast({ title: "Product Added", description: `Your product has been successfully listed.` });
       setFormState({ name: '', description: '', price: '', imageUrl: '', category: '', sizes: '' });
       setImageFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -288,7 +324,7 @@ export default function AdminPanelPage() {
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-md">
               <span className="font-medium">Total Products</span>
-              <span className="text-primary font-bold text-lg">{allProducts.length}</span>
+              <span className="text-primary font-bold text-lg">{listingLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : allProducts.length}</span>
             </div>
              <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-md">
               <span className="font-medium">Total Sales (Mock)</span>
@@ -372,9 +408,18 @@ export default function AdminPanelPage() {
         <CardHeader><CardTitle className="text-xl flex items-center"><ListChecks className="mr-2 h-5 w-5"/>All Listed Products</CardTitle></CardHeader>
         <CardContent>
           {listingLoading && <div className="flex justify-center py-8"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}
-          {listingError && <div className="text-destructive text-center py-8">{listingError}</div>}
+          
+          {listingError && (
+             <Alert variant="destructive" className="mt-4">
+                <ServerCrash className="h-4 w-4" />
+                <AlertTitle>Error Loading Products</AlertTitle>
+                <AlertDescription>{listingError}</AlertDescription>
+            </Alert>
+          )}
+
           {!listingLoading && !listingError && allProducts.length === 0 && <p className="text-center text-muted-foreground py-8">There are no products listed on the platform yet.</p>}
-          {!listingLoading && !listingError && (
+          
+          {!listingLoading && !listingError && allProducts.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {allProducts.map(product => (
                 <Card key={product.id} className="flex flex-col">
@@ -414,5 +459,7 @@ export default function AdminPanelPage() {
     </div>
   );
 }
+
+    
 
     
