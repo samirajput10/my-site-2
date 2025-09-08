@@ -1,3 +1,4 @@
+
 // src/components/layout/HeroSection.tsx
 
 import Link from 'next/link';

@@ -19,7 +19,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   const [currency, setCurrencyState] = useState<Currency>('USD');
 
   useEffect(() => {
-    const storedCurrency = localStorage.getItem('fashionFrenzyCurrency') as Currency;
+    const storedCurrency = localStorage.getItem('dazelleCurrency') as Currency;
     if (storedCurrency && ['USD', 'PKR'].includes(storedCurrency)) {
       setCurrencyState(storedCurrency);
     }
@@ -27,7 +27,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
 
   const setCurrency = (newCurrency: Currency) => {
     setCurrencyState(newCurrency);
-    localStorage.setItem('fashionFrenzyCurrency', newCurrency);
+    localStorage.setItem('dazelleCurrency', newCurrency);
   };
 
   const formatPrice = useMemo(() => (priceInUsd: number) => {

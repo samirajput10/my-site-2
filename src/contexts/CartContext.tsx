@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { CartItem, Product } from '@/types';
@@ -22,7 +23,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Load cart from localStorage on initial render
   useEffect(() => {
-    const storedCart = localStorage.getItem('fashionFrenzyCart');
+    const storedCart = localStorage.getItem('dazelleCart');
     if (storedCart) {
       setCartItems(JSON.parse(storedCart));
     }
@@ -30,7 +31,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('fashionFrenzyCart', JSON.stringify(cartItems));
+    localStorage.setItem('dazelleCart', JSON.stringify(cartItems));
   }, [cartItems]);
 
   const addToCart = (product: Product) => {

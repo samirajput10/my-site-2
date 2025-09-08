@@ -8,7 +8,7 @@ import { FirebaseErrorOverlay } from '@/components/layout/FirebaseErrorOverlay';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
 
 export const metadata: Metadata = {
-  title: 'Fashion Frenzy - Support Small Fashion Brands',
+  title: 'Dazelle - Support Small Fashion Brands',
   description: 'Shop from hundreds of small fashion brands. Each purchase supports an independent creator.',
 };
 

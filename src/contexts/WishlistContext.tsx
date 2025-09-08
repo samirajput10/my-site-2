@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { WishlistItem, Product } from '@/types';
@@ -18,14 +19,14 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedWishlist = localStorage.getItem('fashionFrenzyWishlist');
+    const storedWishlist = localStorage.getItem('dazelleWishlist');
     if (storedWishlist) {
       setWishlistItems(JSON.parse(storedWishlist));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('fashionFrenzyWishlist', JSON.stringify(wishlistItems));
+    localStorage.setItem('dazelleWishlist', JSON.stringify(wishlistItems));
   }, [wishlistItems]);
 
   const addToWishlist = (product: Product) => {

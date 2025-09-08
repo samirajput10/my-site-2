@@ -28,7 +28,7 @@ const AmexIcon = () => (
         <title id="pi-amex">American Express</title>
         <path opacity=".07" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z"/>
         <path fill="#fff" d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32"/>
-        <path d="M35,2c0.6,0,1,0.4,1,1v18c0,0.6-0.4,1-1,1H3c-0.6,0-1-0.4-1-1V3c0-0.6,0.4-1,1-1H35z" fill="#006FCF"/>
+        <path d="M35,2c0.6,0,1,0.4,1,1v18c0,0.6-0.4,1-1,1H3c-0.6,0-1-0.4,1-1V3c0-0.6,0.4-1,1-1H35z" fill="#006FCF"/>
         <path d="M22.9,15.6h-3.8c0,0-0.1,0-0.2-0.1l-0.2-0.8c0,0-0.1-0.2,0-0.3l3.5-6.4c0.1-0.1,0.2-0.1,0.3,0l0.3,0.5 c0,0,0.1,0.1,0,0.2l-3,5.6c0,0-0.1,0.1,0,0.2L22.9,15.6z M23.9,15.6h-0.9l-1.3-2.6h1.4c0.2,0,0.3-0.1,0.3-0.3V12 c0-0.2-0.1-0.3-0.3-0.3h-1.6l-1.3-2.7h1.7c0.2,0,0.3-0.1,0.3-0.3v-0.6c0-0.2-0.1-0.3-0.3-0.3h-3.2c-0.2,0-0.3,0.1-0.3,0.3l-1.9,8 c0,0.2,0.1,0.3,0.3,0.3h3.2c0.2,0,0.3-0.1,0.3-0.3v-0.6c0-0.2-0.1-0.3-0.3-0.3h-1.7L23.9,15.6z M16,15.6h-1.5L13.2,8h1.6L16,15.6z M11.8,12.8h-1c-0.2,0-0.3,0.1-0.3,0.3v0.6c0,0.2,0.1,0.3,0.3,0.3h1c0.2,0,0.3-0.1,0.3-0.3v-0.6C12.1,12.9,12,12.8,11.8,12.8z M15.1,8.1h-0.9L13,11.3c0,0.1,0,0.2-0.1,0.2l-0.7-3.4H11c0,0,0,0-0.1-0.1L9.7,11c0,0.1-0.1,0.1-0.1-0.1L8.3,8.1H7.2c0,0-0.1,0-0.1,0.1l1.7,6.8c0,0,0.1,0.1,0.1,0.1h1.2c0,0,0,0,0,0l1.9-6.3C15.1,8.2,15.1,8.1,15.1,8.1z M11.8,10.6h-1c-0.2,0-0.3,0.1-0.3,0.3v0.6c0,0.2,0.1,0.3,0.3,0.3h1c0.2,0,0.3-0.1,0.3-0.3v-0.6C12.1,10.7,12,10.6,11.8,10.6z M11.8,11.7h-1c-0.2,0-0.3,0.1-0.3,0.3v0.6c0,0.2,0.1,0.3,0.3,0.3h1c0.2,0,0.3-0.1,0.3-0.3v-0.6C12.1,11.8,12,11.7,11.8,11.7z" fill="#FFFFFF"/>
     </svg>
 );
@@ -90,7 +90,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border/40 flex flex-col md:flex-row justify-between items-center text-center md:text-left">
-          <p className="mb-4 md:mb-0">&copy; {new Date().getFullYear()} Fashion Frenzy. All Rights Reserved.</p>
+          <p className="mb-4 md:mb-0">&copy; {new Date().getFullYear()} Dazelle. All Rights Reserved.</p>
           <div className="flex items-center space-x-2">
             <span className="font-medium text-foreground">We Accept:</span>
             <div className="flex items-center space-x-1">

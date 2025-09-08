@@ -103,7 +103,7 @@ export function CustomerReviewGallery() {
             How You Wear It
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            See how our community brings their Fashion Frenzy pieces to life. Tag us @FashionFrenzy to be featured!
+            See how our community brings their Dazelle pieces to life. Tag us @Dazelle to be featured!
           </p>
         </div>
 

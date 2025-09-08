@@ -1,3 +1,4 @@
+
 // src/components/layout/ChatWindow.tsx
 "use client";
 
@@ -16,7 +17,7 @@ interface Message {
 export function ChatWindow() {
   const [isOpen, setIsOpen] = useState(false); // Controlled by ChatButton for now
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: "Hello! I'm Frenzy, your Fashion Frenzy assistant. How can I help you today?", sender: 'bot', timestamp: '2:45 PM' },
+    { id: '1', text: "Hello! I'm your Dazelle assistant. How can I help you today?", sender: 'bot', timestamp: '2:45 PM' },
     { id: '2', text: "Hi! I need help finding a denim jacket", sender: 'user', timestamp: '2:46 PM' },
     { id: '3', text: "Great choice! We have several denim jackets from small brands. Would you like recommendations based on your style preferences?", sender: 'bot', timestamp: '2:46 PM' },
   ]);
