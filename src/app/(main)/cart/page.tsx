@@ -39,6 +39,8 @@ export default function CartPage() {
   };
 
   const handleOrderOnWhatsApp = async () => {
+    if (cartItems.length === 0) return;
+
     const orderDetails = cartItems.map(item => 
       `- ${item.name} (x${item.quantity})`
     ).join('\n');
@@ -51,17 +53,22 @@ export default function CartPage() {
       try {
         const userTryOnRef = ref(rtdb, `userTryOnCounts/${currentUser.uid}`);
         await set(userTryOnRef, 4); // Reset available credits to 4
-        toast({
-          title: "AI Credits Reset!",
-          description: "Your AI Virtual Try-On credits have been reset to 4 as a thank you for your order!",
-        });
       } catch (error) {
         console.error("Failed to reset try-on credits:", error);
         // Don't block the user from ordering, just log the error.
       }
     }
 
+    // Open WhatsApp link
     window.open(whatsappUrl, '_blank');
+    
+    // Clear cart and show confirmation toast
+    clearCart();
+    toast({
+        title: "Order Placed!",
+        description: "Your AI credits have been reset. Please finalize your order details on WhatsApp.",
+    });
+
   };
   
   if (cartItems.length === 0) {
