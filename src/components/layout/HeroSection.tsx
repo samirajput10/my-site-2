@@ -9,8 +9,8 @@ export function HeroSection() {
     <section className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center text-center text-white overflow-hidden">
         <div 
             className="absolute inset-0 bg-cover bg-center z-0" 
-            style={{ backgroundImage: 'url(https://placehold.co/1920x1080.png)' }}
-            data-ai-hint="earrings jewelry sparkle"
+            style={{ backgroundImage: 'url(https://i.postimg.cc/8C8d9C4B/hero-background.png)' }}
+            data-ai-hint="jewelry collection sparkle"
         >
              <div className="absolute inset-0 bg-black/40 z-10" />
         </div>
