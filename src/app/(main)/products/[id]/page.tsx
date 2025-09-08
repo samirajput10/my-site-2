@@ -142,32 +142,34 @@ export default function ProductDetailPage() {
 
               <Separator />
 
-              <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <Button 
-                  size="lg" 
-                  onClick={() => addToCart(product)} 
-                  className="flex-grow bg-primary hover:bg-primary/90 text-primary-foreground"
-                  disabled={!selectedSize && product.sizes.length > 0}
-                >
-                  <ShoppingCart size={20} className="mr-2" />
-                  Add to Cart
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  onClick={handleWishlistToggle} 
-                  className={cn("flex-grow", isWishlisted(product.id) ? "text-primary border-primary hover:bg-primary/10" : "")}
-                >
-                  <Heart size={20} className="mr-2" fill={isWishlisted(product.id) ? "currentColor" : "none"}/>
-                  {isWishlisted(product.id) ? 'Wishlisted' : 'Add to Wishlist'}
-                </Button>
+              <div className="flex flex-col gap-3 mt-6">
+                <Link href={`/ai-try-on?productId=${product.id}`} passHref legacyBehavior>
+                  <a className={cn(buttonVariants({ variant: 'outline', size: 'lg'}), "w-full")}>
+                    <Camera size={20} className="mr-2" />
+                    Try On Yourself
+                  </a>
+                </Link>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button 
+                    size="lg" 
+                    onClick={() => addToCart(product)} 
+                    className="flex-grow bg-primary hover:bg-primary/90 text-primary-foreground"
+                    disabled={!selectedSize && product.sizes.length > 0}
+                  >
+                    <ShoppingCart size={20} className="mr-2" />
+                    Add to Cart
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    onClick={handleWishlistToggle} 
+                    className={cn("flex-grow", isWishlisted(product.id) ? "text-primary border-primary hover:bg-primary/10" : "")}
+                  >
+                    <Heart size={20} className="mr-2" fill={isWishlisted(product.id) ? "currentColor" : "none"}/>
+                    {isWishlisted(product.id) ? 'Wishlisted' : 'Add to Wishlist'}
+                  </Button>
+                </div>
               </div>
-              <Link href={`/ai-try-on?productId=${product.id}`} passHref legacyBehavior>
-                <a className={cn(buttonVariants({ variant: 'outline', size: 'lg'}), "w-full mt-3")}>
-                  <Camera size={20} className="mr-2" />
-                  AI Virtual Try-On
-                </a>
-              </Link>
             </CardContent>
           </div>
         </div>

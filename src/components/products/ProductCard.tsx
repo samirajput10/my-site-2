@@ -93,16 +93,6 @@ export function ProductCard({
             >
                 <Heart className="h-5 w-5" fill={isWishlisted(product.id) ? "currentColor" : "none"} />
             </Button>
-            <Link 
-                href={`/ai-try-on?productId=${product.id}`} 
-                className={cn(
-                    buttonVariants({ variant: 'ghost', size: 'icon' }),
-                    "h-auto p-1.5 rounded-full bg-card/70 hover:bg-card text-muted-foreground hover:text-primary"
-                )}
-                aria-label="AI Virtual Try-On"
-            >
-                <Camera className="h-5 w-5" />
-            </Link>
           </div>
 
         </CardHeader>
