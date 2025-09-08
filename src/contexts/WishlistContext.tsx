@@ -19,14 +19,14 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedWishlist = localStorage.getItem('dazelleWishlist');
+    const storedWishlist = localStorage.getItem('lustraWishlist');
     if (storedWishlist) {
       setWishlistItems(JSON.parse(storedWishlist));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('dazelleWishlist', JSON.stringify(wishlistItems));
+    localStorage.setItem('lustraWishlist', JSON.stringify(wishlistItems));
   }, [wishlistItems]);
 
   const addToWishlist = (product: Product) => {

@@ -84,7 +84,7 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateStyleSuggestionsInputSchema},
   output: {schema: GenerateStyleSuggestionsOutputSchema},
   tools: [findProductsTool],
-  prompt: `You are a personal stylist for an e-commerce jewelry store called Dazelle. Based on the user's prompt, generate personalized jewelry suggestions.
+  prompt: `You are a personal stylist for an e-commerce jewelry store called Lustra. Based on the user's prompt, generate personalized jewelry suggestions.
 
 After giving the style advice, you MUST use the findProducts tool to find relevant products from the store catalog to recommend to the user. Include these products in the 'recommendedProducts' field of your response.
 

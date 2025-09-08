@@ -103,7 +103,7 @@ export function CustomerReviewGallery() {
             How You Sparkle
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            See how our community brings their Dazelle pieces to life. Tag us @Dazelle to be featured!
+            See how our community brings their Lustra pieces to life. Tag us @Lustra to be featured!
           </p>
         </div>
 

@@ -45,7 +45,7 @@ export default function CartPage() {
       `- ${item.name} (x${item.quantity})`
     ).join('\n');
 
-    const message = `Hello Dazelle! I'd like to place an order for the following items:\n\n${orderDetails}\n\n*Total: ${formatPrice(totalPrice)}*\n\nThank you!`;
+    const message = `Hello Lustra! I'd like to place an order for the following items:\n\n${orderDetails}\n\n*Total: ${formatPrice(totalPrice)}*\n\nThank you!`;
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     
     // Reset try-on credits if user is logged in

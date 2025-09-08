@@ -8,7 +8,7 @@ import { FirebaseErrorOverlay } from '@/components/layout/FirebaseErrorOverlay';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
 
 export const metadata: Metadata = {
-  title: 'Dazelle - Discover Unique Jewelry',
+  title: 'Lustra - Discover Unique Jewelry',
   description: 'Shop from hundreds of small jewelry designers. Each purchase supports an independent creator.',
 };
 
