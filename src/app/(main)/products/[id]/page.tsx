@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Heart, ShoppingCart, Loader2, AlertTriangle, Camera } from 'lucide-react';
+import { Heart, ShoppingCart, Loader2, AlertTriangle, Camera, ServerCrash } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -21,14 +21,33 @@ import { getAllProductsFromDB } from '@/actions/productActions';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { ref, onValue } from 'firebase/database';
 import { auth, rtdb } from '@/lib/firebase/config';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-const TRY_ON_LIMIT = 4;
+
+const recommendedDbRules = `{
+  "rules": {
+    "products": {
+      ".read": "true",
+      ".write": "auth != null",
+      ".indexOn": "createdAt"
+    },
+    "userTryOnCounts": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 4"
+      }
+    }
+  }
+}`;
+
 
 export default function ProductDetailPage() {
   const params = useParams();
   const id = params.id as string;
   
   const [product, setProduct] = useState<Product | null | undefined>(undefined); // undefined for loading state
+  const [error, setError] = useState<React.ReactNode | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
@@ -46,7 +65,6 @@ export default function ProductDetailPage() {
         const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
         const unsubscribeCount = onValue(userTryOnRef, (snapshot) => {
           const credits = snapshot.val();
-          // If no record, they have 0 credits until they sign up properly or order
           setAvailableCredits(credits === null || credits === undefined ? 0 : credits);
         });
         return () => unsubscribeCount();
@@ -58,9 +76,25 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (id) {
       const fetchProductData = async () => {
+        setError(null);
+        setProduct(undefined);
+
         const allProductsResult = await getAllProductsFromDB();
+
         if ('error' in allProductsResult) {
-          console.error(allProductsResult.error);
+            if (allProductsResult.error.includes('permission-denied') || allProductsResult.error.includes('PERMISSION_DENIED')) {
+                const permissionError = (
+                    <>
+                        Your database security rules are blocking access. Update your <strong>Realtime Database rules</strong> in Firebase to allow public read access.
+                        <br /><br />
+                        <strong>Recommended rules:</strong>
+                        <pre className="mt-2 p-2 bg-gray-800 text-white rounded-md text-xs whitespace-pre-wrap">{recommendedDbRules}</pre>
+                    </>
+                );
+                setError(permissionError);
+            } else {
+                setError(allProductsResult.error);
+            }
           setProduct(null);
           return;
         }
@@ -68,15 +102,18 @@ export default function ProductDetailPage() {
         const foundProduct = allProductsResult.find(p => p.id === id);
         setProduct(foundProduct || null);
 
+        if (!foundProduct) {
+          setError("This product could not be found.");
+        }
+
         if (foundProduct?.sizes.length) {
           setSelectedSize(foundProduct.sizes[0]);
         }
 
-        // Fetch related products (simple logic: same category, not the current product)
         if (foundProduct) {
           const related = allProductsResult
             .filter(p => p.category === foundProduct.category && p.id !== foundProduct.id)
-            .slice(0, 4); // Show up to 4 related products
+            .slice(0, 4);
           setRelatedProducts(related);
         }
       };
@@ -85,12 +122,26 @@ export default function ProductDetailPage() {
     }
   }, [id]);
 
-  if (product === undefined) {
+  if (product === undefined && !error) {
     return (
       <div className="container mx-auto flex min-h-[calc(100vh-10rem)] items-center justify-center py-12">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
+  }
+  
+  if (error) {
+      return (
+        <div className="container mx-auto py-12">
+             <Alert variant="destructive" className="max-w-2xl mx-auto text-left">
+                <ServerCrash className="h-4 w-4" />
+                <AlertTitle>Error Loading Product</AlertTitle>
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
+        </div>
+      )
   }
 
   if (!product) {
