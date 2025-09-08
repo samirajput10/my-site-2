@@ -64,14 +64,7 @@ export default function AiTryOnPage() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoadingAuth(false);
-      if (!user) {
-        toast({
-          title: "Please Sign Up",
-          description: "You need an account to use the AI Virtual Try-On.",
-          variant: 'destructive'
-        });
-        router.push('/signup');
-      } else {
+      if (user) {
         const fetchCredits = async () => {
             const userCreditsRef = doc(db, `userCredits/${user.uid}`);
             const docSnap = await getDoc(userCreditsRef);
@@ -87,7 +80,7 @@ export default function AiTryOnPage() {
       }
     });
     return () => unsubscribe();
-  }, [router, toast]);
+  }, []);
 
   useEffect(() => {
     if (!productId) {
@@ -220,8 +213,11 @@ export default function AiTryOnPage() {
        <div className="container mx-auto flex min-h-[calc(100vh-10rem)] items-center justify-center text-center">
         <div>
           <ShieldAlert className="h-16 w-16 text-primary mx-auto mb-4" />
-          <h1 className="text-2xl font-bold">You need to be logged in to use this feature.</h1>
-          <p className="text-muted-foreground mt-2">Redirecting you to the signup page...</p>
+          <h1 className="text-2xl font-bold">Access Required</h1>
+          <p className="text-muted-foreground mt-2 mb-4">You need to be logged in to use the AI Virtual Try-On.</p>
+           <Button onClick={() => router.push('/signup')}>
+                Create an Account
+            </Button>
         </div>
       </div>
     )
@@ -345,7 +341,7 @@ export default function AiTryOnPage() {
                                     Start Over
                                   </Button>
                                   <Button size="lg" variant="outline" asChild>
-                                      <a href={generatedImage} download="dazelle-try-on.png">Download Image</a>
+                                      <a href={generatedImage} download="lustra-try-on.png">Download Image</a>
                                   </Button>
                               </div>
                           </CardContent>
