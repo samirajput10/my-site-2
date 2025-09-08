@@ -87,9 +87,9 @@ export default function AdminPanelPage() {
   const [currentApiKey, setCurrentApiKey] = useState('');
 
   useEffect(() => {
-    // This is a client component, so we can access process.env here.
-    // This will only show the key that was available at build time, but it's sufficient for display purposes.
-    setCurrentApiKey(process.env.NEXT_PUBLIC_GEMINI_API_KEY || 'Not Set');
+    // This will only show the key that was available at build time on the client.
+    // The actual key is used server-side and is not exposed to the browser.
+    setCurrentApiKey(process.env.GEMINI_API_KEY || 'Not Set');
   }, []);
 
   const fetchAllProducts = useCallback(async () => {
@@ -371,7 +371,7 @@ export default function AdminPanelPage() {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="api-key">Current Gemini API Key</Label>
-            <Input id="api-key" value={currentApiKey.substring(0, 4) + '...'} readOnly disabled />
+            <Input id="api-key" value={currentApiKey ? currentApiKey.substring(0, 4) + '...' : 'Not Set'} readOnly disabled />
             <p className="text-sm text-muted-foreground mt-2">
               For security, your full API key is not displayed here.
             </p>
@@ -490,5 +490,7 @@ export default function AdminPanelPage() {
     </div>
   );
 }
+
+    
 
     
