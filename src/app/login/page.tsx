@@ -10,8 +10,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { auth } from '@/lib/firebase/config';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, type User } from 'firebase/auth';
 import { LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
+
+// Hardcoded admin credentials
+const ADMIN_EMAIL = "brandboy553340@gmail.com";
+const ADMIN_PASSWORD = "117691tcs";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -28,12 +32,28 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Determine role after successful login
+      let role = 'buyer'; // Default role
+      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+        role = 'admin';
+      }
+      
+      // Store role in localStorage
+      localStorage.setItem(`userProfile_${userCredential.user.uid}`, JSON.stringify({ role: role }));
+
       toast({
         title: 'Login Successful',
-        description: "Welcome back!",
+        description: `Welcome back, ${role === 'admin' ? 'Admin' : 'User'}!`,
       });
-      router.push('/'); // Redirect to homepage or dashboard
+
+      if (role === 'admin') {
+        router.push('/seller/dashboard'); // Redirect admin to the admin panel
+      } else {
+        router.push('/'); // Redirect regular users to homepage
+      }
+
     } catch (err: any) {
       console.error("Login error:", err);
       let errorMessage = "Failed to login. Please check your credentials.";

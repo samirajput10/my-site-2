@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Heart, ShoppingCart, User, Menu, X, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Sun, Moon, Camera } from 'lucide-react'; // Added icons
 import { Logo } from '@/components/icons/Logo';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import {
   DropdownMenu,
@@ -14,10 +13,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuPortal,
-  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
@@ -46,6 +41,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
@@ -54,6 +50,13 @@ export function Header() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+      if (user) {
+        const userProfileString = localStorage.getItem(`userProfile_${user.uid}`);
+        const userProfile = userProfileString ? JSON.parse(userProfileString) : {};
+        setIsAdmin(userProfile.role === 'admin');
+      } else {
+        setIsAdmin(false);
+      }
       setLoadingAuth(false);
     });
     return () => unsubscribe();
@@ -62,6 +65,10 @@ export function Header() {
   const handleLogout = async () => {
     try {
       await firebaseSignOut(auth);
+      // Clear role from localStorage on logout
+      if (currentUser) {
+        localStorage.removeItem(`userProfile_${currentUser.uid}`);
+      }
       toast({
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
@@ -84,7 +91,7 @@ export function Header() {
         <>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">My Account</p>
+              <p className="text-sm font-medium leading-none">{isAdmin ? "Admin Account" : "My Account"}</p>
               <p className="text-xs leading-none text-muted-foreground">
                 {currentUser.email}
               </p>
@@ -99,10 +106,12 @@ export function Header() {
             <Camera className="mr-2 h-4 w-4" />
             <span>AI Try-On</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
-            <LayoutDashboard className="mr-2 h-4 w-4" />
-            <span>Seller Dashboard</span>
-          </DropdownMenuItem>
+          {isAdmin && (
+            <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              <span>Admin Panel</span>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => {handleLogout(); onItemClick?.();}} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
             <LogOut className="mr-2 h-4 w-4" />
@@ -123,10 +132,6 @@ export function Header() {
            <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
             <Camera className="mr-2 h-4 w-4" />
             <span>AI Try-On</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
-            <LayoutDashboard className="mr-2 h-4 w-4" />
-            <span>Seller Dashboard</span>
           </DropdownMenuItem>
         </>
       )}

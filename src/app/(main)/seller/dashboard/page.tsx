@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
-import { ref as dbRef, set, serverTimestamp, query, orderByChild, equalTo, get, remove, push } from 'firebase/database';
+import { ref as dbRef, set, serverTimestamp, query, orderByChild, get, remove, push } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2 } from 'lucide-react';
 
@@ -30,6 +30,7 @@ import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import Image from 'next/image';
+import { getAllProductsFromDB } from '@/actions/productActions';
 
 interface NewProductForm {
   name: string;
@@ -40,7 +41,7 @@ interface NewProductForm {
   sizes: string;
 }
 
-export default function SellerDashboardPage() {
+export default function AdminPanelPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { formatPrice } = useCurrency();
@@ -53,67 +54,31 @@ export default function SellerDashboardPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isSeller, setIsSeller] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [listingLoading, setListingLoading] = useState(true);
   const [listingError, setListingError] = useState<string | null>(null);
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
 
-  const fetchSellerProducts = useCallback(async (userId: string) => {
+  const fetchAllProducts = useCallback(async () => {
     setListingLoading(true);
     setListingError(null);
     try {
-      const productsRef = dbRef(rtdb, 'products');
-      // NOTE: For this query to be efficient, you must define an index in your Realtime Database rules.
-      // E.g., { "rules": { "products": { ".indexOn": "sellerId" } } }
-      const q = query(productsRef, orderByChild('sellerId'), equalTo(userId));
-      const snapshot = await get(q);
-
-      if (!snapshot.exists()) {
-        setSellerProducts([]);
-        setListingLoading(false);
-        return;
+      const result = await getAllProductsFromDB();
+      if ('error' in result) {
+        setListingError(result.error);
+        setAllProducts([]);
+      } else {
+        setAllProducts(result);
       }
-      
-      const productsData = snapshot.val();
-      const products = Object.keys(productsData).map(key => {
-        const data = productsData[key];
-        
-        let parsedSizes: ProductSize[] = [];
-        if (Array.isArray(data.sizes)) {
-          parsedSizes = data.sizes.map(s => String(s).trim().toUpperCase()).filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
-        } else if (typeof data.sizes === 'string' && data.sizes.length > 0) {
-          parsedSizes = data.sizes.split(',').map(s => s.trim().toUpperCase()).filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
-        }
-        
-        const mappedProduct: Product = {
-          id: key,
-          name: data.name || "Unnamed Product",
-          description: data.description || "",
-          price: typeof data.price === 'number' ? data.price : 0,
-          imageUrl: data.imageUrl || `https://placehold.co/300x400.png`,
-          category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
-          sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
-          sellerId: data.sellerId || userId,
-          createdAt: data.createdAt ? new Date(data.createdAt).toISOString() : undefined,
-        };
-        return mappedProduct;
-      }).filter(product => product.name !== "Unnamed Product" || product.price !== 0)
-      .sort((a, b) => { // Manual sort since we can only order by one key in the query
-        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return dateB - dateA;
-      });
-      
-      setSellerProducts(products);
     } catch (error: any) {
-      console.error("Error fetching seller products:", error);
-      const userMessage = "Failed to load your products. Check Realtime Database security rules & indexes.";
+      console.error("Error fetching all products:", error);
+      const userMessage = "Failed to load products. Check Realtime Database security rules & indexes.";
       setListingError(userMessage);
       toast({ title: "Error", description: userMessage, variant: "destructive" });
     } finally {
@@ -127,21 +92,21 @@ export default function SellerDashboardPage() {
       if (user) {
         const userProfileString = localStorage.getItem(`userProfile_${user.uid}`);
         const userProfile = userProfileString ? JSON.parse(userProfileString) : {};
-        if (userProfile.role === 'seller') {
-          setIsSeller(true);
-          fetchSellerProducts(user.uid);
+        if (userProfile.role === 'admin') {
+          setIsAdmin(true);
+          fetchAllProducts();
         } else {
-          setIsSeller(false);
+          setIsAdmin(false);
           setListingLoading(false);
         }
       } else {
-        setIsSeller(false);
+        setIsAdmin(false);
         setListingLoading(false);
       }
       setLoadingAuth(false);
     });
     return () => unsubscribe();
-  }, [fetchSellerProducts]);
+  }, [fetchAllProducts]);
 
   useEffect(() => {
     if (imageFile) {
@@ -220,7 +185,7 @@ export default function SellerDashboardPage() {
         imageUrl: finalImageUrl || 'https://placehold.co/300x400.png',
         category: formState.category as ProductCategory,
         sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
-        sellerId: currentUser.uid,
+        sellerId: currentUser.uid, // Keep sellerId as admin's UID
         createdAt: serverTimestamp(),
       };
 
@@ -231,7 +196,7 @@ export default function SellerDashboardPage() {
       setImageFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
       
-      fetchSellerProducts(currentUser.uid);
+      fetchAllProducts();
 
     } catch (error: any) {
       console.error("Error adding product:", error);
@@ -264,7 +229,7 @@ export default function SellerDashboardPage() {
     try {
       await remove(dbRef(rtdb, `products/${productId}`));
       toast({ title: "Product Deleted" });
-      setSellerProducts(prev => prev.filter(p => p.id !== productId));
+      setAllProducts(prev => prev.filter(p => p.id !== productId));
     } catch (error) {
       console.error("Error deleting product:", error);
       toast({ title: "Deletion Failed", description: "Could not delete product. Check database rules.", variant: "destructive" });
@@ -298,7 +263,7 @@ export default function SellerDashboardPage() {
     );
   }
   
-  if (isSeller === false) { 
+  if (isAdmin === false) { 
     return (
       <div className="container mx-auto flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center text-center">
         <AlertTriangle className="h-16 w-16 text-destructive mb-4" />
@@ -309,7 +274,7 @@ export default function SellerDashboardPage() {
     );
   }
   
-  if (isSeller === null) {
+  if (isAdmin === null) {
       return null;
   }
 
@@ -317,8 +282,8 @@ export default function SellerDashboardPage() {
     <div className="container mx-auto py-8 md:py-12">
       <div className="text-center mb-10">
         <LayoutDashboard className="mx-auto h-16 w-16 text-primary mb-4" />
-        <h1 className="text-4xl font-headline font-bold mb-3">Seller Dashboard</h1>
-        <p className="text-lg text-muted-foreground">Manage your products and sales.</p>
+        <h1 className="text-4xl font-headline font-bold mb-3">Admin Panel</h1>
+        <p className="text-lg text-muted-foreground">Manage all products on the platform.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
@@ -328,8 +293,8 @@ export default function SellerDashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-md">
-              <span className="font-medium">Active Listings</span>
-              <span className="text-primary font-bold text-lg">{sellerProducts.length}</span>
+              <span className="font-medium">Total Products</span>
+              <span className="text-primary font-bold text-lg">{allProducts.length}</span>
             </div>
              <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-md">
               <span className="font-medium">Total Sales (Mock)</span>
@@ -410,14 +375,14 @@ export default function SellerDashboardPage() {
       
 
       <Card className="mt-8 shadow-lg rounded-xl">
-        <CardHeader><CardTitle className="text-xl flex items-center"><ListChecks className="mr-2 h-5 w-5"/>Your Listed Products</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-xl flex items-center"><ListChecks className="mr-2 h-5 w-5"/>All Listed Products</CardTitle></CardHeader>
         <CardContent>
           {listingLoading && <div className="flex justify-center py-8"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}
           {listingError && <div className="text-destructive text-center py-8">{listingError}</div>}
-          {!listingLoading && !listingError && sellerProducts.length === 0 && <p className="text-center text-muted-foreground py-8">You haven't listed any products yet.</p>}
+          {!listingLoading && !listingError && allProducts.length === 0 && <p className="text-center text-muted-foreground py-8">There are no products listed on the platform yet.</p>}
           {!listingLoading && !listingError && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {sellerProducts.map(product => (
+              {allProducts.map(product => (
                 <Card key={product.id} className="flex flex-col">
                   <Image src={product.imageUrl} alt={product.name} width={300} height={400} className="w-full h-64 object-cover rounded-t-lg" onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/300x400.png`; }} />
                   <CardContent className="p-4 flex-grow">

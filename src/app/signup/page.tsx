@@ -12,7 +12,6 @@ import { useToast } from '@/hooks/use-toast';
 import { auth } from '@/lib/firebase/config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { UserPlus, Loader2, Eye, EyeOff } from 'lucide-react';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -20,9 +19,7 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'buyer' | 'seller' | ''>('');
   const [error, setError] = useState<string | null>(null);
-  const [roleError, setRoleError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -30,7 +27,6 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    setRoleError(null);
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -42,24 +38,18 @@ export default function SignupPage() {
       toast({ title: "Signup Error", description: "Password should be at least 6 characters long.", variant: "destructive" });
       return;
     }
-    if (!selectedRole) {
-      setRoleError("Please select your account type (Buyer or Seller).");
-      toast({ title: "Signup Error", description: "Please select your account type.", variant: "destructive" });
-      return;
-    }
 
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Store role in localStorage - FOR PROTOTYPING ONLY
-      // In a real app, this should be stored securely on the backend (e.g., Firestore user document)
-      localStorage.setItem(`userProfile_${user.uid}`, JSON.stringify({ role: selectedRole }));
+      // By default, new signups are buyers. Admin role is assigned on login.
+      localStorage.setItem(`userProfile_${user.uid}`, JSON.stringify({ role: 'buyer' }));
 
       toast({
         title: 'Signup Successful',
-        description: `Welcome, ${selectedRole}! Please login to continue.`,
+        description: `Welcome! Please login to continue.`,
       });
       router.push('/login'); 
     } catch (err: any) {
@@ -154,25 +144,6 @@ export default function SignupPage() {
                   {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </Button>
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-base">I am a...</Label>
-              <RadioGroup
-                value={selectedRole}
-                onValueChange={(value: 'buyer' | 'seller') => setSelectedRole(value)}
-                className="flex space-x-4 pt-1"
-                disabled={loading}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="buyer" id="role-buyer" aria-label="Sign up as a Buyer" />
-                  <Label htmlFor="role-buyer" className="font-normal cursor-pointer">Buyer</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="seller" id="role-seller" aria-label="Sign up as a Seller"/>
-                  <Label htmlFor="role-seller" className="font-normal cursor-pointer">Seller</Label>
-                </div>
-              </RadioGroup>
-              {roleError && <p className="text-sm text-destructive">{roleError}</p>}
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
           </CardContent>
