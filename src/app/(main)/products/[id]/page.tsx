@@ -144,13 +144,6 @@ export default function ProductDetailPage() {
 
               <div className="flex flex-col gap-3 mt-6">
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href={`/ai-try-on?productId=${product.id}`}
-                    className={cn(buttonVariants({ size: 'lg'}), "flex-grow bg-primary hover:bg-primary/90 text-primary-foreground")}
-                  >
-                    <Camera size={20} className="mr-2" />
-                    Try On Yourself
-                  </Link>
                   <Button 
                     size="lg" 
                     onClick={() => addToCart(product)} 
@@ -160,16 +153,23 @@ export default function ProductDetailPage() {
                     <ShoppingCart size={20} className="mr-2" />
                     Add to Cart
                   </Button>
-                </div>
-                <Button 
+                   <Button 
                     size="lg" 
                     variant="outline" 
                     onClick={handleWishlistToggle} 
-                    className={cn("w-full", isWishlisted(product.id) ? "text-primary border-primary hover:bg-primary/10" : "")}
+                    className={cn("flex-grow", isWishlisted(product.id) ? "text-primary border-primary hover:bg-primary/10" : "")}
                   >
                     <Heart size={20} className="mr-2" fill={isWishlisted(product.id) ? "currentColor" : "none"}/>
                     {isWishlisted(product.id) ? 'Wishlisted' : 'Add to Wishlist'}
-                </Button>
+                  </Button>
+                </div>
+                 <Link
+                    href={`/ai-try-on?productId=${product.id}`}
+                    className={cn(buttonVariants({ size: 'lg'}), "w-full bg-primary hover:bg-primary/90 text-primary-foreground")}
+                  >
+                    <Camera size={20} className="mr-2" />
+                    Try On Yourself
+                  </Link>
               </div>
             </CardContent>
           </div>
