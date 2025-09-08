@@ -366,23 +366,31 @@ export default function AdminPanelPage() {
        <Card className="w-full shadow-xl rounded-xl mb-8">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center"><KeyRound className="mr-2 h-6 w-6 text-primary" />Manage API Key</CardTitle>
-          <CardDescription>Update your AI services API key in your project's environment variables.</CardDescription>
+          <CardDescription>View your current key status and instructions for updating it.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="api-key">Current Gemini API Key</Label>
-            <Input id="api-key" value={currentApiKey ? currentApiKey.substring(0, 4) + '...' : 'Not Set'} readOnly disabled />
+            <Input id="api-key" value={currentApiKey && currentApiKey !== 'YOUR_GEMINI_API_KEY' ? '••••••••' + currentApiKey.slice(-4) : 'Not Set'} readOnly />
             <p className="text-sm text-muted-foreground mt-2">
-              For security, your full API key is not displayed here.
+              For security, your full API key is never shown here.
             </p>
           </div>
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>How to Update Your API Key</AlertTitle>
-            <AlertDescription>
-              To change your API key, you must update the `GEMINI_API_KEY` variable in your project's <strong>.env</strong> file. After updating the file, you need to <strong>restart or redeploy</strong> your application for the change to take effect. This is a security measure to protect your credentials.
-            </AlertDescription>
-          </Alert>
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800">
+            <h4 className="font-semibold flex items-center"><ShieldAlert className="w-4 h-4 mr-2" />How to Update Your API Key</h4>
+            <div className="text-sm mt-2 space-y-1">
+              <p>
+                1. Open the <strong>.env</strong> file in your project's root directory.
+              </p>
+              <p>
+                2. Find the line `GEMINI_API_KEY=...` and replace the value with your new key.
+              </p>
+              <p>
+                3. **Restart your application** for the change to take effect.
+              </p>
+               <p className="mt-2 text-xs">This process is a security measure to protect your credentials.</p>
+            </div>
+          </div>
         </CardContent>
        </Card>
 
@@ -490,7 +498,5 @@ export default function AdminPanelPage() {
     </div>
   );
 }
-
-    
 
     
