@@ -53,7 +53,7 @@ export default function AdminPanelPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | { uid: string } | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   
@@ -87,26 +87,34 @@ export default function AdminPanelPage() {
   }, [toast]);
 
   useEffect(() => {
+    // First, check for the mock admin session from sessionStorage
+    const mockAdminSession = sessionStorage.getItem('loggedInUser');
+    if (mockAdminSession) {
+        const adminUser = JSON.parse(mockAdminSession);
+        setCurrentUser(adminUser);
+        setIsAdmin(true);
+        setLoadingAuth(false);
+        fetchAllProducts();
+        return; // Important: stop further execution
+    }
+
+    // If no mock admin, proceed with Firebase auth state
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (user) {
-        const userProfileString = localStorage.getItem(`userProfile_${user.uid}`);
-        const userProfile = userProfileString ? JSON.parse(userProfileString) : {};
-        if (userProfile.role === 'admin') {
-          setIsAdmin(true);
-          fetchAllProducts();
-        } else {
-          setIsAdmin(false);
-          setListingLoading(false);
-        }
-      } else {
+        // Regular user, not an admin in this setup
         setIsAdmin(false);
-        setListingLoading(false);
+      } else {
+        // No user logged in
+        setIsAdmin(false);
+        router.push('/login'); // Redirect if not logged in
       }
       setLoadingAuth(false);
     });
-    return () => unsubscribe();
-  }, [fetchAllProducts]);
+
+    return () => unsubscribe && unsubscribe();
+  }, [fetchAllProducts, router]);
+
 
   useEffect(() => {
     if (imageFile) {
@@ -239,12 +247,6 @@ export default function AdminPanelPage() {
     }
   };
 
-  useEffect(() => {
-    if (!loadingAuth && !currentUser) {
-      router.push('/login');
-    }
-  }, [loadingAuth, currentUser, router]);
-
   if (loadingAuth) {
     return (
       <div className="container mx-auto flex min-h-[calc(100vh-10rem)] items-center justify-center">
@@ -254,15 +256,6 @@ export default function AdminPanelPage() {
     );
   }
 
-  if (!currentUser) {
-    return (
-      <div className="container mx-auto flex min-h-[calc(100vh-10rem)] items-center justify-center">
-        <ShieldAlert className="h-16 w-16 text-destructive" />
-        <p className="ml-4 text-lg text-muted-foreground">Redirecting to login...</p>
-      </div>
-    );
-  }
-  
   if (isAdmin === false) { 
     return (
       <div className="container mx-auto flex min-h-[calc(100vh-10rem)] flex-col items-center justify-center text-center">
@@ -274,8 +267,13 @@ export default function AdminPanelPage() {
     );
   }
   
-  if (isAdmin === null) {
-      return null;
+  if (isAdmin === null || !currentUser) {
+      return (
+        <div className="container mx-auto flex min-h-[calc(100vh-10rem)] items-center justify-center">
+            <ShieldAlert className="h-16 w-16 text-destructive" />
+            <p className="ml-4 text-lg text-muted-foreground">Redirecting to login...</p>
+        </div>
+      );
   }
 
   return (

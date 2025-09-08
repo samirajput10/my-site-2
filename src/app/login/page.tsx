@@ -31,28 +31,49 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
+    // Step 1: Check for hardcoded admin credentials first
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      // This is the admin. We don't need to call Firebase Auth for this mock admin.
+      // We'll create a mock user object to store in state/local storage.
+      const mockAdminUser = {
+        uid: 'admin_user_mock_uid', // A consistent mock UID
+        email: ADMIN_EMAIL,
+      };
+
+      // Store admin role in localStorage
+      localStorage.setItem(`userProfile_${mockAdminUser.uid}`, JSON.stringify({ role: 'admin' }));
+      
+      // Simulate a session for the admin (since we are not using Firebase session)
+      // This part is tricky without a real session, local storage is the simplest way
+      sessionStorage.setItem('loggedInUser', JSON.stringify(mockAdminUser));
+
+
+      toast({
+        title: 'Login Successful',
+        description: 'Welcome back, Admin!',
+      });
+      router.push('/seller/dashboard');
+      setLoading(false);
+      return; // Stop execution here for admin
+    }
+
+
+    // Step 2: If not admin, proceed with Firebase authentication for regular users
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // Determine role after successful login
-      let role = 'buyer'; // Default role
-      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        role = 'admin';
-      }
+      // All other users are buyers
+      const role = 'buyer';
       
       // Store role in localStorage
       localStorage.setItem(`userProfile_${userCredential.user.uid}`, JSON.stringify({ role: role }));
 
       toast({
         title: 'Login Successful',
-        description: `Welcome back, ${role === 'admin' ? 'Admin' : 'User'}!`,
+        description: `Welcome back!`,
       });
-
-      if (role === 'admin') {
-        router.push('/seller/dashboard'); // Redirect admin to the admin panel
-      } else {
-        router.push('/'); // Redirect regular users to homepage
-      }
+      
+      router.push('/'); // Redirect regular users to homepage
 
     } catch (err: any) {
       console.error("Login error:", err);

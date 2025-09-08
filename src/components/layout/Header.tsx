@@ -40,7 +40,7 @@ export function Header() {
   const { currency, setCurrency } = useCurrency();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | { uid: string, email: string } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const { toast } = useToast();
@@ -48,6 +48,16 @@ export function Header() {
   const { setTheme } = useTheme();
 
   useEffect(() => {
+    // Check for mock admin session first
+    const mockAdminSession = sessionStorage.getItem('loggedInUser');
+    if (mockAdminSession) {
+      const adminUser = JSON.parse(mockAdminSession);
+      setCurrentUser(adminUser);
+      setIsAdmin(true);
+      setLoadingAuth(false);
+      return; // Stop if admin is logged in
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (user) {
@@ -64,15 +74,25 @@ export function Header() {
 
   const handleLogout = async () => {
     try {
-      await firebaseSignOut(auth);
-      // Clear role from localStorage on logout
-      if (currentUser) {
+      // Check if it's the mock admin user
+      if (currentUser?.uid === 'admin_user_mock_uid') {
+        sessionStorage.removeItem('loggedInUser');
         localStorage.removeItem(`userProfile_${currentUser.uid}`);
+      } else {
+        await firebaseSignOut(auth);
+        if (currentUser) {
+           localStorage.removeItem(`userProfile_${currentUser.uid}`);
+        }
       }
+      
+      setCurrentUser(null);
+      setIsAdmin(false);
+
       toast({
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
       });
+
       if (isMobile) setMobileMenuOpen(false);
       router.push('/');
     } catch (error) {
