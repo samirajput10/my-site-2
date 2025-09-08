@@ -1,8 +1,10 @@
+
 "use client";
 
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { PromotionalBanner } from '@/components/layout/PromotionalBanner';
+import { ChatButton } from '@/components/layout/ChatButton';
 
 export function MainLayoutClient({
   children,
@@ -15,6 +17,7 @@ export function MainLayoutClient({
       <Header />
       <main className="flex-grow bg-background">{children}</main>
       <Footer />
+      <ChatButton />
     </div>
   );
 }
