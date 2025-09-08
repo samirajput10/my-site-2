@@ -38,12 +38,6 @@ export type CartItem = Product & {
 
 export type WishlistItem = Product;
 
-export type Filters = {
-  categories: ProductCategory[];
-  sizes: ProductSize[];
-  priceRange: { min: number; max: number };
-};
-
 // Types for Virtual Try-On Flow
 export const VirtualTryOnInputSchema = z.object({
   userImage: z
