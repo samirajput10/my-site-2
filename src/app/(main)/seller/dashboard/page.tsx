@@ -7,7 +7,7 @@ import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2, ServerCrash } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2, ServerCrash, KeyRound } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -83,6 +83,14 @@ export default function AdminPanelPage() {
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
+  
+  const [currentApiKey, setCurrentApiKey] = useState('');
+
+  useEffect(() => {
+    // This is a client component, so we can access process.env here.
+    // This will only show the key that was available at build time, but it's sufficient for display purposes.
+    setCurrentApiKey(process.env.NEXT_PUBLIC_GEMINI_API_KEY || 'Not Set');
+  }, []);
 
   const fetchAllProducts = useCallback(async () => {
     setListingLoading(true);
@@ -355,6 +363,29 @@ export default function AdminPanelPage() {
         </Card>
       </div>
 
+       <Card className="w-full shadow-xl rounded-xl mb-8">
+        <CardHeader>
+          <CardTitle className="text-2xl flex items-center"><KeyRound className="mr-2 h-6 w-6 text-primary" />Manage API Key</CardTitle>
+          <CardDescription>Update your AI services API key in your project's environment variables.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="api-key">Current Gemini API Key</Label>
+            <Input id="api-key" value={currentApiKey.substring(0, 4) + '...'} readOnly disabled />
+            <p className="text-sm text-muted-foreground mt-2">
+              For security, your full API key is not displayed here.
+            </p>
+          </div>
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>How to Update Your API Key</AlertTitle>
+            <AlertDescription>
+              To change your API key, you must update the `GEMINI_API_KEY` variable in your project's <strong>.env</strong> file. After updating the file, you need to <strong>restart or redeploy</strong> your application for the change to take effect. This is a security measure to protect your credentials.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+       </Card>
+
 
       <Card className="w-full shadow-xl rounded-xl">
         <CardHeader>
@@ -459,3 +490,5 @@ export default function AdminPanelPage() {
     </div>
   );
 }
+
+    
