@@ -13,7 +13,7 @@ import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
 import Image from 'next/image';
-import { ref, get, set, onValue } from 'firebase/database';
+import { ref, get, set, onValue, runTransaction } from 'firebase/database';
 import { rtdb, auth } from '@/lib/firebase/config';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { Progress } from '@/components/ui/progress';
@@ -38,7 +38,7 @@ export default function AiTryOnPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
-  const [tryOnCount, setTryOnCount] = useState(0);
+  const [availableCredits, setAvailableCredits] = useState(0);
   
   const productId = searchParams.get('productId');
   
@@ -54,10 +54,17 @@ export default function AiTryOnPage() {
         });
         router.push('/signup');
       } else {
-        // Fetch try-on count for the logged-in user
+        // Fetch try-on credits for the logged-in user
         const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
         const unsubscribeCount = onValue(userTryOnRef, (snapshot) => {
-          setTryOnCount(snapshot.val() || 0);
+          const credits = snapshot.val();
+           // If user has no record, they might be new from an old system. Give them credits.
+           if (credits === null || credits === undefined) {
+             set(userTryOnRef, TRY_ON_LIMIT); // Set initial credits
+             setAvailableCredits(TRY_ON_LIMIT);
+           } else {
+             setAvailableCredits(credits);
+           }
         });
         return () => unsubscribeCount();
       }
@@ -141,9 +148,9 @@ export default function AiTryOnPage() {
         setError("Missing user photo, product image, or user session.");
         return;
     }
-     if (tryOnCount >= TRY_ON_LIMIT) {
-      setError("You have reached your maximum number of virtual try-ons.");
-      toast({ title: "Limit Reached", description: "You cannot generate more try-ons.", variant: 'destructive' });
+     if (availableCredits <= 0) {
+      setError("You have no more virtual try-on credits.");
+      toast({ title: "No Credits Left", description: "You cannot generate more try-ons.", variant: 'destructive' });
       return;
     }
 
@@ -152,6 +159,23 @@ export default function AiTryOnPage() {
     setGeneratedImage(null);
     
     toast({ title: "AI Generation In Progress...", description: "Our AI is creating your virtual try-on. This might take a moment!" });
+
+    // Decrement credits in a transaction for safety
+    const userTryOnRef = ref(rtdb, `userTryOnCounts/${currentUser.uid}`);
+    try {
+        await runTransaction(userTryOnRef, (currentCredits) => {
+            if (currentCredits === null || currentCredits === undefined || currentCredits <= 0) {
+                // Abort transaction if no credits are left
+                return;
+            }
+            return currentCredits - 1;
+        });
+    } catch (e) {
+        setError("Could not update your credits. Please try again.");
+        setIsGenerating(false);
+        return;
+    }
+
 
     const result = await performVirtualTryOn({
       userImage: userImage,
@@ -163,13 +187,10 @@ export default function AiTryOnPage() {
     if ('error' in result) {
       setError(result.error);
       toast({ title: "Generation Failed", description: result.error, variant: 'destructive' });
+       // Re-increment credits if generation fails
+       await runTransaction(userTryOnRef, (currentCredits) => (currentCredits || 0) + 1);
     } else {
       setGeneratedImage(result.generatedImage);
-      // Increment try-on count on success
-      const newCount = tryOnCount + 1;
-      const userTryOnRef = ref(rtdb, `userTryOnCounts/${currentUser.uid}`);
-      await set(userTryOnRef, newCount);
-      setTryOnCount(newCount);
        toast({ title: "Success!", description: "Your virtual try-on is ready." });
     }
     setIsGenerating(false);
@@ -186,8 +207,7 @@ export default function AiTryOnPage() {
     </div>
   );
 
-  const hasReachedLimit = tryOnCount >= TRY_ON_LIMIT;
-  const remainingTries = TRY_ON_LIMIT - tryOnCount;
+  const hasReachedLimit = availableCredits <= 0;
 
   if (loadingAuth) {
     return (
@@ -222,13 +242,13 @@ export default function AiTryOnPage() {
              <Card className="shadow-lg rounded-xl">
               <CardHeader>
                 <CardTitle>Your Try-On Credits</CardTitle>
-                <CardDescription>Each account gets {TRY_ON_LIMIT} free virtual try-ons.</CardDescription>
+                <CardDescription>Each new account starts with {TRY_ON_LIMIT} free virtual try-ons. Place an order to reset them!</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                    <Progress value={(tryOnCount / TRY_ON_LIMIT) * 100} className="w-full" />
+                    <Progress value={(availableCredits / TRY_ON_LIMIT) * 100} className="w-full" />
                     <p className="text-sm text-muted-foreground text-center">
-                        You have used {tryOnCount} of {TRY_ON_LIMIT} try-ons. ({remainingTries > 0 ? `${remainingTries} remaining` : "No tries left"})
+                        You have {availableCredits} of {TRY_ON_LIMIT} try-on credits remaining.
                     </p>
                 </div>
               </CardContent>
@@ -299,10 +319,10 @@ export default function AiTryOnPage() {
                     <CardContent>
                          <Button size="lg" onClick={handleGenerate} disabled={isGenerating || !userImage || hasReachedLimit}>
                             {isGenerating ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                            {isGenerating ? 'Generating...' : hasReachedLimit ? 'Limit Reached' : 'Generate Try-On'}
+                            {isGenerating ? 'Generating...' : hasReachedLimit ? 'No Credits Left' : `Generate Try-On (${availableCredits} left)`}
                         </Button>
                         {!userImage && <p className="text-sm text-muted-foreground mt-2">Please upload your photo to enable generation.</p>}
-                        {hasReachedLimit && <p className="text-sm text-destructive mt-2">You have used all your try-on credits.</p>}
+                        {hasReachedLimit && !isGenerating && <p className="text-sm text-destructive mt-2">You have used all your try-on credits. Place an order to get more!</p>}
                     </CardContent>
                   </Card>
 

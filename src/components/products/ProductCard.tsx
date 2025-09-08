@@ -46,7 +46,7 @@ export function ProductCard({
   const router = useRouter();
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [tryOnCount, setTryOnCount] = useState(0);
+  const [availableCredits, setAvailableCredits] = useState(0);
 
    useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
@@ -54,9 +54,12 @@ export function ProductCard({
       if (user) {
         const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
         const unsubscribeCount = onValue(userTryOnRef, (snapshot) => {
-          setTryOnCount(snapshot.val() || 0);
+          const credits = snapshot.val();
+          setAvailableCredits(credits === null || credits === undefined ? 0 : credits);
         });
         return () => unsubscribeCount();
+      } else {
+        setAvailableCredits(0);
       }
     });
     return () => unsubscribeAuth();
@@ -85,9 +88,9 @@ export function ProductCard({
       router.push('/login');
       return;
     }
-    if (tryOnCount >= TRY_ON_LIMIT) {
+    if (availableCredits <= 0) {
         // Optionally show a toast or alert here
-        alert("You have reached your try-on limit.");
+        alert("You have reached your try-on limit. Place an order to get more!");
         return;
     }
     router.push(`/ai-try-on?productId=${product.id}`);
@@ -104,7 +107,7 @@ export function ProductCard({
     displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1">{status}</Badge>;
   }
 
-  const hasReachedTryOnLimit = !currentUser || tryOnCount >= TRY_ON_LIMIT;
+  const hasReachedTryOnLimit = !currentUser || availableCredits <= 0;
 
   return (
     <Card className="group flex h-full flex-col overflow-hidden rounded-lg bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">

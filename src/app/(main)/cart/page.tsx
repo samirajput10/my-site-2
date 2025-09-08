@@ -50,7 +50,7 @@ export default function CartPage() {
     if (currentUser) {
       try {
         const userTryOnRef = ref(rtdb, `userTryOnCounts/${currentUser.uid}`);
-        await set(userTryOnRef, 0); // Reset used count to 0
+        await set(userTryOnRef, 4); // Reset available credits to 4
         toast({
           title: "AI Credits Reset!",
           description: "Your AI Virtual Try-On credits have been reset to 4 as a thank you for your order!",

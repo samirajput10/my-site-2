@@ -55,7 +55,8 @@ const recommendedDbRules = `{
       "$uid": {
         // Users can only read/write their own try-on count
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 4"
       }
     }
   }
@@ -80,7 +81,7 @@ export default function AdminPanelPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [listingLoading, setListingLoading] = useState(true);
-  const [listingError, setListingError] = useState<string | null>(null);
+  const [listingError, setListingError] = useState<string | React.ReactNode | null>(null);
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
@@ -459,7 +460,3 @@ export default function AdminPanelPage() {
     </div>
   );
 }
-
-    
-
-    

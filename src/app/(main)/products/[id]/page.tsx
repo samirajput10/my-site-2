@@ -37,7 +37,7 @@ export default function ProductDetailPage() {
   const { formatPrice } = useCurrency();
   
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [tryOnCount, setTryOnCount] = useState(0);
+  const [availableCredits, setAvailableCredits] = useState(0);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
@@ -45,7 +45,9 @@ export default function ProductDetailPage() {
       if (user) {
         const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
         const unsubscribeCount = onValue(userTryOnRef, (snapshot) => {
-          setTryOnCount(snapshot.val() || 0);
+          const credits = snapshot.val();
+          // If no record, they have 0 credits until they sign up properly or order
+          setAvailableCredits(credits === null || credits === undefined ? 0 : credits);
         });
         return () => unsubscribeCount();
       }
@@ -113,7 +115,7 @@ export default function ProductDetailPage() {
   };
   
   const aiHintForImage = `${product.category.toLowerCase()} ${product.name.split(' ').slice(0,1).join(' ').toLowerCase()}`;
-  const hasReachedTryOnLimit = !currentUser || tryOnCount >= TRY_ON_LIMIT;
+  const hasReachedTryOnLimit = !currentUser || availableCredits <= 0;
 
   return (
     <div className="container mx-auto py-8 md:py-12">
@@ -196,7 +198,7 @@ export default function ProductDetailPage() {
                     onClick={(e) => hasReachedTryOnLimit && e.preventDefault()}
                   >
                     <Camera size={20} className="mr-2" />
-                     {hasReachedTryOnLimit ? "Try-On Limit Reached" : "Try On Yourself"}
+                     {hasReachedTryOnLimit ? `No Credits Left` : `Try On Yourself (${availableCredits} left)`}
                   </Link>
                    {!currentUser && (
                     <p className="text-xs text-center text-muted-foreground">
