@@ -13,6 +13,10 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge'; // For discount/status badges
 import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import { ref, onValue } from 'firebase/database';
+import { auth, rtdb } from '@/lib/firebase/config';
 
 interface ProductCardProps {
   product: Product;
@@ -24,6 +28,8 @@ interface ProductCardProps {
   secondaryInfo?: string;
   originalPrice?: number;
 }
+
+const TRY_ON_LIMIT = 4;
 
 export function ProductCard({ 
   product, 
@@ -38,6 +44,23 @@ export function ProductCard({
   const { addToWishlist, removeFromWishlist, isWishlisted } = useWishlist();
   const { formatPrice } = useCurrency();
   const router = useRouter();
+
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [tryOnCount, setTryOnCount] = useState(0);
+
+   useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (user) {
+        const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
+        const unsubscribeCount = onValue(userTryOnRef, (snapshot) => {
+          setTryOnCount(snapshot.val() || 0);
+        });
+        return () => unsubscribeCount();
+      }
+    });
+    return () => unsubscribeAuth();
+  }, []);
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault(); 
@@ -58,6 +81,15 @@ export function ProductCard({
   const handleTryOn = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!currentUser) {
+      router.push('/login');
+      return;
+    }
+    if (tryOnCount >= TRY_ON_LIMIT) {
+        // Optionally show a toast or alert here
+        alert("You have reached your try-on limit.");
+        return;
+    }
     router.push(`/ai-try-on?productId=${product.id}`);
   };
 
@@ -72,6 +104,7 @@ export function ProductCard({
     displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1">{status}</Badge>;
   }
 
+  const hasReachedTryOnLimit = !currentUser || tryOnCount >= TRY_ON_LIMIT;
 
   return (
     <Card className="group flex h-full flex-col overflow-hidden rounded-lg bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -143,9 +176,9 @@ export function ProductCard({
               <ShoppingCart size={16} className="mr-2" />
               Add to Cart
             </Button>
-            <Button size="sm" onClick={handleTryOn} className="w-full" variant="outline">
+            <Button size="sm" onClick={handleTryOn} className="w-full" variant="outline" disabled={hasReachedTryOnLimit}>
                 <Camera size={16} className="mr-2" />
-                Try On
+                {hasReachedTryOnLimit ? 'Limit Reached' : 'Try On'}
             </Button>
         </CardFooter>
     </Card>

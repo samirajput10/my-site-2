@@ -13,10 +13,12 @@ import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
 import Image from 'next/image';
-import { ref, get } from 'firebase/database';
+import { ref, get, set, onValue } from 'firebase/database';
 import { rtdb, auth } from '@/lib/firebase/config';
 import { onAuthStateChanged, type User } from 'firebase/auth';
+import { Progress } from '@/components/ui/progress';
 
+const TRY_ON_LIMIT = 4;
 
 export default function AiTryOnPage() {
   const router = useRouter();
@@ -35,6 +37,8 @@ export default function AiTryOnPage() {
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+
+  const [tryOnCount, setTryOnCount] = useState(0);
   
   const productId = searchParams.get('productId');
   
@@ -49,6 +53,13 @@ export default function AiTryOnPage() {
           variant: 'destructive'
         });
         router.push('/signup');
+      } else {
+        // Fetch try-on count for the logged-in user
+        const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
+        const unsubscribeCount = onValue(userTryOnRef, (snapshot) => {
+          setTryOnCount(snapshot.val() || 0);
+        });
+        return () => unsubscribeCount();
       }
     });
     return () => unsubscribe();
@@ -126,10 +137,16 @@ export default function AiTryOnPage() {
   };
 
   const handleGenerate = async () => {
-    if (!userImage || !product?.imageUrl) {
-        setError("Missing user photo or product image.");
+    if (!userImage || !product?.imageUrl || !currentUser) {
+        setError("Missing user photo, product image, or user session.");
         return;
     }
+     if (tryOnCount >= TRY_ON_LIMIT) {
+      setError("You have reached your maximum number of virtual try-ons.");
+      toast({ title: "Limit Reached", description: "You cannot generate more try-ons.", variant: 'destructive' });
+      return;
+    }
+
     setIsGenerating(true);
     setError(null);
     setGeneratedImage(null);
@@ -148,6 +165,11 @@ export default function AiTryOnPage() {
       toast({ title: "Generation Failed", description: result.error, variant: 'destructive' });
     } else {
       setGeneratedImage(result.generatedImage);
+      // Increment try-on count on success
+      const newCount = tryOnCount + 1;
+      const userTryOnRef = ref(rtdb, `userTryOnCounts/${currentUser.uid}`);
+      await set(userTryOnRef, newCount);
+      setTryOnCount(newCount);
        toast({ title: "Success!", description: "Your virtual try-on is ready." });
     }
     setIsGenerating(false);
@@ -163,6 +185,9 @@ export default function AiTryOnPage() {
         <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   );
+
+  const hasReachedLimit = tryOnCount >= TRY_ON_LIMIT;
+  const remainingTries = TRY_ON_LIMIT - tryOnCount;
 
   if (loadingAuth) {
     return (
@@ -194,6 +219,21 @@ export default function AiTryOnPage() {
         </div>
 
         <div className="max-w-5xl mx-auto space-y-8">
+             <Card className="shadow-lg rounded-xl">
+              <CardHeader>
+                <CardTitle>Your Try-On Credits</CardTitle>
+                <CardDescription>Each account gets {TRY_ON_LIMIT} free virtual try-ons.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                    <Progress value={(tryOnCount / TRY_ON_LIMIT) * 100} className="w-full" />
+                    <p className="text-sm text-muted-foreground text-center">
+                        You have used {tryOnCount} of {TRY_ON_LIMIT} try-ons. ({remainingTries > 0 ? `${remainingTries} remaining` : "No tries left"})
+                    </p>
+                </div>
+              </CardContent>
+            </Card>
+
             {productError ? (
                 <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
@@ -257,11 +297,12 @@ export default function AiTryOnPage() {
                         <CardDescription>You're all set! Click generate to see the magic happen.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                         <Button size="lg" onClick={handleGenerate} disabled={isGenerating || !userImage}>
+                         <Button size="lg" onClick={handleGenerate} disabled={isGenerating || !userImage || hasReachedLimit}>
                             {isGenerating ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                            {isGenerating ? 'Generating...' : 'Generate Try-On'}
+                            {isGenerating ? 'Generating...' : hasReachedLimit ? 'Limit Reached' : 'Generate Try-On'}
                         </Button>
                         {!userImage && <p className="text-sm text-muted-foreground mt-2">Please upload your photo to enable generation.</p>}
+                        {hasReachedLimit && <p className="text-sm text-destructive mt-2">You have used all your try-on credits.</p>}
                     </CardContent>
                   </Card>
 

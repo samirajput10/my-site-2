@@ -3,7 +3,6 @@
 
 import { useEffect, useState }from 'react';
 import { useParams } from 'next/navigation';
-import { mockProducts } from '@/data/products';
 import type { Product } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
 import { Button } from '@/components/ui/button';
@@ -19,6 +18,11 @@ import { ProductCard } from '@/components/products/ProductCard'; // For related 
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { getAllProductsFromDB } from '@/actions/productActions';
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import { ref, onValue } from 'firebase/database';
+import { auth, rtdb } from '@/lib/firebase/config';
+
+const TRY_ON_LIMIT = 4;
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -31,6 +35,23 @@ export default function ProductDetailPage() {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isWishlisted } = useWishlist();
   const { formatPrice } = useCurrency();
+  
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [tryOnCount, setTryOnCount] = useState(0);
+
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (user) {
+        const userTryOnRef = ref(rtdb, `userTryOnCounts/${user.uid}`);
+        const unsubscribeCount = onValue(userTryOnRef, (snapshot) => {
+          setTryOnCount(snapshot.val() || 0);
+        });
+        return () => unsubscribeCount();
+      }
+    });
+    return () => unsubscribeAuth();
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -92,6 +113,7 @@ export default function ProductDetailPage() {
   };
   
   const aiHintForImage = `${product.category.toLowerCase()} ${product.name.split(' ').slice(0,1).join(' ').toLowerCase()}`;
+  const hasReachedTryOnLimit = !currentUser || tryOnCount >= TRY_ON_LIMIT;
 
   return (
     <div className="container mx-auto py-8 md:py-12">
@@ -165,11 +187,22 @@ export default function ProductDetailPage() {
                 </div>
                  <Link
                     href={`/ai-try-on?productId=${product.id}`}
-                    className={cn(buttonVariants({ size: 'lg'}), "w-full bg-primary hover:bg-primary/90 text-primary-foreground")}
+                    className={cn(
+                        buttonVariants({ size: 'lg'}), 
+                        "w-full bg-primary hover:bg-primary/90 text-primary-foreground",
+                        hasReachedTryOnLimit && "bg-muted hover:bg-muted text-muted-foreground cursor-not-allowed"
+                    )}
+                    aria-disabled={hasReachedTryOnLimit}
+                    onClick={(e) => hasReachedTryOnLimit && e.preventDefault()}
                   >
                     <Camera size={20} className="mr-2" />
-                    Try On Yourself
+                     {hasReachedTryOnLimit ? "Try-On Limit Reached" : "Try On Yourself"}
                   </Link>
+                   {!currentUser && (
+                    <p className="text-xs text-center text-muted-foreground">
+                      <Link href="/login" className="underline">Log in</Link> to use the AI Try-On feature.
+                    </p>
+                  )}
               </div>
             </CardContent>
           </div>
