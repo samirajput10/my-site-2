@@ -31,33 +31,14 @@ export default function AboutUsPage() {
                     {/* Founder 1 */}
                     <div className="flex flex-col items-center space-y-2">
                         <Avatar className="w-32 h-32 mb-2 border-4 border-primary/20 shadow-lg">
-                            <AvatarImage src="https://placehold.co/200x200.png" alt="Aqib Karamat" data-ai-hint="man portrait"/>
+                            <AvatarImage src="https://i.postimg.cc/MZ3V2hfX/stylefusion-ai-result-3.png" alt="Sami" data-ai-hint="man portrait"/>
                             <AvatarFallback>AK</AvatarFallback>
                         </Avatar>
-                        <h3 className="text-xl font-semibold font-headline text-foreground">samiullah</h3>
+                        <h3 className="text-xl font-semibold font-headline text-foreground">Samiullah</h3>
                         <p className="text-primary font-medium"> AI Developer </p>
                         <p className="mt-2 text-muted-foreground text-center max-w-xs">samiullah is the technical architect behind Lustra, blending his love for code with a keen eye for user experience to build a seamless platform.</p>
                     </div>
-                    {/* Founder 2 */}
-                    <div className="flex flex-col items-center space-y-2">
-                        <Avatar className="w-32 h-32 mb-2 border-4 border-primary/20 shadow-lg">
-                            <AvatarImage src="https://placehold.co/200x200.png" alt="Adnan" data-ai-hint="man portrait"/>
-                            <AvatarFallback>A</AvatarFallback>
-                        </Avatar>
-                        <h3 className="text-xl font-semibold font-headline text-foreground">araiz</h3>
-                        <p className="text-primary font-medium">backend developer</p>
-                         <p className="mt-2 text-muted-foreground text-center max-w-xs">araiz is the creative visionary, curating our collection and ensuring every piece reflects our commitment to style, quality, and originality.</p>
-                    </div>
-                        {/* Founder 3 */}
-                          <div className="flex flex-col items-center space-y-2">
-                        <Avatar className="w-32 h-32 mb-2 border-4 border-primary/20 shadow-lg">
-                            <AvatarImage src="https://placehold.co/200x200.png" alt="Aqib Karamat" data-ai-hint="man portrait"/>
-                            <AvatarFallback>AK</AvatarFallback>
-                        </Avatar>
-                        <h3 className="text-xl font-semibold font-headline text-foreground">sufyan </h3>
-                        <p className="text-primary font-medium">ui designer </p>
-                        <p className="mt-2 text-muted-foreground text-center max-w-xs">samiullah is the technical architect behind Lustra, blending his love for code with a keen eye for user experience to build a seamless platform.</p>
-                    </div>
+                  
                 </div>
             </div>
           </CardContent>
