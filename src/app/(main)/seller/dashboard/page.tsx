@@ -7,13 +7,22 @@ import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2, ServerCrash, KeyRound, Sparkles, Wand2, Image as ImageIcon } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2, ServerCrash, KeyRound, Sparkles, Wand2, Image as ImageIcon, Edit } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,10 +40,10 @@ import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import Image from 'next/image';
-import { getAllProductsFromDB } from '@/actions/productActions';
+import { getAllProductsFromDB, updateProductInDB } from '@/actions/productActions';
 import { getProductDetailsFromImage } from '@/actions/adminActions';
 
-interface NewProductForm {
+interface ProductFormState {
   name: string;
   description: string;
   price: string;
@@ -67,7 +76,7 @@ export default function AdminPanelPage() {
   const router = useRouter();
   const { formatPrice } = useCurrency();
   
-  const [formState, setFormState] = useState<NewProductForm>({
+  const [formState, setFormState] = useState<ProductFormState>({
     name: '', description: '', price: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10',
   });
   const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
@@ -90,6 +99,10 @@ export default function AdminPanelPage() {
   const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
   
   const [currentApiKey, setCurrentApiKey] = useState('');
+
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  const [editFormState, setEditFormState] = useState<Partial<ProductFormState>>({});
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     setCurrentApiKey(process.env.GEMINI_API_KEY || 'Not Set');
@@ -181,6 +194,24 @@ export default function AdminPanelPage() {
     };
   }, [imageFiles]);
 
+  // When a product is selected for editing, populate the edit form state
+  useEffect(() => {
+    if (productToEdit) {
+      setEditFormState({
+        name: productToEdit.name,
+        description: productToEdit.description,
+        price: String(productToEdit.price),
+        imageUrls: [...productToEdit.imageUrls, ...Array(3 - productToEdit.imageUrls.length).fill('')],
+        category: productToEdit.category,
+        sizes: productToEdit.sizes.join(', '),
+        stock: String(productToEdit.stock),
+      });
+    } else {
+      setEditFormState({});
+    }
+  }, [productToEdit]);
+
+
   const handleGenerateDetails = async () => {
     if (!aiImageUrl) {
         toast({ title: 'Image URL Missing', description: 'Please paste an image URL to generate details.', variant: 'destructive'});
@@ -217,6 +248,17 @@ export default function AdminPanelPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormState(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setEditFormState(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditUrlChange = (index: number, value: string) => {
+    const newUrls = [...(editFormState.imageUrls || ['', '', ''])];
+    newUrls[index] = value;
+    setEditFormState(prev => ({ ...prev, imageUrls: newUrls }));
   };
 
   const handleUrlChange = (index: number, value: string) => {
@@ -333,6 +375,24 @@ export default function AdminPanelPage() {
     }
   };
 
+  const handleUpdateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!productToEdit) return;
+
+    setIsUpdating(true);
+    const result = await updateProductInDB(productToEdit.id, editFormState as Partial<Product>);
+    
+    if (result.success) {
+      toast({ title: "Product Updated", description: "The product details have been saved." });
+      setProductToEdit(null); // Close the dialog
+      fetchAllProducts(); // Refresh the list
+    } else {
+      toast({ title: "Update Failed", description: result.error, variant: "destructive" });
+    }
+    setIsUpdating(false);
+  };
+
+
   const handleDeleteProduct = async (productId: string) => {
     if (!currentUser) return;
     setIsDeleting(true);
@@ -429,27 +489,19 @@ export default function AdminPanelPage() {
         </Card>
       </div>
 
-      <Card className="w-full shadow-xl rounded-xl mb-8">
+       <Card className="w-full shadow-xl rounded-xl mb-8">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center"><KeyRound className="mr-2 h-6 w-6 text-primary" />Manage API Key</CardTitle>
-          <CardDescription>View your current key status and instructions for updating it.</CardDescription>
+          <CardDescription>Your Gemini API key is required for AI features to work.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="api-key">Current Gemini API Key</Label>
-            <Input id="api-key" value={currentApiKey && currentApiKey.startsWith('AIza') ? '••••••••' + currentApiKey.slice(-4) : 'Not Set or Invalid'} readOnly />
-            <p className="text-sm text-muted-foreground mt-2">
-              For security, your full API key is never shown here.
-            </p>
-          </div>
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 dark:bg-blue-900/20 dark:border-blue-500/30 dark:text-blue-200">
-            <h4 className="font-semibold flex items-center"><ShieldAlert className="w-4 h-4 mr-2" />How to Update Your API Key</h4>
-            <div className="text-sm mt-2 space-y-1">
-              <p>To change your API key, you must update the `GEMINI_API_KEY` variable in your project's <strong>.env</strong> file.</p>
-              <p>After updating the file, you need to <strong>restart or redeploy</strong> your application for the change to take effect.</p>
-               <p className="mt-2 text-xs">This process is a security measure to protect your credentials.</p>
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 dark:bg-blue-900/20 dark:border-blue-500/30 dark:text-blue-200">
+                <h4 className="font-semibold flex items-center"><ShieldAlert className="w-4 h-4 mr-2" />How to Set Your API Key</h4>
+                <div className="text-sm mt-2 space-y-1">
+                <p>To enable AI features like product detail generation, you must set the `GEMINI_API_KEY` variable in your project's <strong>.env</strong> file.</p>
+                <p>After updating the file, you must <strong>restart or redeploy</strong> your application for the change to take effect.</p>
+                </div>
             </div>
-          </div>
         </CardContent>
        </Card>
 
@@ -582,7 +634,10 @@ export default function AdminPanelPage() {
                     <p className="text-sm text-muted-foreground">Stock: {product.stock}</p>
                     <p className="text-xl font-bold text-primary mt-1">{formatPrice(product.price)}</p>
                   </CardContent>
-                  <CardFooter className="p-4 pt-0">
+                   <CardFooter className="p-4 pt-0 grid grid-cols-2 gap-2">
+                    <Button variant="outline" size="sm" className="w-full" onClick={() => setProductToEdit(product)}>
+                      <Edit className="mr-2 h-4 w-4" /> Update
+                    </Button>
                     <Button variant="destructive" size="sm" className="w-full" onClick={() => setProductToDeleteId(product.id)} disabled={isDeleting && productToDeleteId === product.id}>
                       <Trash2 className="mr-2 h-4 w-4" /> Delete
                     </Button>
@@ -594,6 +649,7 @@ export default function AdminPanelPage() {
         </CardContent>
       </Card>
 
+      {/* Delete Confirmation Dialog */}
       {productToDeleteId && (
         <AlertDialog open={!!productToDeleteId} onOpenChange={(isOpen) => !isOpen && setProductToDeleteId(null)}>
           <AlertDialogContent>
@@ -610,6 +666,77 @@ export default function AdminPanelPage() {
           </AlertDialogContent>
         </AlertDialog>
       )}
+
+      {/* Update Product Dialog */}
+      <Dialog open={!!productToEdit} onOpenChange={(isOpen) => !isOpen && setProductToEdit(null)}>
+        <DialogContent className="sm:max-w-2xl">
+          {productToEdit && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Update {productToEdit.name}</DialogTitle>
+                <DialogDescription>
+                  Make changes to the product details below. Click save when you're done.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleUpdateSubmit} className="max-h-[70vh] overflow-y-auto pr-6 space-y-4">
+                  <div>
+                    <Label htmlFor="edit-name">Product Name *</Label>
+                    <Input id="edit-name" name="name" value={editFormState.name || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-price">Price (PKR) *</Label>
+                    <Input id="edit-price" name="price" type="number" value={editFormState.price || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-description">Description</Label>
+                    <Textarea id="edit-description" name="description" value={editFormState.description || ''} onChange={handleEditFormChange} disabled={isUpdating} />
+                  </div>
+                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="edit-category">Category *</Label>
+                        <Input id="edit-category" name="category" value={editFormState.category || ''} onChange={handleEditFormChange} list="category-options" required disabled={isUpdating} />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-sizes">Sizes *</Label>
+                        <Input id="edit-sizes" name="sizes" value={editFormState.sizes || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-stock">Stock *</Label>
+                        <Input id="edit-stock" name="stock" type="number" value={editFormState.stock || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
+                      </div>
+                    </div>
+                     <div>
+                        <Label>Product Image URLs</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {[0, 1, 2].map(index => (
+                            <Input
+                            key={index}
+                            id={`edit-image-url-${index}`}
+                            name={`imageUrl-${index}`}
+                            value={editFormState.imageUrls?.[index] || ''}
+                            onChange={(e) => handleEditUrlChange(index, e.target.value)}
+                            disabled={isUpdating}
+                            placeholder={`Image URL ${index + 1}`}
+                            />
+                        ))}
+                        </div>
+                    </div>
+              
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline" disabled={isUpdating}>
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button type="submit" disabled={isUpdating}>
+                   {isUpdating ? <Loader2 className="mr-2 animate-spin" /> : 'Save Changes'}
+                </Button>
+              </DialogFooter>
+              </form>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

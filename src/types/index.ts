@@ -18,6 +18,7 @@ export type Product = {
   stock: number; // Added stock quantity
   sellerId: string; 
   createdAt?: string; // Serialized Firestore Timestamp (ISO string)
+  updatedAt?: string; // Serialized Firestore Timestamp (ISO string)
 };
 
 // Zod schema for validating Product data, can be used in Genkit flows.
@@ -32,6 +33,7 @@ export const ProductSchema = z.object({
   stock: z.number().int().min(0), // Added stock validation
   sellerId: z.string(),
   createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
 });
 
 export type CartItem = Product & {

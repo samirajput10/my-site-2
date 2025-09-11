@@ -4,7 +4,7 @@
 import { db } from '@/lib/firebase/config';
 import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
-import { collection, getDocs, doc, getDoc, query, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, query, orderBy, limit, updateDoc, serverTimestamp } from "firebase/firestore";
 
 // Helper to ensure imageUrls is always a non-empty array
 const ensureImageUrls = (data: any): string[] => {
@@ -52,6 +52,7 @@ export async function getAllProductsFromDB(): Promise<Product[] | { error: strin
         stock: typeof data.stock === 'number' ? data.stock : 0,
         sellerId: data.sellerId || "unknown_seller",
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
+        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : undefined,
       };
       return mappedProduct;
     }).filter(product => product.name !== "Unnamed Product" || product.price !== 0);
@@ -96,6 +97,7 @@ export async function getProductFromDB(productId: string): Promise<Product | nul
       stock: typeof data.stock === 'number' ? data.stock : 10, // Default to 10 if not set
       sellerId: data.sellerId || "unknown_seller",
       createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
+      updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : undefined,
     };
 
     return mappedProduct;
@@ -104,4 +106,42 @@ export async function getProductFromDB(productId: string): Promise<Product | nul
      console.error("Error fetching product from Firestore:", error);
     return { error: `Failed to fetch product details. ${error.message}` };
   }
+}
+
+export async function updateProductInDB(productId: string, updatedData: Partial<Product>): Promise<{ success: boolean; error?: string }> {
+    try {
+        const productRef = doc(db, "products", productId);
+        
+        // Construct the data object for Firestore, ensuring correct types
+        const dataToUpdate: any = { ...updatedData };
+        
+        // Convert price and stock back to numbers if they are strings
+        if (typeof dataToUpdate.price === 'string') {
+            dataToUpdate.price = parseFloat(dataToUpdate.price);
+        }
+        if (typeof dataToUpdate.stock === 'string') {
+            dataToUpdate.stock = parseInt(dataToUpdate.stock, 10);
+        }
+
+        // Handle sizes array
+        if (typeof dataToUpdate.sizes === 'string') {
+             const parsedSizes = dataToUpdate.sizes.split(',')
+                .map((s: string) => s.trim())
+                .filter((s: string) => ALL_SIZES.includes(s as ProductSize));
+            dataToUpdate.sizes = parsedSizes.length > 0 ? parsedSizes : ['One Size'];
+        }
+
+        // Remove id from the data object as it shouldn't be updated
+        delete dataToUpdate.id;
+        
+        // Add a server timestamp for the update
+        dataToUpdate.updatedAt = serverTimestamp();
+
+        await updateDoc(productRef, dataToUpdate);
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error updating product in Firestore:", error);
+        return { success: false, error: `Failed to update product. ${error.message}` };
+    }
 }
