@@ -12,7 +12,7 @@ export type Product = {
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
+  imageUrls: string[]; // Changed from imageUrl to imageUrls
   category: ProductCategory;
   sizes: ProductSize[];
   sellerId: string; 
@@ -25,7 +25,7 @@ export const ProductSchema = z.object({
   name: z.string(),
   description: z.string(),
   price: z.number(),
-  imageUrl: z.string(),
+  imageUrls: z.array(z.string()), // Changed from imageUrl to imageUrls
   category: z.enum(ALL_CATEGORIES),
   sizes: z.array(z.enum(ALL_SIZES)),
   sellerId: z.string(),

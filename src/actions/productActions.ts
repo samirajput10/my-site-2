@@ -6,6 +6,17 @@ import type { Product, ProductCategory, ProductSize } from '@/types';
 import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
 import { collection, getDocs, doc, getDoc, query, orderBy, limit } from "firebase/firestore";
 
+// Helper to ensure imageUrls is always a non-empty array
+const ensureImageUrls = (data: any): string[] => {
+    if (Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
+        return data.imageUrls.filter(Boolean); // Filter out any empty strings
+    }
+    if (typeof data.imageUrl === 'string' && data.imageUrl) {
+        return [data.imageUrl]; // Legacy support
+    }
+    return [`https://placehold.co/300x450.png`]; // Fallback
+};
+
 export async function getAllProductsFromDB(): Promise<Product[] | { error: string }> {
   try {
     const productsRef = collection(db, "products");
@@ -35,7 +46,7 @@ export async function getAllProductsFromDB(): Promise<Product[] | { error: strin
         name: data.name || "Unnamed Product",
         description: data.description || "",
         price: typeof data.price === 'number' ? data.price : 0,
-        imageUrl: data.imageUrl || `https://placehold.co/300x450.png`,
+        imageUrls: ensureImageUrls(data),
         category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
         sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
         sellerId: data.sellerId || "unknown_seller",
@@ -78,7 +89,7 @@ export async function getProductFromDB(productId: string): Promise<Product | nul
       name: data.name || "Unnamed Product",
       description: data.description || "",
       price: typeof data.price === 'number' ? data.price : 0,
-      imageUrl: data.imageUrl || `https://placehold.co/600x800.png`,
+      imageUrls: ensureImageUrls(data),
       category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
       sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
       sellerId: data.sellerId || "unknown_seller",

@@ -182,7 +182,7 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2">
           <div className="p-4 md:p-6">
              <ProductImage
-              src={product.imageUrl.replace('300x450', '600x800')} // Request larger image
+              src={product.imageUrls[0].replace('300x450', '600x800')} // Request larger image
               alt={product.name}
               width={600}
               height={800}

@@ -7,7 +7,7 @@ import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2, ServerCrash, KeyRound, Sparkles, Wand2 } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2, ServerCrash, KeyRound, Sparkles, Wand2, Image as ImageIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,7 @@ interface NewProductForm {
   name: string;
   description: string;
   price: string;
-  imageUrl: string;
+  imageUrls: string[];
   category: string;
   sizes: string;
 }
@@ -67,11 +67,11 @@ export default function AdminPanelPage() {
   const { formatPrice } = useCurrency();
   
   const [formState, setFormState] = useState<NewProductForm>({
-    name: '', description: '', price: '', imageUrl: '', category: '', sizes: '',
+    name: '', description: '', price: '', imageUrls: ['', '', ''], category: '', sizes: '',
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
+  const [previewUrls, setPreviewUrls] = useState<(string | null)[]>([null, null, null]);
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const [aiImageUrl, setAiImageUrl] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -91,9 +91,7 @@ export default function AdminPanelPage() {
   const [currentApiKey, setCurrentApiKey] = useState('');
 
   useEffect(() => {
-    // This will only show the key that was available at build time on the client.
-    // The actual key is used server-side and is not exposed to the browser.
-    setCurrentApiKey(process.env.NEXT_PUBLIC_GEMINI_API_KEY || 'Not Set');
+    setCurrentApiKey(process.env.GEMINI_API_KEY || 'Not Set');
   }, []);
 
   const fetchAllProducts = useCallback(async () => {
@@ -158,16 +156,29 @@ export default function AdminPanelPage() {
 
 
   useEffect(() => {
-    if (imageFile) {
-      const objectUrl = URL.createObjectURL(imageFile);
-      setPreviewUrl(objectUrl);
-      return () => URL.revokeObjectURL(objectUrl);
-    } else if (formState.imageUrl) {
-        setPreviewUrl(formState.imageUrl);
-    } else {
-        setPreviewUrl(null);
+    const newPreviewUrls = [...previewUrls];
+    let changed = false;
+
+    imageFiles.forEach((file, index) => {
+        if (file) {
+            const objectUrl = URL.createObjectURL(file);
+            newPreviewUrls[index] = objectUrl;
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        setPreviewUrls(newPreviewUrls);
     }
-  }, [imageFile, formState.imageUrl]);
+
+    return () => {
+        newPreviewUrls.forEach(url => {
+            if (url && url.startsWith('blob:')) {
+                URL.revokeObjectURL(url);
+            }
+        });
+    };
+  }, [imageFiles]);
 
   const handleGenerateDetails = async () => {
     if (!aiImageUrl) {
@@ -185,11 +196,12 @@ export default function AdminPanelPage() {
                 name: result.name,
                 description: result.description,
                 category: result.category,
-                imageUrl: aiImageUrl,
-                price: '', // Let user set price
-                sizes: '', // Let user set sizes
+                imageUrls: [aiImageUrl, '', ''],
+                price: '', 
+                sizes: '', 
             });
-            setImageFile(null);
+            setImageFiles([null, null, null]);
+            setPreviewUrls([aiImageUrl, null, null]);
             toast({ title: 'AI Generation Complete!', description: 'Product details have been filled in the form below.' });
         }
     } catch (error) {
@@ -203,18 +215,32 @@ export default function AdminPanelPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormState(prev => ({ ...prev, [name]: value }));
-    if (name === 'imageUrl' && value) {
-      setImageFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUrlChange = (index: number, value: string) => {
+      const newUrls = [...formState.imageUrls];
+      newUrls[index] = value;
+      setFormState(prev => ({...prev, imageUrls: newUrls}));
+      if (value) {
+          const newImageFiles = [...imageFiles];
+          newImageFiles[index] = null;
+          setImageFiles(newImageFiles);
+
+          const newPreviewUrls = [...previewUrls];
+          newPreviewUrls[index] = value;
+          setPreviewUrls(newPreviewUrls);
+      }
+  };
+
+  const handleFileChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-      setFormState(prev => ({ ...prev, imageUrl: '' }));
+      const newFiles = [...imageFiles];
+      newFiles[index] = e.target.files[0];
+      setImageFiles(newFiles);
+
+      const newUrls = [...formState.imageUrls];
+      newUrls[index] = '';
+      setFormState(prev => ({...prev, imageUrls: newUrls}));
     }
   };
 
@@ -229,18 +255,23 @@ export default function AdminPanelPage() {
     
     setIsSubmitting(true);
     try {
-      let finalImageUrl = formState.imageUrl;
+      let finalImageUrls = [...formState.imageUrls];
 
-      if (imageFile) {
-        toast({ title: "Uploading Image...", description: "Your image is being uploaded to secure storage." });
-        const sRef = storageRef(storage, `products/${currentUser.uid}/${Date.now()}_${imageFile.name}`);
-        const uploadTask = await uploadBytes(sRef, imageFile);
-        finalImageUrl = await getDownloadURL(uploadTask.ref);
-        toast({ title: "Image Upload Complete!", description: "A link to your image has been generated." });
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i];
+        if(file){
+           toast({ title: `Uploading Image ${i+1}...`, description: "Your image is being uploaded to secure storage." });
+           const sRef = storageRef(storage, `products/${currentUser.uid}/${Date.now()}_${file.name}`);
+           const uploadTask = await uploadBytes(sRef, file);
+           finalImageUrls[i] = await getDownloadURL(uploadTask.ref);
+           toast({ title: `Image ${i+1} Upload Complete!`, description: "A link to your image has been generated." });
+        }
       }
       
-      if (!finalImageUrl) {
-        toast({ title: "Image Error", description: "Please provide an image by uploading or entering a URL.", variant: "destructive" });
+      const filteredImageUrls = finalImageUrls.filter(url => url && url.trim() !== '');
+
+      if (filteredImageUrls.length === 0) {
+        toast({ title: "Image Error", description: "Please provide at least one image by uploading or entering a URL.", variant: "destructive" });
         setIsSubmitting(false);
         return;
       }
@@ -261,7 +292,7 @@ export default function AdminPanelPage() {
         name: formState.name,
         description: formState.description,
         price: parseFloat(formState.price),
-        imageUrl: finalImageUrl,
+        imageUrls: filteredImageUrls,
         category: formState.category as ProductCategory,
         sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
         sellerId: currentUser.uid,
@@ -271,9 +302,12 @@ export default function AdminPanelPage() {
       await addDoc(productsCollectionRef, newProductData);
       
       toast({ title: "Product Added", description: `Your product has been successfully listed.` });
-      setFormState({ name: '', description: '', price: '', imageUrl: '', category: '', sizes: '' });
-      setImageFile(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      setFormState({ name: '', description: '', price: '', imageUrls: ['', '', ''], category: '', sizes: '' });
+      setImageFiles([null, null, null]);
+      setPreviewUrls([null, null, null]);
+      fileInputRefs.current.forEach(input => {
+        if(input) input.value = '';
+      });
       
       fetchAllProducts();
 
@@ -284,12 +318,6 @@ export default function AdminPanelPage() {
         switch (error.code) {
           case 'storage/unauthorized':
             errorMessage = "Image upload failed. You don't have permission. Please check your Firebase Storage security rules.";
-            break;
-          case 'storage/canceled':
-            errorMessage = "Image upload was canceled.";
-            break;
-          case 'storage/unknown':
-            errorMessage = "An unknown error occurred during image upload. Please check your network and Firebase configuration.";
             break;
           case 'permission-denied':
              errorMessage = "Permission denied. Check your Firestore security rules to ensure you have write access.";
@@ -398,7 +426,7 @@ export default function AdminPanelPage() {
         </Card>
       </div>
 
-       <Card className="w-full shadow-xl rounded-xl mb-8">
+      <Card className="w-full shadow-xl rounded-xl mb-8">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center"><KeyRound className="mr-2 h-6 w-6 text-primary" />Manage API Key</CardTitle>
           <CardDescription>View your current key status and instructions for updating it.</CardDescription>
@@ -406,7 +434,7 @@ export default function AdminPanelPage() {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="api-key">Current Gemini API Key</Label>
-            <Input id="api-key" value={currentApiKey && currentApiKey !== 'YOUR_GEMINI_API_KEY' ? '••••••••' + currentApiKey.slice(-4) : 'Not Set'} readOnly />
+            <Input id="api-key" value={currentApiKey && currentApiKey.startsWith('AIza') ? '••••••••' + currentApiKey.slice(-4) : 'Not Set or Invalid'} readOnly />
             <p className="text-sm text-muted-foreground mt-2">
               For security, your full API key is never shown here.
             </p>
@@ -479,11 +507,39 @@ export default function AdminPanelPage() {
               </div>
             </div>
             <div>
-              <Label htmlFor="image-upload">Product Image</Label>
-              <Input id="image-upload" type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" disabled={isSubmitting} />
-              <p className="text-sm text-muted-foreground mt-2">Or enter image URL:</p>
-              <Input id="imageUrl" name="imageUrl" value={formState.imageUrl} onChange={handleChange} disabled={isSubmitting || !!imageFile} />
-              {previewUrl && <img src={previewUrl} alt="Preview" width={100} height={133} className="rounded-md border object-cover mt-2 w-[100px] h-[133px]" />}
+              <Label>Product Images (up to 3)</Label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                {[0, 1, 2].map(index => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                        <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                        <Label htmlFor={`image-url-${index}`} className="text-sm">Image {index + 1}</Label>
+                    </div>
+                    <Input
+                      id={`image-upload-${index}`}
+                      type="file"
+                      ref={(el) => (fileInputRefs.current[index] = el)}
+                      onChange={(e) => handleFileChange(index, e)}
+                      accept="image/*"
+                      disabled={isSubmitting}
+                    />
+                    <p className="text-xs text-muted-foreground text-center">Or enter URL:</p>
+                    <Input
+                      id={`image-url-${index}`}
+                      name={`imageUrl-${index}`}
+                      value={formState.imageUrls[index]}
+                      onChange={(e) => handleUrlChange(index, e.target.value)}
+                      disabled={isSubmitting || !!imageFiles[index]}
+                      placeholder={`Image URL ${index + 1}`}
+                    />
+                    {previewUrls[index] && (
+                        <div className="relative w-[100px] h-[133px]">
+                            <Image src={previewUrls[index] as string} alt={`Preview ${index+1}`} layout="fill" className="rounded-md border object-cover mt-2" />
+                        </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
             <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="mr-2 animate-spin" /> : <PlusCircle className="mr-2" />}
@@ -513,7 +569,7 @@ export default function AdminPanelPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {allProducts.map(product => (
                 <Card key={product.id} className="flex flex-col">
-                  <Image src={product.imageUrl} alt={product.name} width={300} height={400} className="w-full h-64 object-cover rounded-t-lg" onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/300x400.png`; }} />
+                  <Image src={product.imageUrls[0]} alt={product.name} width={300} height={400} className="w-full h-64 object-cover rounded-t-lg" onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/300x400.png`; }} />
                   <CardContent className="p-4 flex-grow">
                     <h3 className="font-semibold truncate">{product.name}</h3>
                     <p className="text-xl font-bold text-primary mt-1">{formatPrice(product.price)}</p>

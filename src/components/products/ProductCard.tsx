@@ -11,12 +11,19 @@ import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge'; // For discount/status badges
+import { Badge } from '@/components/ui/badge'; 
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/config';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
+
 
 interface ProductCardProps {
   product: Product;
@@ -44,6 +51,9 @@ export function ProductCard({
   const { addToWishlist, removeFromWishlist, isWishlisted } = useWishlist();
   const { formatPrice } = useCurrency();
   const router = useRouter();
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 2000, stopOnInteraction: true, stopOnMouseEnter: true })
+  );
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [availableCredits, setAvailableCredits] = useState(0);
@@ -104,11 +114,11 @@ export function ProductCard({
 
   let displayBadge: React.ReactNode = null;
   if (discount) {
-    displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1">{discount}</Badge>;
+    displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1 z-10">{discount}</Badge>;
   } else if (status === "New") {
-    displayBadge = <Badge variant="secondary" className="absolute bottom-2 left-2 text-xs px-2 py-1 bg-green-600 text-white">{status}</Badge>;
+    displayBadge = <Badge variant="secondary" className="absolute bottom-2 left-2 text-xs px-2 py-1 bg-green-600 text-white z-10">{status}</Badge>;
   } else if (status) {
-    displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1">{status}</Badge>;
+    displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1 z-10">{status}</Badge>;
   }
 
   const hasReachedTryOnLimit = !currentUser || availableCredits <= 0;
@@ -117,18 +127,43 @@ export function ProductCard({
     <Card className="group flex h-full flex-col overflow-hidden rounded-lg bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
         <CardHeader className="p-0 relative">
           <Link href={`/products/${product.id}`} aria-label={product.name}>
-            <ProductImage
-              src={product.imageUrl}
-              alt={product.name}
-              width={300}
-              height={400} 
-              className="w-full h-auto aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
-              aiHint={aiHintForImage}
-            />
+             <Carousel 
+                plugins={[autoplayPlugin.current]}
+                className="w-full"
+                opts={{ align: "start", loop: true, }}
+              >
+              <CarouselContent>
+                {product.imageUrls && product.imageUrls.length > 0 ? (
+                  product.imageUrls.map((url, index) => (
+                    <CarouselItem key={index}>
+                      <ProductImage
+                        src={url}
+                        alt={`${product.name} image ${index + 1}`}
+                        width={300}
+                        height={400} 
+                        className="w-full h-auto aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
+                        aiHint={aiHintForImage}
+                      />
+                    </CarouselItem>
+                  ))
+                ) : (
+                   <CarouselItem>
+                      <ProductImage
+                        src={`https://placehold.co/300x400.png`}
+                        alt={product.name}
+                        width={300}
+                        height={400} 
+                        className="w-full h-auto aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
+                        aiHint={aiHintForImage}
+                      />
+                    </CarouselItem>
+                )}
+              </CarouselContent>
+            </Carousel>
           </Link>
           {displayBadge}
           
-          <div className="absolute top-2 right-2 flex flex-col gap-2">
+          <div className="absolute top-2 right-2 flex flex-col gap-2 z-10">
             <Button 
                 variant="ghost" 
                 size="icon" 

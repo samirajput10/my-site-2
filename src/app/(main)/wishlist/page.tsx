@@ -44,7 +44,7 @@ export default function WishlistPage() {
           <Card key={item.id} className="overflow-hidden shadow-lg rounded-xl flex flex-col">
             <Link href={`/products/${item.id}`}>
               <CardHeader className="p-0">
-                <ProductImage src={item.imageUrl} alt={item.name} width={300} height={400} className="w-full h-auto aspect-[3/4]" aiHint={aiHintForImage}/>
+                <ProductImage src={item.imageUrls[0]} alt={item.name} width={300} height={400} className="w-full h-auto aspect-[3/4]" aiHint={aiHintForImage}/>
               </CardHeader>
             </Link>
             <CardContent className="p-4 flex-grow">

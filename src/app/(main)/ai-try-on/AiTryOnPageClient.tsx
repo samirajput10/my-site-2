@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Upload, Sparkles, ArrowLeft, AlertTriangle, User as UserIcon, ShieldAlert, ServerCrash, Gem } from 'lucide-react';
+import { Loader2, Sparkles, ArrowLeft, AlertTriangle, User as UserIcon, ShieldAlert, ServerCrash, Gem } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { performVirtualTryOn } from '@/actions/tryOnActions';
 import type { Product } from '@/types';
@@ -141,7 +141,7 @@ export default function AiTryOnPageClient() {
   };
 
   const handleGenerate = async () => {
-    if (!userImage || !product?.imageUrl || !currentUser) {
+    if (!userImage || !product?.imageUrls[0] || !currentUser) {
         setError("Missing user photo, product image, or user session.");
         return;
     }
@@ -160,7 +160,7 @@ export default function AiTryOnPageClient() {
     try {
         const result = await performVirtualTryOn({
             userImage: userImage,
-            productImage: product.imageUrl,
+            productImageUrl: product.imageUrls[0],
             productName: product.name,
             productCategory: product.category,
         });
@@ -297,7 +297,7 @@ export default function AiTryOnPageClient() {
                           {/* Product Image Display */}
                           <div className="flex flex-col items-center gap-2">
                             <div className="relative w-full aspect-[3/4] max-w-sm mx-auto rounded-lg border-2 border-muted-foreground/30 bg-muted/50 flex flex-col items-center justify-center text-center p-4">
-                                <ProductImage src={product.imageUrl} alt={product.name} width={400} height={533} className="rounded-lg object-cover" />
+                                <ProductImage src={product.imageUrls[0]} alt={product.name} width={400} height={533} className="rounded-lg object-cover" />
                             </div>
                              <h3 className="font-semibold text-lg mt-2">{product.name}</h3>
                           </div>
@@ -360,5 +360,3 @@ export default function AiTryOnPageClient() {
     </div>
   );
 }
-
-    

@@ -104,7 +104,7 @@ export default function CartPage() {
             return (
             <Card key={item.id} className="flex flex-col sm:flex-row items-center p-4 shadow-md rounded-xl">
               <Link href={`/products/${item.id}`} className="shrink-0 mb-4 sm:mb-0 sm:mr-4">
-                 <ProductImage src={item.imageUrl} alt={item.name} width={100} height={120} className="rounded-md" aiHint={aiHintForImage}/>
+                 <ProductImage src={item.imageUrls[0]} alt={item.name} width={100} height={120} className="rounded-md" aiHint={aiHintForImage}/>
               </Link>
               <div className="flex-grow text-center sm:text-left">
                 <Link href={`/products/${item.id}`}>
@@ -167,5 +167,3 @@ export default function CartPage() {
     </div>
   );
 }
-
-    
