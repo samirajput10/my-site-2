@@ -487,8 +487,8 @@ export default function AdminPanelPage() {
                 <Input id="name" name="name" value={formState.name} onChange={handleChange} required disabled={isSubmitting} />
               </div>
               <div>
-                <Label htmlFor="price">Price (USD) *</Label>
-                <Input id="price" name="price" type="number" value={formState.price} onChange={handleChange} required step="0.01" min="0.01" disabled={isSubmitting}/>
+                <Label htmlFor="price">Price (PKR) *</Label>
+                <Input id="price" name="price" type="number" value={formState.price} onChange={handleChange} required step="1" min="1" disabled={isSubmitting}/>
               </div>
             </div>
             <div>

@@ -1,43 +1,28 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo } from 'react';
 
-type Currency = 'USD' | 'PKR';
-
-const EXCHANGE_RATE_USD_TO_PKR = 278; // Example fixed rate
+type Currency = 'PKR';
 
 interface CurrencyContextType {
   currency: Currency;
-  setCurrency: (currency: Currency) => void;
-  formatPrice: (priceInUsd: number) => string;
+  formatPrice: (priceInPkr: number) => string;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
-  const [currency, setCurrencyState] = useState<Currency>('USD');
+  const currency: Currency = 'PKR';
 
-  useEffect(() => {
-    const storedCurrency = localStorage.getItem('dazelleCurrency') as Currency;
-    if (storedCurrency && ['USD', 'PKR'].includes(storedCurrency)) {
-      setCurrencyState(storedCurrency);
-    }
+  const formatPrice = useMemo(() => (priceInPkr: number) => {
+    // Assuming prices are now stored directly in PKR
+    return `PKR ${priceInPkr.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
   }, []);
-
+  
   const setCurrency = (newCurrency: Currency) => {
-    setCurrencyState(newCurrency);
-    localStorage.setItem('dazelleCurrency', newCurrency);
+    // No-op, currency is fixed to PKR
   };
-
-  const formatPrice = useMemo(() => (priceInUsd: number) => {
-    if (currency === 'PKR') {
-      const priceInPkr = priceInUsd * EXCHANGE_RATE_USD_TO_PKR;
-      return `PKR ${priceInPkr.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
-    }
-    // Default to USD
-    return `$${priceInUsd.toFixed(2)}`;
-  }, [currency]);
 
   const value = {
     currency,

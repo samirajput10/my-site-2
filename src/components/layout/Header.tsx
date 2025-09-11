@@ -37,7 +37,7 @@ const mainNavLinks = [
 export function Header() {
   const { totalItems: cartTotalItems } = useCart();
   const { wishlistItems } = useWishlist();
-  const { currency, setCurrency } = useCurrency();
+  const { currency } = useCurrency();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const [currentUser, setCurrentUser] = useState<FirebaseUser | { uid: string, email: string } | null>(null);
@@ -176,23 +176,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="hidden md:flex text-muted-foreground hover:text-primary">
-                  {currency}
-                  <ChevronDown className="ml-1 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Select Currency</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuRadioGroup value={currency} onValueChange={(value) => setCurrency(value as 'USD' | 'PKR')}>
-                  <DropdownMenuRadioItem value="USD">USD ($)</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="PKR">PKR (Rs)</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
+            
             <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary relative">
               <Link href="/wishlist">
                 <Heart className="h-5 w-5" />

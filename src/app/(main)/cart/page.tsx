@@ -153,7 +153,7 @@ export default function CartPage() {
               </div>
               <Separator />
               <div className="flex justify-between font-bold text-xl">
-                <p>Total</p>
+                <p>Total (in PKR)</p>
                 <p>{formatPrice(totalPrice)}</p>
               </div>
                <Button onClick={handleOrderOnWhatsApp} size="lg" className="w-full mt-6 bg-green-500 hover:bg-green-600 text-white">
