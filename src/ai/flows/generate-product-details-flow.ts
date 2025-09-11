@@ -13,7 +13,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { ALL_CATEGORIES } from '@/types';
 
-export const GenerateProductDetailsFromImageInputSchema = z.object({
+const GenerateProductDetailsFromImageInputSchema = z.object({
   imageUrl: z
     .string()
     .url()
@@ -25,7 +25,7 @@ export type GenerateProductDetailsFromImageInput = z.infer<
   typeof GenerateProductDetailsFromImageInputSchema
 >;
 
-export const GenerateProductDetailsFromImageOutputSchema = z.object({
+const GenerateProductDetailsFromImageOutputSchema = z.object({
   name: z.string().describe('A creative and descriptive name for the product.'),
   description: z.string().describe('A compelling and detailed description for the product.'),
   category: z.enum(ALL_CATEGORIES).describe('The most fitting category for the product.'),
