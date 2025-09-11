@@ -12,9 +12,10 @@ export type Product = {
   name: string;
   description: string;
   price: number;
-  imageUrls: string[]; // Changed from imageUrl to imageUrls
+  imageUrls: string[];
   category: ProductCategory;
   sizes: ProductSize[];
+  stock: number; // Added stock quantity
   sellerId: string; 
   createdAt?: string; // Serialized Firestore Timestamp (ISO string)
 };
@@ -25,9 +26,10 @@ export const ProductSchema = z.object({
   name: z.string(),
   description: z.string(),
   price: z.number(),
-  imageUrls: z.array(z.string()), // Changed from imageUrl to imageUrls
+  imageUrls: z.array(z.string()),
   category: z.enum(ALL_CATEGORIES),
   sizes: z.array(z.enum(ALL_SIZES)),
+  stock: z.number().int().min(0), // Added stock validation
   sellerId: z.string(),
   createdAt: z.string().optional(),
 });

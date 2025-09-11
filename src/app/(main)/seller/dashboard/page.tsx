@@ -41,6 +41,7 @@ interface NewProductForm {
   imageUrls: string[];
   category: string;
   sizes: string;
+  stock: string;
 }
 
 const recommendedDbRules = `{
@@ -67,7 +68,7 @@ export default function AdminPanelPage() {
   const { formatPrice } = useCurrency();
   
   const [formState, setFormState] = useState<NewProductForm>({
-    name: '', description: '', price: '', imageUrls: ['', '', ''], category: '', sizes: '',
+    name: '', description: '', price: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10',
   });
   const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
   const [previewUrls, setPreviewUrls] = useState<(string | null)[]>([null, null, null]);
@@ -199,6 +200,7 @@ export default function AdminPanelPage() {
                 imageUrls: [aiImageUrl, '', ''],
                 price: '', 
                 sizes: '', 
+                stock: '10',
             });
             setImageFiles([null, null, null]);
             setPreviewUrls([aiImageUrl, null, null]);
@@ -248,7 +250,7 @@ export default function AdminPanelPage() {
     e.preventDefault();
     if (!currentUser) return;
 
-    if (!formState.name || !formState.price || !formState.category || !formState.sizes) {
+    if (!formState.name || !formState.price || !formState.category || !formState.sizes || !formState.stock) {
       toast({ title: "Missing Fields", description: "Please fill all required fields.", variant: "destructive" });
       return;
     }
@@ -295,6 +297,7 @@ export default function AdminPanelPage() {
         imageUrls: filteredImageUrls,
         category: formState.category as ProductCategory,
         sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
+        stock: parseInt(formState.stock, 10),
         sellerId: currentUser.uid,
         createdAt: serverTimestamp(),
       };
@@ -302,7 +305,7 @@ export default function AdminPanelPage() {
       await addDoc(productsCollectionRef, newProductData);
       
       toast({ title: "Product Added", description: `Your product has been successfully listed.` });
-      setFormState({ name: '', description: '', price: '', imageUrls: ['', '', ''], category: '', sizes: '' });
+      setFormState({ name: '', description: '', price: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10' });
       setImageFiles([null, null, null]);
       setPreviewUrls([null, null, null]);
       fileInputRefs.current.forEach(input => {
@@ -495,7 +498,7 @@ export default function AdminPanelPage() {
               <Label htmlFor="description">Description</Label>
               <Textarea id="description" name="description" value={formState.description} onChange={handleChange} disabled={isSubmitting}/>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div>
                 <Label htmlFor="category">Category *</Label>
                 <Input id="category" name="category" value={formState.category} onChange={handleChange} list="category-options" required disabled={isSubmitting}/>
@@ -504,6 +507,10 @@ export default function AdminPanelPage() {
               <div>
                 <Label htmlFor="sizes">Sizes (comma-separated, or "One Size") *</Label>
                 <Input id="sizes" name="sizes" value={formState.sizes} onChange={handleChange} required disabled={isSubmitting}/>
+              </div>
+               <div>
+                <Label htmlFor="stock">Stock Quantity *</Label>
+                <Input id="stock" name="stock" type="number" value={formState.stock} onChange={handleChange} required min="0" disabled={isSubmitting}/>
               </div>
             </div>
             <div>
@@ -572,6 +579,7 @@ export default function AdminPanelPage() {
                   <Image src={product.imageUrls[0]} alt={product.name} width={300} height={400} className="w-full h-64 object-cover rounded-t-lg" onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/300x400.png`; }} />
                   <CardContent className="p-4 flex-grow">
                     <h3 className="font-semibold truncate">{product.name}</h3>
+                    <p className="text-sm text-muted-foreground">Stock: {product.stock}</p>
                     <p className="text-xl font-bold text-primary mt-1">{formatPrice(product.price)}</p>
                   </CardContent>
                   <CardFooter className="p-4 pt-0">

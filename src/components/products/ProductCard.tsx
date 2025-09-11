@@ -111,9 +111,12 @@ export function ProductCard({
   };
 
   const aiHintForImage = `${product.category.toLowerCase()} ${product.name.split(' ').slice(0,1).join(' ').toLowerCase()}`;
+  const isOutOfStock = product.stock <= 0;
 
   let displayBadge: React.ReactNode = null;
-  if (discount) {
+  if (isOutOfStock) {
+    displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1 z-10">Out of Stock</Badge>;
+  } else if (discount) {
     displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1 z-10">{discount}</Badge>;
   } else if (status === "New") {
     displayBadge = <Badge variant="secondary" className="absolute bottom-2 left-2 text-xs px-2 py-1 bg-green-600 text-white z-10">{status}</Badge>;
@@ -214,13 +217,13 @@ export function ProductCard({
           )}
         </CardContent>
         <CardFooter className="mt-auto p-4 pt-0 grid grid-cols-2 gap-2">
-           <Button size="sm" onClick={handleAddToCart} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+           <Button size="sm" onClick={handleAddToCart} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isOutOfStock}>
               <ShoppingCart size={16} className="mr-2" />
-              Add to Cart
+              {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
             </Button>
-            <Button size="sm" onClick={handleTryOn} className="w-full" variant="outline" disabled={hasReachedTryOnLimit}>
+            <Button size="sm" onClick={handleTryOn} className="w-full" variant="outline" disabled={hasReachedTryOnLimit || isOutOfStock}>
                 <Camera size={16} className="mr-2" />
-                {hasReachedTryOnLimit ? 'Limit Reached' : 'Try On'}
+                {isOutOfStock ? 'Unavailable' : hasReachedTryOnLimit ? 'Limit Reached' : 'Try On'}
             </Button>
         </CardFooter>
     </Card>

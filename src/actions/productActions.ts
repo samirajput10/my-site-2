@@ -49,6 +49,7 @@ export async function getAllProductsFromDB(): Promise<Product[] | { error: strin
         imageUrls: ensureImageUrls(data),
         category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
         sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
+        stock: typeof data.stock === 'number' ? data.stock : 0,
         sellerId: data.sellerId || "unknown_seller",
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
       };
@@ -92,6 +93,7 @@ export async function getProductFromDB(productId: string): Promise<Product | nul
       imageUrls: ensureImageUrls(data),
       category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
       sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
+      stock: typeof data.stock === 'number' ? data.stock : 10, // Default to 10 if not set
       sellerId: data.sellerId || "unknown_seller",
       createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
     };

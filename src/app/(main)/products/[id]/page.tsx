@@ -175,6 +175,7 @@ export default function ProductDetailPage() {
   
   const aiHintForImage = `${product.category.toLowerCase()} ${product.name.split(' ').slice(0,1).join(' ').toLowerCase()}`;
   const hasReachedTryOnLimit = !currentUser || availableCredits <= 0;
+  const isOutOfStock = product.stock <= 0;
 
   return (
     <div className="container mx-auto py-8 md:py-12">
@@ -200,7 +201,14 @@ export default function ProductDetailPage() {
               <CardDescription className="text-base text-muted-foreground leading-relaxed">
                 {product.description}
               </CardDescription>
-              <p className="text-4xl font-bold text-primary">{formatPrice(product.price)}</p>
+              <div className="flex items-center gap-4">
+                <p className="text-4xl font-bold text-primary">{formatPrice(product.price)}</p>
+                {isOutOfStock ? (
+                  <Badge variant="destructive" className="text-base">Out of Stock</Badge>
+                ) : (
+                  <Badge variant="default" className="text-base bg-green-600 hover:bg-green-700">In Stock</Badge>
+                )}
+              </div>
               
               <Separator />
 
@@ -231,10 +239,10 @@ export default function ProductDetailPage() {
                     size="lg" 
                     onClick={() => addToCart(product)} 
                     className="flex-grow bg-primary hover:bg-primary/90 text-primary-foreground"
-                    disabled={!selectedSize && product.sizes.length > 0 && product.sizes[0] !== 'One Size'}
+                    disabled={isOutOfStock || (!selectedSize && product.sizes.length > 0 && product.sizes[0] !== 'One Size')}
                   >
                     <ShoppingCart size={20} className="mr-2" />
-                    Add to Cart
+                    {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                   </Button>
                    <Button 
                     size="lg" 
@@ -251,13 +259,13 @@ export default function ProductDetailPage() {
                     className={cn(
                         buttonVariants({ size: 'lg'}), 
                         "w-full bg-primary hover:bg-primary/90 text-primary-foreground",
-                        hasReachedTryOnLimit && "bg-muted hover:bg-muted text-muted-foreground cursor-not-allowed"
+                        (hasReachedTryOnLimit || isOutOfStock) && "bg-muted hover:bg-muted text-muted-foreground cursor-not-allowed"
                     )}
-                    aria-disabled={hasReachedTryOnLimit}
-                    onClick={(e) => hasReachedTryOnLimit && e.preventDefault()}
+                    aria-disabled={hasReachedTryOnLimit || isOutOfStock}
+                    onClick={(e) => (hasReachedTryOnLimit || isOutOfStock) && e.preventDefault()}
                   >
                     <Camera size={20} className="mr-2" />
-                     {hasReachedTryOnLimit ? `No Credits Left` : `Try On Yourself (${availableCredits} left)`}
+                     {isOutOfStock ? 'Unavailable for Try-On' : hasReachedTryOnLimit ? `No Credits Left` : `Try On Yourself (${availableCredits} left)`}
                   </Link>
                    {!currentUser && (
                     <p className="text-xs text-center text-muted-foreground">
