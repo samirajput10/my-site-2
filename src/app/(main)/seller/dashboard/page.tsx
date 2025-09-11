@@ -7,7 +7,7 @@ import type { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2, ServerCrash, KeyRound } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Package, Loader2, AlertTriangle, ShieldAlert, ListChecks, Trash2, DollarSign, BarChart2, ServerCrash, KeyRound, Sparkles, Wand2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,7 @@ import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import Image from 'next/image';
 import { getAllProductsFromDB } from '@/actions/productActions';
+import { getProductDetailsFromImage } from '@/actions/adminActions';
 
 interface NewProductForm {
   name: string;
@@ -72,6 +73,9 @@ export default function AdminPanelPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [aiImageUrl, setAiImageUrl] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const [currentUser, setCurrentUser] = useState<User | { uid: string } | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
@@ -89,7 +93,7 @@ export default function AdminPanelPage() {
   useEffect(() => {
     // This will only show the key that was available at build time on the client.
     // The actual key is used server-side and is not exposed to the browser.
-    setCurrentApiKey(process.env.GEMINI_API_KEY || 'Not Set');
+    setCurrentApiKey(process.env.NEXT_PUBLIC_GEMINI_API_KEY || 'Not Set');
   }, []);
 
   const fetchAllProducts = useCallback(async () => {
@@ -164,6 +168,37 @@ export default function AdminPanelPage() {
         setPreviewUrl(null);
     }
   }, [imageFile, formState.imageUrl]);
+
+  const handleGenerateDetails = async () => {
+    if (!aiImageUrl) {
+        toast({ title: 'Image URL Missing', description: 'Please paste an image URL to generate details.', variant: 'destructive'});
+        return;
+    }
+    setIsGenerating(true);
+    toast({ title: 'AI Generation Started', description: 'The AI is creating product details...'});
+    try {
+        const result = await getProductDetailsFromImage({ imageUrl: aiImageUrl });
+        if ('error' in result) {
+            toast({ title: 'AI Generation Failed', description: result.error, variant: 'destructive' });
+        } else {
+            setFormState({
+                name: result.name,
+                description: result.description,
+                category: result.category,
+                imageUrl: aiImageUrl,
+                price: '', // Let user set price
+                sizes: '', // Let user set sizes
+            });
+            setImageFile(null);
+            toast({ title: 'AI Generation Complete!', description: 'Product details have been filled in the form below.' });
+        }
+    } catch (error) {
+        console.error('Error generating details', error);
+        toast({ title: 'An Unexpected Error Occurred', description: 'Please check the console for details.', variant: 'destructive'});
+    } finally {
+        setIsGenerating(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -376,23 +411,39 @@ export default function AdminPanelPage() {
               For security, your full API key is never shown here.
             </p>
           </div>
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800">
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 dark:bg-blue-900/20 dark:border-blue-500/30 dark:text-blue-200">
             <h4 className="font-semibold flex items-center"><ShieldAlert className="w-4 h-4 mr-2" />How to Update Your API Key</h4>
             <div className="text-sm mt-2 space-y-1">
-              <p>
-                1. Open the <strong>.env</strong> file in your project's root directory.
-              </p>
-              <p>
-                2. Find the line `GEMINI_API_KEY=...` and replace the value with your new key.
-              </p>
-              <p>
-                3. **Restart your application** for the change to take effect.
-              </p>
+              <p>To change your API key, you must update the `GEMINI_API_KEY` variable in your project's <strong>.env</strong> file.</p>
+              <p>After updating the file, you need to <strong>restart or redeploy</strong> your application for the change to take effect.</p>
                <p className="mt-2 text-xs">This process is a security measure to protect your credentials.</p>
             </div>
           </div>
         </CardContent>
        </Card>
+
+      <Card className="w-full shadow-xl rounded-xl mb-8">
+        <CardHeader>
+          <CardTitle className="text-2xl flex items-center"><Wand2 className="mr-2 h-6 w-6 text-primary"/>Generate with AI</CardTitle>
+          <CardDescription>Paste an image URL to have AI generate the product name, description, and category for you.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Input
+                id="ai-image-url"
+                placeholder="https://example.com/image.jpg"
+                value={aiImageUrl}
+                onChange={(e) => setAiImageUrl(e.target.value)}
+                disabled={isGenerating}
+                className="flex-grow"
+              />
+              <Button onClick={handleGenerateDetails} disabled={isGenerating} className="sm:w-auto">
+                {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                {isGenerating ? 'Generating...' : 'Generate Details'}
+              </Button>
+            </div>
+        </CardContent>
+      </Card>
 
 
       <Card className="w-full shadow-xl rounded-xl">
@@ -498,5 +549,3 @@ export default function AdminPanelPage() {
     </div>
   );
 }
-
-    

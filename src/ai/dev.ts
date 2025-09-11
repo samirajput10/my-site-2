@@ -4,3 +4,4 @@ config();
 
 import '@/ai/flows/summarize-product-reviews.ts';
 import '@/ai/flows/virtual-try-on-flow.ts';
+import '@/ai/flows/generate-product-details-flow.ts';
