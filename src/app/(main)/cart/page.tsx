@@ -108,14 +108,14 @@ export default function CartPage() {
               <Link href={`/products/${item.id}`} className="shrink-0 mb-4 sm:mb-0 sm:mr-4">
                  <ProductImage src={item.imageUrls[0]} alt={item.name} width={100} height={120} className="rounded-md" aiHint={aiHintForImage}/>
               </Link>
-              <div className="flex-grow text-center sm:text-left">
+              <div className="flex-grow w-full text-center sm:text-left">
                 <Link href={`/products/${item.id}`}>
                     <h2 className="text-lg font-semibold hover:text-primary transition-colors">{item.name}</h2>
                 </Link>
                 <p className="text-sm text-muted-foreground">{item.category} - {item.sizes.join(', ')}</p>
                 <p className="text-lg font-semibold text-primary mt-1">{formatPrice(item.price)}</p>
               </div>
-              <div className="flex items-center space-x-2 mt-4 sm:mt-0 sm:ml-auto">
+              <div className="flex items-center space-x-2 mt-4 sm:mt-0 sm:ml-auto w-full sm:w-auto justify-center">
                 <Input
                   type="number"
                   min="1"

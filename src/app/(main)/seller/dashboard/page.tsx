@@ -628,7 +628,9 @@ export default function AdminPanelPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {allProducts.map(product => (
                 <Card key={product.id} className="flex flex-col">
-                  <Image src={product.imageUrls[0]} alt={product.name} width={300} height={400} className="w-full h-64 object-cover rounded-t-lg" onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/300x400.png`; }} />
+                  <div className="relative w-full aspect-[3/4] rounded-t-lg overflow-hidden">
+                    <Image src={product.imageUrls[0]} alt={product.name} layout="fill" className="object-cover" onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/300x400.png`; }} />
+                  </div>
                   <CardContent className="p-4 flex-grow">
                     <h3 className="font-semibold truncate">{product.name}</h3>
                     <p className="text-sm text-muted-foreground">Stock: {product.stock}</p>

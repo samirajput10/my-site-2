@@ -37,7 +37,7 @@ export default function WishlistPage() {
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-headline font-bold mb-8 text-center">My Wishlist</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         {wishlistItems.map(item => {
           const aiHintForImage = `${item.category.toLowerCase()} ${item.name.split(' ').slice(0,1).join(' ').toLowerCase()}`;
           return (
@@ -53,10 +53,11 @@ export default function WishlistPage() {
               </Link>
               <p className="text-primary font-semibold text-lg">{formatPrice(item.price)}</p>
             </CardContent>
-            <CardFooter className="p-4 pt-0 grid grid-cols-2 gap-2">
+            <CardFooter className="p-2 pt-0 grid grid-cols-1 gap-2 sm:p-4 sm:grid-cols-2">
               <Button size="sm" variant="outline" onClick={() => handleMoveToCart(item)} className="w-full">
                 <ShoppingCart size={16} className="mr-2" />
-                Move to Cart
+                <span className="hidden sm:inline">Move to Cart</span>
+                <span className="sm:hidden">Cart</span>
               </Button>
               <Button size="sm" variant="destructive" onClick={() => removeFromWishlist(item.id)} className="w-full">
                 <Trash2 size={16} className="mr-2" />

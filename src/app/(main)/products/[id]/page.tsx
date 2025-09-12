@@ -200,16 +200,16 @@ export default function ProductDetailPage() {
                 align: "start",
                 loop: true,
               }}
-              className="w-full max-w-sm md:max-w-full">
+              className="w-full max-w-md">
               <CarouselContent>
                 {product.imageUrls.map((url, index) => (
                   <CarouselItem key={index}>
                       <ProductImage
-                        src={url.replace('300x450', '600x800')}
+                        src={url}
                         alt={`${product.name} image ${index + 1}`}
                         width={600}
                         height={800}
-                        className="w-full h-auto aspect-[3/4] rounded-lg shadow-md"
+                        className="w-full h-auto aspect-[3/4] rounded-lg shadow-md object-cover"
                         priority={index === 0}
                         aiHint={aiHintForImage}
                       />
