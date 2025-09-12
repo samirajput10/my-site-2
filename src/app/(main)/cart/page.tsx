@@ -24,6 +24,8 @@ export default function CartPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const WHATSAPP_NUMBER = "923174919129"; // Should match the number in ChatButton.tsx
+  const SHIPPING_COST = 250;
+  const finalTotal = totalPrice + SHIPPING_COST;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -45,7 +47,7 @@ export default function CartPage() {
       `- ${item.name} (x${item.quantity})`
     ).join('\n');
 
-    const message = `Hello Lustra! I'd like to place an order for the following items:\n\n${orderDetails}\n\n*Total: ${formatPrice(totalPrice)}*\n\nThank you!`;
+    const message = `Hello Lustra! I'd like to place an order for the following items:\n\n${orderDetails}\n\n*Shipping: ${formatPrice(SHIPPING_COST)}*\n*Total: ${formatPrice(finalTotal)}*\n\nThank you!`;
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     
     // Reset try-on credits if user is logged in
@@ -149,12 +151,12 @@ export default function CartPage() {
               </div>
               <div className="flex justify-between">
                 <p>Shipping</p>
-                <p>To be discussed</p> 
+                <p>{formatPrice(SHIPPING_COST)}</p> 
               </div>
               <Separator />
               <div className="flex justify-between font-bold text-xl">
                 <p>Total (in PKR)</p>
-                <p>{formatPrice(totalPrice)}</p>
+                <p>{formatPrice(finalTotal)}</p>
               </div>
                <Button onClick={handleOrderOnWhatsApp} size="lg" className="w-full mt-6 bg-green-500 hover:bg-green-600 text-white">
                  <WhatsAppIcon className="mr-2 h-5 w-5" />
