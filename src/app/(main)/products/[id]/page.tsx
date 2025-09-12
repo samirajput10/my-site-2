@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState }from 'react';
+import { useEffect, useState, useRef }from 'react';
 import { useParams } from 'next/navigation';
 import type { Product } from '@/types';
 import { ProductImage } from '@/components/products/ProductImage';
@@ -29,6 +29,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay";
 
 
 const recommendedDbRules = `{
@@ -65,6 +66,10 @@ export default function ProductDetailPage() {
   
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [availableCredits, setAvailableCredits] = useState(0);
+
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: true, stopOnMouseEnter: true })
+  );
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
@@ -189,7 +194,13 @@ export default function ProductDetailPage() {
       <Card className="overflow-hidden shadow-xl rounded-xl">
         <div className="grid grid-cols-1 md:grid-cols-2">
           <div className="p-4 md:p-6 flex justify-center items-center bg-muted/30">
-            <Carousel className="w-full max-w-sm md:max-w-full">
+            <Carousel 
+              plugins={[autoplayPlugin.current]}
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full max-w-sm md:max-w-full">
               <CarouselContent>
                 {product.imageUrls.map((url, index) => (
                   <CarouselItem key={index}>
