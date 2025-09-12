@@ -22,6 +22,13 @@ import { onAuthStateChanged, type User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/config';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
 
 const recommendedDbRules = `{
@@ -182,15 +189,25 @@ export default function ProductDetailPage() {
       <Card className="overflow-hidden shadow-xl rounded-xl">
         <div className="grid grid-cols-1 md:grid-cols-2">
           <div className="p-4 md:p-6 flex justify-center items-center bg-muted/30">
-              <ProductImage
-                src={product.imageUrls[0].replace('300x450', '600x800')} // Request larger image
-                alt={product.name}
-                width={600}
-                height={800}
-                className="w-full h-auto max-w-sm md:max-w-full aspect-[3/4] rounded-lg shadow-md"
-                priority
-                aiHint={aiHintForImage}
-              />
+            <Carousel className="w-full max-w-sm md:max-w-full">
+              <CarouselContent>
+                {product.imageUrls.map((url, index) => (
+                  <CarouselItem key={index}>
+                      <ProductImage
+                        src={url.replace('300x450', '600x800')}
+                        alt={`${product.name} image ${index + 1}`}
+                        width={600}
+                        height={800}
+                        className="w-full h-auto aspect-[3/4] rounded-lg shadow-md"
+                        priority={index === 0}
+                        aiHint={aiHintForImage}
+                      />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="absolute left-2" />
+              <CarouselNext className="absolute right-2" />
+            </Carousel>
           </div>
           <div className="p-6 md:p-8 flex flex-col justify-center">
             <CardHeader className="p-0 mb-4">
@@ -291,3 +308,5 @@ export default function ProductDetailPage() {
     </div>
   );
 }
+
+    
