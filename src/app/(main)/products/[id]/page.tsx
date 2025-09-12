@@ -181,16 +181,18 @@ export default function ProductDetailPage() {
     <div className="container mx-auto py-8 md:py-12">
       <Card className="overflow-hidden shadow-xl rounded-xl">
         <div className="grid grid-cols-1 md:grid-cols-2">
-          <div className="p-4 md:p-6">
-             <ProductImage
-              src={product.imageUrls[0].replace('300x450', '600x800')} // Request larger image
-              alt={product.name}
-              width={600}
-              height={800}
-              className="w-full h-auto aspect-[3/4] rounded-lg shadow-md"
-              priority
-              aiHint={aiHintForImage}
-            />
+          <div className="p-4 md:p-6 flex justify-center items-center">
+            <div className="w-full max-w-md md:max-w-full">
+              <ProductImage
+                src={product.imageUrls[0].replace('300x450', '600x800')} // Request larger image
+                alt={product.name}
+                width={600}
+                height={800}
+                className="w-full h-auto aspect-[3/4] rounded-lg shadow-md"
+                priority
+                aiHint={aiHintForImage}
+              />
+            </div>
           </div>
           <div className="p-6 md:p-8 flex flex-col justify-center">
             <CardHeader className="p-0 mb-4">
