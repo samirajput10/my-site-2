@@ -105,58 +105,121 @@ export function Header() {
     }
   };
 
+  // This is now a full DropdownMenu component
   const UserActionsMenu = ({onItemClick}: {onItemClick?: () => void}) => (
-    <>
-      {currentUser ? (
-        <>
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{isAdmin ? "Admin Account" : "My Account"}</p>
-              <p className="text-xs leading-none text-muted-foreground">
-                {currentUser.email}
-              </p>
-            </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => { router.push('/wishlist'); onItemClick?.(); }}>
-            <Heart className="mr-2 h-4 w-4" />
-            <span>Wishlist</span>
-          </DropdownMenuItem>
-           <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
-            <Camera className="mr-2 h-4 w-4" />
-            <span>AI Try-On</span>
-          </DropdownMenuItem>
-          {isAdmin && (
-            <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              <span>Admin Panel</span>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+          <User className="h-5 w-5" />
+          <span className="sr-only">User Menu</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56 bg-popover text-popover-foreground">
+        {currentUser ? (
+          <>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{isAdmin ? "Admin Account" : "My Account"}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {currentUser.email}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { router.push('/wishlist'); onItemClick?.(); }}>
+              <Heart className="mr-2 h-4 w-4" />
+              <span>Wishlist</span>
             </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => {handleLogout(); onItemClick?.();}} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Sign out</span>
-          </DropdownMenuItem>
-        </>
-      ) : (
-        <>
-          <DropdownMenuItem onClick={() => { router.push('/login'); onItemClick?.(); }}>
-            <LogIn className="mr-2 h-4 w-4" />
-            <span>Login</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => { router.push('/signup'); onItemClick?.(); }}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            <span>Sign Up</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-           <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
-            <Camera className="mr-2 h-4 w-4" />
-            <span>AI Try-On</span>
-          </DropdownMenuItem>
-        </>
-      )}
-    </>
+            <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
+              <Camera className="mr-2 h-4 w-4" />
+              <span>AI Try-On</span>
+            </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                <span>Admin Panel</span>
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => {handleLogout(); onItemClick?.();}} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sign out</span>
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <>
+            <DropdownMenuItem onClick={() => { router.push('/login'); onItemClick?.(); }}>
+              <LogIn className="mr-2 h-4 w-4" />
+              <span>Login</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { router.push('/signup'); onItemClick?.(); }}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              <span>Sign Up</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
+              <Camera className="mr-2 h-4 w-4" />
+              <span>AI Try-On</span>
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
+
+  const MobileUserActions = ({onItemClick}: {onItemClick?: () => void}) => (
+     <>
+        {currentUser ? (
+          <>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{isAdmin ? "Admin Account" : "My Account"}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {currentUser.email}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { router.push('/wishlist'); onItemClick?.(); }}>
+              <Heart className="mr-2 h-4 w-4" />
+              <span>Wishlist</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
+              <Camera className="mr-2 h-4 w-4" />
+              <span>AI Try-On</span>
+            </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                <span>Admin Panel</span>
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => {handleLogout(); onItemClick?.();}} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sign out</span>
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <>
+            <DropdownMenuItem onClick={() => { router.push('/login'); onItemClick?.(); }}>
+              <LogIn className="mr-2 h-4 w-4" />
+              <span>Login</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { router.push('/signup'); onItemClick?.(); }}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              <span>Sign Up</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
+              <Camera className="mr-2 h-4 w-4" />
+              <span>AI Try-On</span>
+            </DropdownMenuItem>
+          </>
+        )}
+      </>
+  )
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md dark:shadow-[0_4px_6px_-1px_rgba(255,255,255,0.08),_0_2px_4px_-2px_rgba(255,255,255,0.08)]">
@@ -222,17 +285,7 @@ export function Header() {
             </DropdownMenu>
 
             <div className="hidden md:block">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
-                    <User className="h-5 w-5" />
-                    <span className="sr-only">User Menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-popover text-popover-foreground">
-                  <UserActionsMenu />
-                </DropdownMenuContent>
-              </DropdownMenu>
+               <UserActionsMenu />
             </div>
 
             <div className="md:hidden">
@@ -263,7 +316,7 @@ export function Header() {
                     ))}
                   </nav>
                   <div className="p-4 border-t border-border">
-                    <UserActionsMenu onItemClick={() => setMobileMenuOpen(false)} />
+                    <MobileUserActions onItemClick={() => setMobileMenuOpen(false)} />
                   </div>
                 </SheetContent>
               </Sheet>
@@ -273,3 +326,5 @@ export function Header() {
     </header>
   );
 }
+
+    
