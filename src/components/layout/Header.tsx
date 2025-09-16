@@ -106,7 +106,7 @@ export function Header() {
   };
 
   // This is now a full DropdownMenu component
-  const UserActionsMenu = ({onItemClick}: {onItemClick?: () => void}) => (
+  const UserActionsMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
@@ -126,38 +126,38 @@ export function Header() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { router.push('/wishlist'); onItemClick?.(); }}>
+            <DropdownMenuItem onClick={() => router.push('/wishlist')}>
               <Heart className="mr-2 h-4 w-4" />
               <span>Wishlist</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
+            <DropdownMenuItem onClick={() => router.push('/ai-try-on')}>
               <Camera className="mr-2 h-4 w-4" />
               <span>AI Try-On</span>
             </DropdownMenuItem>
             {isAdmin && (
-              <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
+              <DropdownMenuItem onClick={() => router.push('/seller/dashboard')}>
                 <LayoutDashboard className="mr-2 h-4 w-4" />
                 <span>Admin Panel</span>
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => {handleLogout(); onItemClick?.();}} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
               <span>Sign out</span>
             </DropdownMenuItem>
           </>
         ) : (
           <>
-            <DropdownMenuItem onClick={() => { router.push('/login'); onItemClick?.(); }}>
+            <DropdownMenuItem onClick={() => router.push('/login')}>
               <LogIn className="mr-2 h-4 w-4" />
               <span>Login</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => { router.push('/signup'); onItemClick?.(); }}>
+            <DropdownMenuItem onClick={() => router.push('/signup')}>
               <UserPlus className="mr-2 h-4 w-4" />
               <span>Sign Up</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
+            <DropdownMenuItem onClick={() => router.push('/ai-try-on')}>
               <Camera className="mr-2 h-4 w-4" />
               <span>AI Try-On</span>
             </DropdownMenuItem>
@@ -167,58 +167,54 @@ export function Header() {
     </DropdownMenu>
   );
 
-  const MobileUserActions = ({onItemClick}: {onItemClick?: () => void}) => (
-     <>
+  const MobileNavLinks = ({onItemClick}: {onItemClick?: () => void}) => (
+    <>
+      {mainNavLinks.map((link) => (
+        <SheetClose key={link.label} asChild>
+          <Button variant="ghost" asChild className="w-full justify-start text-lg py-3 text-foreground hover:text-primary">
+              <Link href={link.href} onClick={onItemClick}>
+                {link.icon && <link.icon className="mr-2 h-4 w-4" />}
+                {link.label}
+              </Link>
+          </Button>
+        </SheetClose>
+      ))}
+    </>
+  );
+
+  const MobileUserActions = ({onItemClick}: {onItemClick?: () => void}) => {
+    const handleAndClose = (path: string) => {
+      router.push(path);
+      onItemClick?.();
+    };
+    const handleLogoutAndClose = () => {
+      handleLogout();
+      onItemClick?.();
+    };
+
+    return (
+      <div className="flex flex-col space-y-2">
         {currentUser ? (
           <>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{isAdmin ? "Admin Account" : "My Account"}</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {currentUser.email}
-                </p>
-              </div>
-            </DropdownMenuLabel>
+            <div className="px-2 py-1.5 text-sm font-semibold">{isAdmin ? "Admin Account" : "My Account"}</div>
+            <p className="px-2 pb-2 text-xs text-muted-foreground">{currentUser.email}</p>
+            <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/wishlist')} className="w-full justify-start"><Heart className="mr-2 h-4 w-4" />Wishlist</Button></SheetClose>
+            <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/ai-try-on')} className="w-full justify-start"><Camera className="mr-2 h-4 w-4" />AI Try-On</Button></SheetClose>
+            {isAdmin && <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/seller/dashboard')} className="w-full justify-start"><LayoutDashboard className="mr-2 h-4 w-4" />Admin Panel</Button></SheetClose>}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { router.push('/wishlist'); onItemClick?.(); }}>
-              <Heart className="mr-2 h-4 w-4" />
-              <span>Wishlist</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
-              <Camera className="mr-2 h-4 w-4" />
-              <span>AI Try-On</span>
-            </DropdownMenuItem>
-            {isAdmin && (
-              <DropdownMenuItem onClick={() => { router.push('/seller/dashboard'); onItemClick?.(); }}>
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                <span>Admin Panel</span>
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => {handleLogout(); onItemClick?.();}} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Sign out</span>
-            </DropdownMenuItem>
+            <SheetClose asChild><Button variant="ghost" onClick={handleLogoutAndClose} className="w-full justify-start text-destructive"><LogOut className="mr-2 h-4 w-4" />Sign Out</Button></SheetClose>
           </>
         ) : (
           <>
-            <DropdownMenuItem onClick={() => { router.push('/login'); onItemClick?.(); }}>
-              <LogIn className="mr-2 h-4 w-4" />
-              <span>Login</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => { router.push('/signup'); onItemClick?.(); }}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              <span>Sign Up</span>
-            </DropdownMenuItem>
+            <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/login')} className="w-full justify-start"><LogIn className="mr-2 h-4 w-4" />Login</Button></SheetClose>
+            <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/signup')} className="w-full justify-start"><UserPlus className="mr-2 h-4 w-4" />Sign Up</Button></SheetClose>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => { router.push('/ai-try-on'); onItemClick?.(); }}>
-              <Camera className="mr-2 h-4 w-4" />
-              <span>AI Try-On</span>
-            </DropdownMenuItem>
+            <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/ai-try-on')} className="w-full justify-start"><Camera className="mr-2 h-4 w-4" />AI Try-On</Button></SheetClose>
           </>
         )}
-      </>
-  )
+      </div>
+    );
+  }
 
 
   return (
@@ -304,16 +300,7 @@ export function Header() {
                     </SheetClose>
                   </div>
                   <nav className="flex-grow p-4 space-y-2">
-                    {mainNavLinks.map((link) => (
-                      <SheetClose key={link.label} asChild>
-                        <Button variant="ghost" asChild className="w-full justify-start text-lg py-3 text-foreground hover:text-primary">
-                           <Link href={link.href}>
-                              {link.icon && <link.icon className="mr-2 h-4 w-4" />}
-                              {link.label}
-                           </Link>
-                        </Button>
-                      </SheetClose>
-                    ))}
+                    <MobileNavLinks onItemClick={() => setMobileMenuOpen(false)} />
                   </nav>
                   <div className="p-4 border-t border-border">
                     <MobileUserActions onItemClick={() => setMobileMenuOpen(false)} />
@@ -326,5 +313,3 @@ export function Header() {
     </header>
   );
 }
-
-    
