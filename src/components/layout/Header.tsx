@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Heart, ShoppingCart, User, Menu, X, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Sun, Moon, Camera } from 'lucide-react'; // Added icons
 import { Logo } from '@/components/icons/Logo';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -293,12 +293,13 @@ export function Header() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] p-0 flex flex-col bg-card text-card-foreground">
-                  <div className="flex justify-between items-center p-4 border-b border-border">
+                  <SheetHeader className="flex flex-row justify-between items-center p-4 border-b border-border">
+                    <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
                     <SheetClose asChild><Logo /></SheetClose>
                     <SheetClose asChild>
                        <Button variant="ghost" size="icon"><X className="h-5 w-5"/></Button>
                     </SheetClose>
-                  </div>
+                  </SheetHeader>
                   <nav className="flex-grow p-4 space-y-2">
                     <MobileNavLinks onItemClick={() => setMobileMenuOpen(false)} />
                   </nav>
