@@ -1,8 +1,8 @@
-// src/components/layout/HeroSection.tsx
-
+"use client";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import GradientText from './GradientText';
 
 export function HeroSection() {
   return (
@@ -16,9 +16,9 @@ export function HeroSection() {
         </div>
 
         <div className="relative z-20 container mx-auto px-4">
-            <h1 className="text-4xl md:text-6xl font-headline font-extrabold text-white drop-shadow-lg mb-4 leading-tight">
+            <GradientText className="text-4xl md:text-6xl font-headline font-extrabold text-white drop-shadow-lg mb-4 leading-tight">
                Discover Your Signature Sparkle
-            </h1>
+            </GradientText>
             <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-8 drop-shadow-md">
                 Each piece tells a story. Find the one that speaks to you. Handcrafted jewelry from independent designers worldwide.
             </p>
