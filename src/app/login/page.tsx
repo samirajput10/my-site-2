@@ -130,8 +130,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md shadow-xl">
+    <div className="relative flex min-h-screen items-center justify-center p-4">
+      <div 
+        className="absolute inset-0 bg-cover bg-center -z-10" 
+        style={{ backgroundImage: 'url(https://i.postimg.cc/mk9kwKzT/Gemini-Generated-Image-14suy014suy014su.png)' }} 
+        data-ai-hint="floating jewelry background"
+      />
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm -z-10" />
+      <Card className="w-full max-w-md shadow-xl bg-card/80 backdrop-blur-lg border-white/20">
         <CardHeader className="text-center">
           <LogIn className="mx-auto h-12 w-12 text-primary mb-2" />
           <CardTitle className="text-3xl font-headline">Welcome Back!</CardTitle>
@@ -203,7 +209,7 @@ export default function LoginPage() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-card/80 px-2 text-muted-foreground">Or continue with</span>
             </div>
           </div>
         
