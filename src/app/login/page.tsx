@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { auth } from '@/lib/firebase/config';
-import { signInWithEmailAndPassword, type User } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendEmailVerification, type User } from 'firebase/auth';
 import { LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
 
 // Hardcoded admin credentials
@@ -23,57 +23,47 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showResend, setShowResend] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setShowResend(false);
     setLoading(true);
 
     // Step 1: Check for hardcoded admin credentials first
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      // This is the admin. We don't need to call Firebase Auth for this mock admin.
-      // We'll create a mock user object to store in state/local storage.
       const mockAdminUser = {
-        uid: 'admin_user_mock_uid', // A consistent mock UID
+        uid: 'admin_user_mock_uid',
         email: ADMIN_EMAIL,
       };
-
-      // Store admin role in localStorage
       localStorage.setItem(`userProfile_${mockAdminUser.uid}`, JSON.stringify({ role: 'admin' }));
-      
-      // Simulate a session for the admin (since we are not using Firebase session)
-      // This part is tricky without a real session, local storage is the simplest way
       sessionStorage.setItem('loggedInUser', JSON.stringify(mockAdminUser));
 
-
-      toast({
-        title: 'Login Successful',
-        description: 'Welcome back, Admin!',
-      });
+      toast({ title: 'Login Successful', description: 'Welcome back, Admin!' });
       router.push('/seller/dashboard');
       setLoading(false);
-      return; // Stop execution here for admin
+      return;
     }
-
 
     // Step 2: If not admin, proceed with Firebase authentication for regular users
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      // All other users are buyers
+      if (!userCredential.user.emailVerified) {
+        setError("Please verify your email before logging in.");
+        setShowResend(true);
+        setLoading(false);
+        return;
+      }
+
       const role = 'buyer';
-      
-      // Store role in localStorage
       localStorage.setItem(`userProfile_${userCredential.user.uid}`, JSON.stringify({ role: role }));
 
-      toast({
-        title: 'Login Successful',
-        description: `Welcome back!`,
-      });
-      
-      router.push('/'); // Redirect regular users to homepage
+      toast({ title: 'Login Successful', description: `Welcome back!` });
+      router.push('/');
 
     } catch (err: any) {
       console.error("Login error:", err);
@@ -84,13 +74,22 @@ export default function LoginPage() {
         errorMessage = "Please enter a valid email address.";
       }
       setError(errorMessage);
-      toast({
-        title: 'Login Failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      toast({ title: 'Login Failed', description: errorMessage, variant: 'destructive' });
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const handleResendVerification = async () => {
+    if (auth.currentUser) {
+      try {
+        await sendEmailVerification(auth.currentUser);
+        toast({ title: "Verification Email Sent", description: "A new verification link has been sent to your email." });
+      } catch (error) {
+        toast({ title: "Error", description: "Failed to send verification email. Please try again.", variant: 'destructive' });
+      }
+    } else {
+        toast({ title: "Error", description: "Could not find user. You may need to log in again.", variant: 'destructive' });
     }
   };
 
@@ -141,7 +140,14 @@ export default function LoginPage() {
                 </Button>
               </div>
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && (
+              <p className="text-sm text-destructive flex items-center justify-between">
+                {error}
+                {showResend && (
+                    <Button variant="link" type="button" onClick={handleResendVerification} className="p-0 h-auto text-xs">Resend Email</Button>
+                )}
+              </p>
+            )}
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading}>

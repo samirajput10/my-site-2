@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase/config';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { UserPlus, Loader2, Eye, EyeOff } from 'lucide-react';
 
@@ -45,6 +45,9 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // Send verification email
+      await sendEmailVerification(user);
+
       // By default, new signups are buyers. Admin role is assigned on login.
       localStorage.setItem(`userProfile_${user.uid}`, JSON.stringify({ role: 'buyer' }));
       
@@ -54,9 +57,12 @@ export default function SignupPage() {
 
       toast({
         title: 'Signup Successful',
-        description: `Welcome! Your account is ready and pre-loaded with 4 AI try-on credits.`,
+        description: `A verification email has been sent to ${email}.`,
       });
-      router.push('/login'); 
+
+      // Redirect to a page that tells them to check their email
+      router.push(`/verify-email?email=${email}`);
+
     } catch (err: any) {
       console.error("Signup error:", err);
       let errorMessage = "Failed to create an account. Please try again.";
@@ -177,5 +183,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
-    
