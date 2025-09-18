@@ -1,6 +1,6 @@
 
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
+import { getAuth, type Auth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getDatabase, type Database } from 'firebase/database';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
@@ -47,4 +47,4 @@ if (!firebaseError) {
     }
 }
 
-export { app, auth, db, rtdb, storage, firebaseError };
+export { app, auth, db, rtdb, storage, firebaseError, GoogleAuthProvider, signInWithPopup };

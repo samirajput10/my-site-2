@@ -9,9 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { auth } from '@/lib/firebase/config';
+import { auth, db, GoogleAuthProvider, signInWithPopup } from '@/lib/firebase/config';
 import { signInWithEmailAndPassword, sendEmailVerification, type User } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
+import { FaGoogle } from 'react-icons/fa';
 
 // Hardcoded admin credentials
 const ADMIN_EMAIL = "brandboy553340@gmail.com";
@@ -23,6 +25,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [showResend, setShowResend] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -93,6 +96,39 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    setError(null);
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if user is new, if so, set up their credits
+      const userCreditsRef = doc(db, `userCredits/${user.uid}`);
+      const docSnap = await getDoc(userCreditsRef);
+      if (!docSnap.exists()) {
+        await setDoc(userCreditsRef, { credits: 4 });
+      }
+
+      // Set user role in local storage
+      localStorage.setItem(`userProfile_${user.uid}`, JSON.stringify({ role: 'buyer' }));
+      
+      toast({ title: 'Login Successful', description: `Welcome, ${user.displayName}!` });
+      router.push('/');
+    } catch (error: any) {
+      console.error("Google login error:", error);
+      let errorMessage = "Failed to sign in with Google. Please try again.";
+      if(error.code === 'auth/popup-closed-by-user') {
+          errorMessage = 'Sign-in process was cancelled.';
+      }
+      setError(errorMessage);
+      toast({ title: 'Google Login Failed', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-xl">
@@ -101,8 +137,8 @@ export default function LoginPage() {
           <CardTitle className="text-3xl font-headline">Welcome Back!</CardTitle>
           <CardDescription>Sign in to continue to Lustra.</CardDescription>
         </CardHeader>
-        <form onSubmit={handleLogin}>
-          <CardContent className="space-y-6">
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -112,7 +148,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={loading}
+                disabled={loading || googleLoading}
               />
             </div>
             <div className="space-y-2">
@@ -125,7 +161,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  disabled={loading}
+                  disabled={loading || googleLoading}
                   className="pr-10"
                 />
                 <Button
@@ -148,9 +184,7 @@ export default function LoginPage() {
                 )}
               </p>
             )}
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading}>
+             <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading || googleLoading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -162,14 +196,34 @@ export default function LoginPage() {
                 </>
               )}
             </Button>
-            <p className="text-sm text-muted-foreground">
-              Don&apos;t have an account?{' '}
-              <Button variant="link" asChild className="p-0 h-auto">
-                <Link href="/signup">Sign up</Link>
-              </Button>
-            </p>
-          </CardFooter>
-        </form>
+          </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            </div>
+          </div>
+        
+          <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={loading || googleLoading}>
+            {googleLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FaGoogle className="mr-2 h-4 w-4" />
+            )}
+            Google
+          </Button>
+        </CardContent>
+        <CardFooter className="flex flex-col gap-4">
+          <p className="text-sm text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <Button variant="link" asChild className="p-0 h-auto">
+              <Link href="/signup">Sign up</Link>
+            </Button>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );
