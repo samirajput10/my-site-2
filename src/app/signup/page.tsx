@@ -119,8 +119,17 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md shadow-xl">
+    <div 
+      className="relative flex min-h-screen items-center justify-center bg-background p-4"
+      style={{
+          backgroundImage: "url('https://i.postimg.cc/qRrkYxst/Gemini-Generated-Image-1.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+      }}
+      data-ai-hint="floating jewelry rings background"
+    >
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+      <Card className="w-full max-w-md shadow-xl z-10 bg-card/80 backdrop-blur-lg border-white/20">
         <CardHeader className="text-center">
           <UserPlus className="mx-auto h-12 w-12 text-primary mb-2" />
           <CardTitle className="text-3xl font-headline">Create Your Account</CardTitle>
@@ -210,7 +219,7 @@ export default function SignupPage() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or sign up with</span>
+              <span className="bg-card/0 px-2 text-muted-foreground">Or sign up with</span>
             </div>
           </div>
           
@@ -236,3 +245,5 @@ export default function SignupPage() {
     </div>
   );
 }
+
+    
