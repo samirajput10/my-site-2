@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { firebaseError } from '@/lib/firebase/config';
 import { FirebaseErrorOverlay } from '@/components/layout/FirebaseErrorOverlay';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'Lustra - Discover Unique Jewelry',
@@ -38,6 +39,18 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Belleza&display=swap" rel="stylesheet" />
+        
+        {/* Google tag (gtag.js) */}
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-SND2DGSRJN"></Script>
+        <Script id="google-analytics">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-SND2DGSRJN');
+          `}
+        </Script>
       </head>
       <body className="font-body bg-background text-foreground antialiased"> {/* Changed to font-body */}
         <ThemeProvider
