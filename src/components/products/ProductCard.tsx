@@ -219,7 +219,7 @@ export function ProductCard({
           )}
         </CardContent>
         <CardFooter className="mt-auto p-4 pt-0 grid grid-cols-2 gap-2">
-           <Button size="sm" onClick={handleAddToCart} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isOutOfStock}>
+           <Button size="sm" onClick={handleAddToCart} className={cn("w-full text-white", isOutOfStock ? "bg-red-500 hover:bg-red-600" : "bg-green-600 hover:bg-green-700")} disabled={isOutOfStock}>
               <ShoppingCart size={16} className="mr-2" />
               {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
             </Button>
