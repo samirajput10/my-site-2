@@ -47,6 +47,7 @@ interface ProductFormState {
   name: string;
   description: string;
   price: string;
+  originalPrice: string; // Add originalPrice to form state
   imageUrls: string[];
   category: string;
   sizes: string;
@@ -77,7 +78,7 @@ export default function AdminPanelPage() {
   const { formatPrice } = useCurrency();
   
   const [formState, setFormState] = useState<ProductFormState>({
-    name: '', description: '', price: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10',
+    name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10',
   });
   const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
   const [previewUrls, setPreviewUrls] = useState<(string | null)[]>([null, null, null]);
@@ -201,6 +202,7 @@ export default function AdminPanelPage() {
         name: productToEdit.name,
         description: productToEdit.description,
         price: String(productToEdit.price),
+        originalPrice: productToEdit.originalPrice ? String(productToEdit.originalPrice) : '',
         imageUrls: [...productToEdit.imageUrls, ...Array(3 - productToEdit.imageUrls.length).fill('')],
         category: productToEdit.category,
         sizes: productToEdit.sizes.join(', '),
@@ -224,15 +226,13 @@ export default function AdminPanelPage() {
         if ('error' in result) {
             toast({ title: 'AI Generation Failed', description: result.error, variant: 'destructive' });
         } else {
-            setFormState({
+            setFormState(prev => ({
+                ...prev,
                 name: result.name,
                 description: result.description,
                 category: result.category,
                 imageUrls: [aiImageUrl, '', ''],
-                price: '', 
-                sizes: '', 
-                stock: '10',
-            });
+            }));
             setImageFiles([null, null, null]);
             setPreviewUrls([aiImageUrl, null, null]);
             toast({ title: 'AI Generation Complete!', description: 'Product details have been filled in the form below.' });
@@ -332,7 +332,7 @@ export default function AdminPanelPage() {
           return;
       }
 
-      const newProductData = {
+      const newProductData: any = {
         name: formState.name,
         description: formState.description,
         price: parseFloat(formState.price),
@@ -344,10 +344,14 @@ export default function AdminPanelPage() {
         createdAt: serverTimestamp(),
       };
 
+      if (formState.originalPrice && parseFloat(formState.originalPrice) > parseFloat(formState.price)) {
+          newProductData.originalPrice = parseFloat(formState.originalPrice);
+      }
+
       await addDoc(productsCollectionRef, newProductData);
       
       toast({ title: "Product Added", description: `Your product has been successfully listed.` });
-      setFormState({ name: '', description: '', price: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10' });
+      setFormState({ name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10' });
       setImageFiles([null, null, null]);
       setPreviewUrls([null, null, null]);
       fileInputRefs.current.forEach(input => {
@@ -380,7 +384,19 @@ export default function AdminPanelPage() {
     if (!productToEdit) return;
 
     setIsUpdating(true);
-    const result = await updateProductInDB(productToEdit.id, editFormState as Partial<Product>);
+
+    const updatedProductData: Partial<Product> = {
+        name: editFormState.name,
+        description: editFormState.description,
+        price: editFormState.price ? parseFloat(editFormState.price) : undefined,
+        originalPrice: editFormState.originalPrice ? parseFloat(editFormState.originalPrice) : undefined,
+        imageUrls: editFormState.imageUrls?.filter(url => url && url.trim() !== ''),
+        category: editFormState.category as ProductCategory,
+        sizes: editFormState.sizes ? editFormState.sizes.split(',').map(s => s.trim() as ProductSize) : undefined,
+        stock: editFormState.stock ? parseInt(editFormState.stock, 10) : undefined,
+    };
+
+    const result = await updateProductInDB(productToEdit.id, updatedProductData);
     
     if (result.success) {
       toast({ title: "Product Updated", description: "The product details have been saved." });
@@ -541,11 +557,17 @@ export default function AdminPanelPage() {
                 <Label htmlFor="name">Product Name *</Label>
                 <Input id="name" name="name" value={formState.name} onChange={handleChange} required disabled={isSubmitting} />
               </div>
-              <div>
+               <div>
                 <Label htmlFor="price">Price (PKR) *</Label>
                 <Input id="price" name="price" type="number" value={formState.price} onChange={handleChange} required step="1" min="1" disabled={isSubmitting}/>
               </div>
             </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <Label htmlFor="originalPrice">Original Price (Optional)</Label>
+                    <Input id="originalPrice" name="originalPrice" type="number" value={formState.originalPrice} onChange={handleChange} placeholder="e.g., 599" step="1" min="1" disabled={isSubmitting}/>
+                </div>
+             </div>
             <div>
               <Label htmlFor="description">Description</Label>
               <Textarea id="description" name="description" value={formState.description} onChange={handleChange} disabled={isSubmitting}/>
@@ -634,7 +656,12 @@ export default function AdminPanelPage() {
                   <CardContent className="p-4 flex-grow">
                     <h3 className="font-semibold truncate">{product.name}</h3>
                     <p className="text-sm text-muted-foreground">Stock: {product.stock}</p>
-                    <p className="text-xl font-bold text-primary mt-1">{formatPrice(product.price)}</p>
+                    <div className="flex items-baseline gap-2">
+                        <p className="text-xl font-bold text-primary mt-1">{formatPrice(product.price)}</p>
+                        {product.originalPrice && product.originalPrice > product.price && (
+                            <p className="text-sm text-muted-foreground line-through">{formatPrice(product.originalPrice)}</p>
+                        )}
+                    </div>
                   </CardContent>
                    <CardFooter className="p-4 pt-0 grid grid-cols-2 gap-2">
                     <Button variant="outline" size="sm" className="w-full" onClick={() => setProductToEdit(product)}>
@@ -685,9 +712,15 @@ export default function AdminPanelPage() {
                     <Label htmlFor="edit-name">Product Name *</Label>
                     <Input id="edit-name" name="name" value={editFormState.name || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
                   </div>
-                  <div>
-                    <Label htmlFor="edit-price">Price (PKR) *</Label>
-                    <Input id="edit-price" name="price" type="number" value={editFormState.price || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="edit-price">Price (PKR) *</Label>
+                        <Input id="edit-price" name="price" type="number" value={editFormState.price || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
+                    </div>
+                    <div>
+                        <Label htmlFor="edit-originalPrice">Original Price (Optional)</Label>
+                        <Input id="edit-originalPrice" name="originalPrice" type="number" value={editFormState.originalPrice || ''} onChange={handleEditFormChange} disabled={isUpdating} />
+                    </div>
                   </div>
                   <div>
                     <Label htmlFor="edit-description">Description</Label>

@@ -33,7 +33,6 @@ interface ProductCardProps {
   reviewCount?: number;
   brandName?: string;
   secondaryInfo?: string;
-  originalPrice?: number;
 }
 
 const TRY_ON_LIMIT = 4;
@@ -113,15 +112,18 @@ export function ProductCard({
   const aiHintForImage = `${product.category.toLowerCase()} ${product.name.split(' ').slice(0,1).join(' ').toLowerCase()}`;
   const isOutOfStock = product.stock <= 0;
 
+  const showDiscount = product.originalPrice && product.originalPrice > product.price;
+  const calculatedDiscount = showDiscount ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100) : 0;
+
   let displayBadge: React.ReactNode = null;
   if (isOutOfStock) {
-    displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1 z-10">Out of Stock</Badge>;
-  } else if (discount) {
-    displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1 z-10">{discount}</Badge>;
+    displayBadge = <Badge variant="destructive" className="absolute top-2 left-2 text-xs px-2 py-1 z-10">Out of Stock</Badge>;
+  } else if (showDiscount) {
+    displayBadge = <Badge variant="destructive" className="absolute top-2 left-2 text-xs px-2 py-1 z-10">{calculatedDiscount}% OFF</Badge>;
   } else if (status === "New") {
-    displayBadge = <Badge variant="secondary" className="absolute bottom-2 left-2 text-xs px-2 py-1 bg-green-600 text-white z-10">{status}</Badge>;
+    displayBadge = <Badge variant="secondary" className="absolute top-2 left-2 text-xs px-2 py-1 bg-green-600 text-white z-10">{status}</Badge>;
   } else if (status) {
-    displayBadge = <Badge variant="destructive" className="absolute bottom-2 left-2 text-xs px-2 py-1 z-10">{status}</Badge>;
+    displayBadge = <Badge variant="destructive" className="absolute top-2 left-2 text-xs px-2 py-1 z-10">{status}</Badge>;
   }
 
   const hasReachedTryOnLimit = !currentUser || availableCredits <= 0;
@@ -198,10 +200,10 @@ export function ProductCard({
             </div>
           )}
 
-          <div className="flex items-baseline">
+          <div className="flex items-baseline gap-2">
             <span className="text-primary font-bold text-lg">{formatPrice(product.price)}</span>
-            {(product as any).originalPrice && (product as any).originalPrice > product.price && (
-              <span className="text-muted-foreground text-sm line-through ml-2">{formatPrice((product as any).originalPrice)}</span>
+            {showDiscount && (
+              <span className="text-muted-foreground text-sm line-through">{formatPrice(product.originalPrice!)}</span>
             )}
           </div>
 

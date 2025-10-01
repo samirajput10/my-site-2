@@ -46,6 +46,7 @@ export async function getAllProductsFromDB(): Promise<Product[] | { error: strin
         name: data.name || "Unnamed Product",
         description: data.description || "",
         price: typeof data.price === 'number' ? data.price : 0,
+        originalPrice: typeof data.originalPrice === 'number' ? data.originalPrice : undefined,
         imageUrls: ensureImageUrls(data),
         category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
         sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
@@ -91,6 +92,7 @@ export async function getProductFromDB(productId: string): Promise<Product | nul
       name: data.name || "Unnamed Product",
       description: data.description || "",
       price: typeof data.price === 'number' ? data.price : 0,
+      originalPrice: typeof data.originalPrice === 'number' ? data.originalPrice : undefined,
       imageUrls: ensureImageUrls(data),
       category: (ALL_CATEGORIES.includes(data.category) ? data.category : ALL_CATEGORIES[0]) as ProductCategory,
       sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
@@ -115,10 +117,16 @@ export async function updateProductInDB(productId: string, updatedData: Partial<
         // Construct the data object for Firestore, ensuring correct types
         const dataToUpdate: any = { ...updatedData };
         
-        // Convert price and stock back to numbers if they are strings
+        // Convert price, stock and original price back to numbers if they are strings
         if (typeof dataToUpdate.price === 'string') {
             dataToUpdate.price = parseFloat(dataToUpdate.price);
         }
+         if (typeof dataToUpdate.originalPrice === 'string') {
+            dataToUpdate.originalPrice = parseFloat(dataToUpdate.originalPrice);
+        } else if (dataToUpdate.originalPrice === '' || dataToUpdate.originalPrice === undefined) {
+             dataToUpdate.originalPrice = null; // Use null to remove from Firestore if empty
+        }
+
         if (typeof dataToUpdate.stock === 'string') {
             dataToUpdate.stock = parseInt(dataToUpdate.stock, 10);
         }
