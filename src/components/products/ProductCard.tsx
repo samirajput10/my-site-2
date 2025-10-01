@@ -119,7 +119,7 @@ export function ProductCard({
   if (isOutOfStock) {
     displayBadge = <Badge variant="destructive" className="absolute top-2 left-2 text-xs px-2 py-1 z-10">Out of Stock</Badge>;
   } else if (showDiscount) {
-    displayBadge = <Badge variant="destructive" className="absolute top-2 left-2 text-xs px-2 py-1 z-10">{calculatedDiscount}% OFF</Badge>;
+    displayBadge = <Badge className="absolute top-2 left-2 text-xs px-2 py-1 z-10 bg-green-600 text-white hover:bg-green-700">{calculatedDiscount}% OFF</Badge>;
   } else if (status === "New") {
     displayBadge = <Badge variant="secondary" className="absolute top-2 left-2 text-xs px-2 py-1 bg-green-600 text-white z-10">{status}</Badge>;
   } else if (status) {
