@@ -505,22 +505,6 @@ export default function AdminPanelPage() {
         </Card>
       </div>
 
-       <Card className="w-full shadow-xl rounded-xl mb-8">
-        <CardHeader>
-          <CardTitle className="text-2xl flex items-center"><KeyRound className="mr-2 h-6 w-6 text-primary" />Manage API Key</CardTitle>
-          <CardDescription>Your Gemini API key is required for AI features to work.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 dark:bg-blue-900/20 dark:border-blue-500/30 dark:text-blue-200">
-                <h4 className="font-semibold flex items-center"><ShieldAlert className="w-4 h-4 mr-2" />How to Set Your API Key</h4>
-                <div className="text-sm mt-2 space-y-1">
-                <p>To enable AI features like product detail generation, you must set the `GEMINI_API_KEY` variable in your project's <strong>.env</strong> file.</p>
-                <p>After updating the file, you must <strong>restart or redeploy</strong> your application for the change to take effect.</p>
-                </div>
-            </div>
-        </CardContent>
-       </Card>
-
       <Card className="w-full shadow-xl rounded-xl mb-8">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center"><Wand2 className="mr-2 h-6 w-6 text-primary"/>Generate with AI</CardTitle>
