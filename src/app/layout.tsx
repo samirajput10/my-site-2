@@ -25,7 +25,7 @@ export default function RootLayout({
          <head>
             <title>Configuration Error</title>
          </head>
-        <body className="font-body bg-background text-foreground antialiased">
+        <body className="font-sans bg-background text-foreground antialiased">
           <FirebaseErrorOverlay message={firebaseError} />
         </body>
       </html>
@@ -35,11 +35,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Added Google Fonts for Alegreya and Belleza */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Belleza&display=swap" rel="stylesheet" />
-        
         {/* Google tag (gtag.js) */}
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-SND2DGSRJN"></Script>
         <Script id="google-analytics">
@@ -52,7 +47,7 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className="font-body bg-background text-foreground antialiased"> {/* Changed to font-body */}
+      <body className="font-sans bg-background text-foreground antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
