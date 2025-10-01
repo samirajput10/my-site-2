@@ -215,9 +215,14 @@ export default function AiTryOnPageClient() {
           <ShieldAlert className="h-16 w-16 text-primary mx-auto mb-4" />
           <h1 className="text-2xl font-bold">Access Required</h1>
           <p className="text-muted-foreground mt-2 mb-4">You need to be logged in to use the AI Virtual Try-On.</p>
-           <Button onClick={() => router.push('/signup')}>
-                Create an Account
-            </Button>
+           <div className="flex justify-center gap-4">
+               <Button onClick={() => router.push('/login')}>
+                    Login
+                </Button>
+               <Button variant="outline" onClick={() => router.push('/signup')}>
+                    Create an Account
+                </Button>
+            </div>
         </div>
       </div>
     )
