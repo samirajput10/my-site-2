@@ -16,8 +16,8 @@ import { LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
 import { FaGoogle } from 'react-icons/fa';
 
 // Hardcoded admin credentials
-const ADMIN_EMAIL = "brandboy553340@gmail.com";
-const ADMIN_PASSWORD = "117691tcs";
+const ADMIN_EMAIL = "mansoor69@gmail.com";
+const ADMIN_PASSWORD = "mansoor69";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
