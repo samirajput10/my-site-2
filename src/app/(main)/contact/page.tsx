@@ -56,8 +56,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">Email Us</h3>
-                    <a href="mailto:aqibbrand784@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">
-                      brandboy553340@gmail.com
+                    <a href="mailto:support@stylefusion.com" className="text-muted-foreground hover:text-primary transition-colors">
+                      support@stylefusion.com
                     </a>
                   </div>
                 </div>
@@ -67,7 +67,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">Call Us</h3>
-                    <p className="text-muted-foreground">03174919129</p>
+                    <p className="text-muted-foreground">+1 (555) 123-4567</p>
                   </div>
                 </div>
                  <div className="flex items-start space-x-4">
@@ -76,7 +76,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">Visit Us</h3>
-                    <p className="text-muted-foreground">superior University, Lahore, Pakistan</p>
+                    <p className="text-muted-foreground">123 Fashion Ave, Style City, 45678</p>
                   </div>
                 </div>
               </CardContent>

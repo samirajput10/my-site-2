@@ -9,8 +9,11 @@ import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'Lustra - Discover Unique Jewelry',
-  description: 'Shop from hundreds of small jewelry designers. Each purchase supports an independent creator.',
+  title: 'StyleFusion - Discover Unique Fashion',
+  description: 'Shop from hundreds of small fashion brands. Each purchase supports an independent creator.',
+  openGraph: {
+    images: ['/og-image.png'],
+  }
 };
 
 export default function RootLayout({

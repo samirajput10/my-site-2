@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Percent, ArrowRight } from 'lucide-react';
@@ -6,15 +7,15 @@ export function SaleBanner() {
   return (
     <section 
       className="relative bg-cover bg-center text-white"
-      style={{ backgroundImage: "url('https://i.postimg.cc/rpkHkdRV/Generated-Image-September-09-2025-3-13-PM.png')" }}
-      data-ai-hint="jewelry sale background"
+      style={{ backgroundImage: "url('https://i.postimg.cc/tJnB8bM7/photo-1445205170230-053b83016050.jpg')" }}
+      data-ai-hint="fashion sale background"
     >
       <div className="absolute inset-0 bg-black/50 z-0" />
       <div className="relative z-10 container mx-auto px-4 py-16 md:py-24 text-center">
        <Percent className="mx-auto h-12 w-12 mb-4" />
         <h2 className="text-3xl font-headline font-bold mb-3 drop-shadow-md">Summer Sale is On!</h2>
         <p className="text-lg mb-6 max-w-2xl mx-auto drop-shadow-sm">
-          Get up to <span className="font-bold">20% off</span> on selected items. Don't miss out on these hot deals!
+          Get up to <span className="font-bold">50% off</span> on selected items. Don't miss out on these hot deals!
         </p>
         <Button asChild size="lg" className="bg-white text-black hover:bg-white/90">
           <Link href="/shop?sale=true">

@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -11,7 +12,7 @@ interface ProductImageProps {
   aiHint?: string;
 }
 
-const WHITELISTED_HOSTNAMES = ['placehold.co', 'firebasestorage.googleapis.com'];
+const WHITELISTED_HOSTNAMES = ['placehold.co', 'firebasestorage.googleapis.com', 'i.postimg.cc'];
 
 export function ProductImage({ src, alt, width, height, className, priority = false, aiHint = "fashion clothing" }: ProductImageProps) {
   const placeholderSrc = `https://placehold.co/${width}x${height}.png`;

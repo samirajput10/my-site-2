@@ -1,11 +1,11 @@
 
 import { z } from 'zod';
 
-export type ProductCategory = "Necklaces" | "Rings" | "Bracelets" | "Earrings" | "Anklets" | "Body Jewelry";
-export const ALL_CATEGORIES: ProductCategory[] = ["Necklaces", "Rings", "Bracelets", "Earrings", "Anklets", "Body Jewelry"];
+export type ProductCategory = "T-Shirts" | "Dresses" | "Pants" | "Jackets" | "Skirts" | "Loungewear";
+export const ALL_CATEGORIES: ProductCategory[] = ["T-Shirts", "Dresses", "Pants", "Jackets", "Skirts", "Loungewear"];
 
-export type ProductSize = "6" | "7" | "8" | "9" | "Adjustable" | "One Size";
-export const ALL_SIZES: ProductSize[] = ["6", "7", "8", "9", "Adjustable", "One Size"];
+export type ProductSize = "XS" | "S" | "M" | "L" | "XL" | "XXL" | "One Size";
+export const ALL_SIZES: ProductSize[] = ["XS", "S", "M", "L", "XL", "XXL", "One Size"];
 
 export type Product = {
   id: string; // Firestore document ID when fetched

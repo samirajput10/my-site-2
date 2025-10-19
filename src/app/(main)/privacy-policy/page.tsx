@@ -17,7 +17,7 @@ export default function PrivacyPolicyPage() {
           <CardContent className="p-8 md:p-12">
             <div className="prose dark:prose-invert max-w-none text-foreground/90 leading-relaxed space-y-8">
               <p>
-                Welcome to Lustra. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us.
+                Welcome to StyleFusion. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us.
               </p>
               
               <section>
@@ -70,12 +70,12 @@ export default function PrivacyPolicyPage() {
                   4. Contact Us
                 </h2>
                 <p>
-                  If you have questions or comments about this policy, you may email us at <a href="mailto:privacy@lustra.com" className="text-primary hover:underline">privacy@lustra.com</a> or by post to:
+                  If you have questions or comments about this policy, you may email us at <a href="mailto:privacy@stylefusion.com" className="text-primary hover:underline">privacy@stylefusion.com</a> or by post to:
                 </p>
                 <address className="not-italic bg-muted/50 p-4 rounded-md border-l-4 border-primary">
-                  Lustra<br />
+                  StyleFusion<br />
                   Privacy Department<br />
-                  Minhaj University, Lahore, Pakistan
+                  123 Fashion Ave, Style City, 45678
                 </address>
               </section>
 

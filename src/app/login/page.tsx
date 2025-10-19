@@ -133,15 +133,15 @@ export default function LoginPage() {
     <div className="relative flex min-h-screen items-center justify-center p-4">
       <div 
         className="absolute inset-0 bg-cover bg-center -z-10" 
-        style={{ backgroundImage: 'url(https://i.postimg.cc/mk9kwKzT/Gemini-Generated-Image-14suy014suy014su.png)' }} 
-        data-ai-hint="floating jewelry background"
+        style={{ backgroundImage: 'url(https://i.postimg.cc/DzvKcbzJ/Gemini-Generated-Image-jwx2z2jwx2z2jwx2.png)' }} 
+        data-ai-hint="floating fashion items background"
       />
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm -z-10" />
       <Card className="w-full max-w-md shadow-xl bg-card/80 backdrop-blur-lg border-white/20">
         <CardHeader className="text-center">
           <LogIn className="mx-auto h-12 w-12 text-primary mb-2" />
           <CardTitle className="text-3xl font-headline">Welcome Back!</CardTitle>
-          <CardDescription>Sign in to continue to Lustra.</CardDescription>
+          <CardDescription>Sign in to continue to StyleFusion.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">

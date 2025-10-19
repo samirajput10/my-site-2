@@ -47,26 +47,22 @@ export default function CartPage() {
       `- ${item.name} (x${item.quantity})`
     ).join('\n');
 
-    const message = `Hello Lustra! I'd like to place an order for the following items:\n\n${orderDetails}\n\n*Shipping: ${formatPrice(SHIPPING_COST)}*\n*Total: ${formatPrice(finalTotal)}*\n\nThank you!`;
+    const message = `Hello StyleFusion! I'd like to place an order for the following items:\n\n${orderDetails}\n\n*Shipping: ${formatPrice(SHIPPING_COST)}*\n*Total: ${formatPrice(finalTotal)}*\n\nThank you!`;
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     
-    // Reset try-on credits if user is logged in
+    // This logic was for AI Try-on, keeping the toast but removing credit logic
     if (currentUser) {
       try {
-        const userCreditsRef = doc(db, `userCredits/${currentUser.uid}`);
-        // Use setDoc with merge:true to create or update the document.
-        await setDoc(userCreditsRef, { credits: 4 }, { merge: true }); 
         toast({
           title: "Order Placed!",
           description: "Please finalize your order details on WhatsApp.",
         });
       } catch (error) {
-        console.error("Failed to reset user data on order:", error);
+        console.error("Failed to process order:", error);
         toast({
             title: "Order Placed!",
             description: "Please finalize your order details on WhatsApp.",
         });
-        // Don't block the user from ordering, just log the error.
       }
     } else {
          toast({
@@ -88,7 +84,7 @@ export default function CartPage() {
       <div className="container mx-auto py-12 text-center min-h-[calc(100vh-10rem)] flex flex-col items-center justify-center">
         <ShoppingBag className="h-24 w-24 text-muted-foreground mb-6" />
         <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
-        <p className="text-muted-foreground mb-8">Add some beautiful jewelry to your cart and let the journey begin!</p>
+        <p className="text-muted-foreground mb-8">Add some stylish apparel to your cart and let the journey begin!</p>
         <Button asChild size="lg">
           <Link href="/shop">Continue Shopping</Link>
         </Button>
