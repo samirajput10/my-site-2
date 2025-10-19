@@ -42,6 +42,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import Image from 'next/image';
 import { getAllProductsFromDB, updateProductInDB } from '@/actions/productActions';
 import { getProductDetailsFromImage } from '@/actions/adminActions';
+import { getSettings, saveSettings } from '@/actions/settingsActions';
 
 interface ProductFormState {
   name: string;
@@ -104,6 +105,72 @@ export default function AdminPanelPage() {
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [editFormState, setEditFormState] = useState<Partial<ProductFormState>>({});
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
+  const [saleImageFile, setSaleImageFile] = useState<File | null>(null);
+  const [heroPreview, setHeroPreview] = useState<string | null>(null);
+  const [salePreview, setSalePreview] = useState<string | null>(null);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  useEffect(() => {
+    const fetchSiteSettings = async () => {
+        const settings = await getSettings();
+        if (settings) {
+            if (settings.heroImageUrl) setHeroPreview(settings.heroImageUrl);
+            if (settings.saleImageUrl) setSalePreview(settings.saleImageUrl);
+        }
+    };
+    fetchSiteSettings();
+  }, []);
+
+  const handleHeroFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      setHeroImageFile(file);
+      setHeroPreview(URL.createObjectURL(file));
+    }
+  };
+  
+  const handleSaleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files?.[0]) {
+        const file = e.target.files[0];
+        setSaleImageFile(file);
+        setSalePreview(URL.createObjectURL(file));
+      }
+  };
+
+  const handleSaveSettings = async () => {
+    if (!currentUser) return;
+    setIsSavingSettings(true);
+    let heroImageUrl: string | undefined = heroPreview || undefined;
+    let saleImageUrl: string | undefined = salePreview || undefined;
+
+    try {
+        if (heroImageFile) {
+            toast({ title: 'Uploading Hero Banner...' });
+            const sRef = storageRef(storage, `settings/hero_banner_${Date.now()}`);
+            const uploadTask = await uploadBytes(sRef, heroImageFile);
+            heroImageUrl = await getDownloadURL(uploadTask.ref);
+            toast({ title: 'Hero Banner Uploaded!' });
+        }
+        if (saleImageFile) {
+            toast({ title: 'Uploading Sale Banner...' });
+            const sRef = storageRef(storage, `settings/sale_banner_${Date.now()}`);
+            const uploadTask = await uploadBytes(sRef, saleImageFile);
+            saleImageUrl = await getDownloadURL(uploadTask.ref);
+            toast({ title: 'Sale Banner Uploaded!' });
+        }
+        
+        await saveSettings({ heroImageUrl, saleImageUrl });
+        toast({ title: 'Site Settings Saved', description: 'Your new banner images are now live.' });
+
+    } catch (error: any) {
+        console.error("Error saving settings:", error);
+        toast({ title: 'Error Saving Settings', description: error.message, variant: 'destructive' });
+    } finally {
+        setIsSavingSettings(false);
+    }
+  };
 
   useEffect(() => {
     setCurrentApiKey(process.env.GEMINI_API_KEY || 'Not Set');
@@ -467,7 +534,7 @@ export default function AdminPanelPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <Card className="shadow-lg rounded-xl">
+        <Card className="shadow-lg rounded-xl lg:col-span-3">
           <CardHeader>
             <CardTitle className="text-xl flex items-center"><Package className="mr-2 h-5 w-5"/>Product Overview</CardTitle>
           </CardHeader>
@@ -476,34 +543,34 @@ export default function AdminPanelPage() {
               <span className="font-medium">Total Products</span>
               <span className="text-primary font-bold text-lg">{listingLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : allProducts.length}</span>
             </div>
-             <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-md">
-              <span className="font-medium">Total Sales (Mock)</span>
-              <span className="text-primary font-bold text-lg">125</span>
-            </div>
           </CardContent>
-        </Card>
-        
-        <Card className="lg:col-span-2 shadow-lg rounded-xl">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center"><DollarSign className="mr-2 h-5 w-5"/>Sales & Payouts (Mock Data)</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-secondary/50 rounded-md">
-                <Label className="text-sm text-muted-foreground">Total Revenue</Label>
-                <p className="text-2xl font-bold text-primary">{formatPrice(7850.50)}</p>
-              </div>
-              <div className="p-4 bg-secondary/50 rounded-md">
-                <Label className="text-sm text-muted-foreground">Next Estimated Payout</Label>
-                <p className="text-2xl font-bold text-primary">{formatPrice(1230.00)}</p>
-              </div>
-          </CardContent>
-          <CardFooter className="p-4">
-            <Button variant="outline" className="w-full">
-              <BarChart2 className="mr-2 h-4 w-4" /> View Detailed Analytics
-            </Button>
-          </CardFooter>
         </Card>
       </div>
+      
+       <Card className="w-full shadow-xl rounded-xl mb-8">
+        <CardHeader>
+          <CardTitle className="text-2xl flex items-center"><ImageIcon className="mr-2 h-6 w-6 text-primary"/>Site Customization</CardTitle>
+          <CardDescription>Update the main banner images for your homepage.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+                <Label htmlFor="hero-banner-upload">Hero Section Background</Label>
+                <Input id="hero-banner-upload" type="file" onChange={handleHeroFileChange} accept="image/*" disabled={isSavingSettings} />
+                {heroPreview && <Image src={heroPreview} alt="Hero preview" width={300} height={150} className="rounded-md border object-cover mt-2" />}
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="sale-banner-upload">Sale Banner Background</Label>
+                <Input id="sale-banner-upload" type="file" onChange={handleSaleFileChange} accept="image/*" disabled={isSavingSettings} />
+                {salePreview && <Image src={salePreview} alt="Sale preview" width={300} height={150} className="rounded-md border object-cover mt-2" />}
+            </div>
+        </CardContent>
+        <CardFooter>
+            <Button onClick={handleSaveSettings} disabled={isSavingSettings}>
+                {isSavingSettings ? <Loader2 className="mr-2 animate-spin" /> : null}
+                Save Settings
+            </Button>
+        </CardFooter>
+      </Card>
 
       <Card className="w-full shadow-xl rounded-xl mb-8">
         <CardHeader>
@@ -759,3 +826,5 @@ export default function AdminPanelPage() {
     </div>
   );
 }
+
+    
