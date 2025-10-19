@@ -35,8 +35,6 @@ interface ProductCardProps {
   secondaryInfo?: string;
 }
 
-const TRY_ON_LIMIT = 4;
-
 export function ProductCard({ 
   product, 
   discount, 
@@ -55,25 +53,10 @@ export function ProductCard({
   );
 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [availableCredits, setAvailableCredits] = useState(0);
 
    useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      if (user) {
-        const fetchCredits = async () => {
-            const userCreditsRef = doc(db, `userCredits/${user.uid}`);
-            const docSnap = await getDoc(userCreditsRef);
-            if (docSnap.exists()) {
-                setAvailableCredits(docSnap.data().credits || 0);
-            } else {
-                setAvailableCredits(0);
-            }
-        };
-        fetchCredits();
-      } else {
-        setAvailableCredits(0);
-      }
     });
     return () => unsubscribeAuth();
   }, []);
@@ -94,21 +77,6 @@ export function ProductCard({
     addToCart(product);
   };
   
-  const handleTryOn = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!currentUser) {
-      router.push('/login');
-      return;
-    }
-    if (availableCredits <= 0) {
-        // Optionally show a toast or alert here
-        alert("You have reached your try-on limit. Place an order to get more!");
-        return;
-    }
-    router.push(`/ai-try-on?productId=${product.id}`);
-  };
-
   const aiHintForImage = `${product.category.toLowerCase()} ${product.name.split(' ').slice(0,1).join(' ').toLowerCase()}`;
   const isOutOfStock = product.stock <= 0;
 
@@ -125,8 +93,6 @@ export function ProductCard({
   } else if (status) {
     displayBadge = <Badge variant="destructive" className="absolute top-2 left-2 text-xs px-2 py-1 z-10">{status}</Badge>;
   }
-
-  const hasReachedTryOnLimit = !currentUser || availableCredits <= 0;
 
   return (
     <Card className="group flex h-full flex-col overflow-hidden rounded-lg bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -218,14 +184,10 @@ export function ProductCard({
             </div>
           )}
         </CardContent>
-        <CardFooter className="mt-auto p-4 pt-0 grid grid-cols-2 gap-2">
+        <CardFooter className="mt-auto p-4 pt-0 grid grid-cols-1 gap-2">
            <Button size="sm" onClick={handleAddToCart} className={cn("w-full text-white", isOutOfStock ? "bg-red-500 hover:bg-red-600" : "bg-green-600 hover:bg-green-700")} disabled={isOutOfStock}>
               <ShoppingCart size={16} className="mr-2" />
               {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-            </Button>
-            <Button size="sm" onClick={handleTryOn} className="w-full" variant="outline" disabled={hasReachedTryOnLimit || isOutOfStock}>
-                <Camera size={16} className="mr-2" />
-                {isOutOfStock ? 'Unavailable' : hasReachedTryOnLimit ? 'Limit Reached' : 'Try On'}
             </Button>
         </CardFooter>
     </Card>

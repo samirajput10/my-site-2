@@ -58,10 +58,10 @@ export default function CartPage() {
         await setDoc(userCreditsRef, { credits: 4 }, { merge: true }); 
         toast({
           title: "Order Placed!",
-          description: "Your AI credits have been reset. Please finalize your order details on WhatsApp.",
+          description: "Please finalize your order details on WhatsApp.",
         });
       } catch (error) {
-        console.error("Failed to reset try-on credits:", error);
+        console.error("Failed to reset user data on order:", error);
         toast({
             title: "Order Placed!",
             description: "Please finalize your order details on WhatsApp.",

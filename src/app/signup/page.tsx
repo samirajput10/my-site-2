@@ -53,9 +53,9 @@ export default function SignupPage() {
       // By default, new signups are buyers. Admin role is assigned on login.
       localStorage.setItem(`userProfile_${user.uid}`, JSON.stringify({ role: 'buyer' }));
       
-      // Initialize their AI try-on credits to 4 in Firestore
-      const userCreditsRef = doc(db, `userCredits/${user.uid}`);
-      await setDoc(userCreditsRef, { credits: 4 });
+      // Initialize their user data in Firestore
+      const userDocRef = doc(db, `users/${user.uid}`);
+      await setDoc(userDocRef, { email: user.email, createdAt: new Date() });
 
       toast({
         title: 'Signup Successful',
@@ -94,11 +94,11 @@ export default function SignupPage() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Check if user is new, if so, set up their credits.
-      const userCreditsRef = doc(db, `userCredits/${user.uid}`);
-      const docSnap = await getDoc(userCreditsRef);
+      // Check if user is new, if so, set up their data.
+      const userDocRef = doc(db, `users/${user.uid}`);
+      const docSnap = await getDoc(userDocRef);
       if (!docSnap.exists()) {
-        await setDoc(userCreditsRef, { credits: 4 });
+        await setDoc(userDocRef, { email: user.email, createdAt: new Date() });
       }
 
       localStorage.setItem(`userProfile_${user.uid}`, JSON.stringify({ role: 'buyer' }));

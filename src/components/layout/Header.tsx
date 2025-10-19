@@ -31,7 +31,6 @@ import { useTheme } from 'next-themes';
 const mainNavLinks = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
-  { href: '/ai-try-on', label: 'AI Try-On', icon: Camera },
 ];
 
 export function Header() {
@@ -130,10 +129,6 @@ export function Header() {
               <Heart className="mr-2 h-4 w-4" />
               <span>Wishlist</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/ai-try-on')}>
-              <Camera className="mr-2 h-4 w-4" />
-              <span>AI Try-On</span>
-            </DropdownMenuItem>
             {isAdmin && (
               <DropdownMenuItem onClick={() => router.push('/seller/dashboard')}>
                 <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -155,11 +150,6 @@ export function Header() {
             <DropdownMenuItem onClick={() => router.push('/signup')}>
               <UserPlus className="mr-2 h-4 w-4" />
               <span>Sign Up</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/ai-try-on')}>
-              <Camera className="mr-2 h-4 w-4" />
-              <span>AI Try-On</span>
             </DropdownMenuItem>
           </>
         )}
@@ -199,7 +189,6 @@ export function Header() {
             <div className="px-2 py-1.5 text-sm font-semibold">{isAdmin ? "Admin Account" : "My Account"}</div>
             <p className="px-2 pb-2 text-xs text-muted-foreground">{currentUser.email}</p>
             <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/wishlist')} className="w-full justify-start"><Heart className="mr-2 h-4 w-4" />Wishlist</Button></SheetClose>
-            <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/ai-try-on')} className="w-full justify-start"><Camera className="mr-2 h-4 w-4" />AI Try-On</Button></SheetClose>
             {isAdmin && <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/seller/dashboard')} className="w-full justify-start"><LayoutDashboard className="mr-2 h-4 w-4" />Admin Panel</Button></SheetClose>}
             <DropdownMenuSeparator />
             <SheetClose asChild><Button variant="ghost" onClick={handleLogoutAndClose} className="w-full justify-start text-destructive"><LogOut className="mr-2 h-4 w-4" />Sign Out</Button></SheetClose>
@@ -208,8 +197,6 @@ export function Header() {
           <>
             <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/login')} className="w-full justify-start"><LogIn className="mr-2 h-4 w-4" />Login</Button></SheetClose>
             <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/signup')} className="w-full justify-start"><UserPlus className="mr-2 h-4 w-4" />Sign Up</Button></SheetClose>
-            <DropdownMenuSeparator />
-            <SheetClose asChild><Button variant="ghost" onClick={() => handleAndClose('/ai-try-on')} className="w-full justify-start"><Camera className="mr-2 h-4 w-4" />AI Try-On</Button></SheetClose>
           </>
         )}
       </div>
@@ -304,5 +291,3 @@ export function Header() {
     </header>
   );
 }
-
-    

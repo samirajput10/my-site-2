@@ -104,11 +104,11 @@ export default function LoginPage() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Check if user is new, if so, set up their credits
-      const userCreditsRef = doc(db, `userCredits/${user.uid}`);
-      const docSnap = await getDoc(userCreditsRef);
+      // Check if user is new, if so, set up their data
+      const userDocRef = doc(db, `users/${user.uid}`);
+      const docSnap = await getDoc(userDocRef);
       if (!docSnap.exists()) {
-        await setDoc(userCreditsRef, { credits: 4 });
+        await setDoc(userDocRef, { email: user.email, createdAt: new Date() });
       }
 
       // Set user role in local storage

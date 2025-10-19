@@ -65,7 +65,6 @@ export default function ProductDetailPage() {
   const { formatPrice } = useCurrency();
   
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [availableCredits, setAvailableCredits] = useState(0);
 
   const autoplayPlugin = useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true, stopOnMouseEnter: true })
@@ -74,18 +73,6 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      if (user) {
-        const fetchCredits = async () => {
-            const userCreditsRef = doc(db, `userCredits/${user.uid}`);
-            const docSnap = await getDoc(userCreditsRef);
-            if (docSnap.exists()) {
-                setAvailableCredits(docSnap.data().credits || 0);
-            } else {
-                setAvailableCredits(0);
-            }
-        };
-        fetchCredits();
-      }
     });
     return () => unsubscribeAuth();
   }, []);
@@ -186,7 +173,6 @@ export default function ProductDetailPage() {
   };
   
   const aiHintForImage = `${product.category.toLowerCase()} ${product.name.split(' ').slice(0,1).join(' ').toLowerCase()}`;
-  const hasReachedTryOnLimit = !currentUser || availableCredits <= 0;
   const isOutOfStock = product.stock <= 0;
 
   return (
@@ -282,24 +268,6 @@ export default function ProductDetailPage() {
                     {isWishlisted(product.id) ? 'Wishlisted' : 'Add to Wishlist'}
                   </Button>
                 </div>
-                 <Link
-                    href={`/ai-try-on?productId=${product.id}`}
-                    className={cn(
-                        buttonVariants({ size: 'lg'}), 
-                        "w-full bg-primary hover:bg-primary/90 text-primary-foreground",
-                        (hasReachedTryOnLimit || isOutOfStock) && "bg-muted hover:bg-muted text-muted-foreground cursor-not-allowed"
-                    )}
-                    aria-disabled={hasReachedTryOnLimit || isOutOfStock}
-                    onClick={(e) => (hasReachedTryOnLimit || isOutOfStock) && e.preventDefault()}
-                  >
-                    <Camera size={20} className="mr-2" />
-                     {isOutOfStock ? 'Unavailable for Try-On' : hasReachedTryOnLimit ? `No Credits Left` : `Try On Yourself (${availableCredits} left)`}
-                  </Link>
-                   {!currentUser && (
-                    <p className="text-xs text-center text-muted-foreground">
-                      <Link href="/login" className="underline">Log in</Link> to use the AI Try-On feature.
-                    </p>
-                  )}
               </div>
             </CardContent>
           </div>
@@ -319,5 +287,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
-    
