@@ -32,7 +32,7 @@ export function HeroSection() {
             <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-8 drop-shadow-md">
                 Each piece tells a story. Find the one that speaks to you. Curated collections from independent designers worldwide.
             </p>
-            <Button size="lg" asChild className="bg-white text-black hover:bg-white/90">
+            <Button size="lg" asChild className="bg-white text-black hover:bg-white/90 hover:text-[#6E8CFB]">
                 <Link href="/shop">
                     Shop Now <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
