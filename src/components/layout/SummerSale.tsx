@@ -1,0 +1,99 @@
+
+"use client";
+
+import { useEffect, useState, useRef } from 'react';
+import Link from 'next/link';
+import { ProductCard } from '@/components/products/ProductCard';
+import type { Product } from '@/types';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Loader2, Gift } from 'lucide-react';
+import { getAllProductsFromDB } from '@/actions/productActions';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+
+export function SummerSale() {
+  const [saleProducts, setSaleProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 3500, stopOnInteraction: true, stopOnMouseEnter: true })
+  );
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+
+      const allProductsResult = await getAllProductsFromDB();
+      if ('error' in allProductsResult) {
+        console.error("SummerSale Error:", allProductsResult.error);
+        setSaleProducts([]);
+      } else {
+        // Filter for products that are on sale
+        const onSale = allProductsResult.filter(p => p.originalPrice && p.originalPrice > p.price);
+        setSaleProducts(onSale);
+      }
+      
+      setIsLoading(false);
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <section className="bg-muted/30 py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-8">
+             <h2 className="text-2xl font-bold text-foreground flex items-center"><Gift className="mr-3 h-6 w-6 text-primary"/>Summer Sale</h2>
+          </div>
+          <div className="flex items-center justify-center min-h-[200px]">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (saleProducts.length === 0) {
+    return null; // Don't show if there are no sale products
+  }
+
+  return (
+    <section className="bg-muted/30 py-12">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold text-foreground flex items-center"><Gift className="mr-3 h-6 w-6 text-primary"/>Summer Sale</h2>
+          <Button variant="link" asChild className="text-primary hover:underline">
+            <Link href="/shop?sale=true">View All <ArrowRight className="ml-1 h-4 w-4" /></Link>
+          </Button>
+        </div>
+        
+        <Carousel
+          plugins={[autoplayPlugin.current]}
+          className="w-full"
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+        >
+          <CarouselContent className="-ml-4">
+            {saleProducts.map((product) => (
+              <CarouselItem key={product.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                <div className="p-1 h-full">
+                  <ProductCard product={product} />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </div>
+    </section>
+  );
+}
