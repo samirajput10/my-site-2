@@ -12,7 +12,7 @@ export function HeroSection() {
   ];
     
   return (
-    <section className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center text-center text-white overflow-hidden">
+    <section className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center text-center text-white overflow-hidden dark:shadow-[0_4px_14px_0_rgba(255,255,255,0.1)]">
         <div 
             className="absolute inset-0 bg-cover bg-center z-0" 
             style={{ backgroundImage: 'url("/images/Whisk_146c52a8b90425f9e5e4f578f20215abeg.png")' }}
