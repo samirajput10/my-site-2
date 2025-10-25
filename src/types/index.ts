@@ -7,6 +7,9 @@ export const ALL_CATEGORIES: ProductCategory[] = ["T-Shirts", "Dresses", "Pants"
 export type ProductSize = "XS" | "S" | "M" | "L" | "XL" | "XXL" | "One Size";
 export const ALL_SIZES: ProductSize[] = ["XS", "S", "M", "L", "XL", "XXL", "One Size"];
 
+export type ProductSeason = "Summer" | "Winter";
+export const ALL_SEASONS: ProductSeason[] = ["Summer", "Winter"];
+
 export type Product = {
   id: string; // Firestore document ID when fetched
   name: string;
@@ -18,6 +21,7 @@ export type Product = {
   sizes: ProductSize[];
   stock: number; // Added stock quantity
   sellerId: string; 
+  season?: ProductSeason; // Added season
   createdAt?: string; // Serialized Firestore Timestamp (ISO string)
   updatedAt?: string; // Serialized Firestore Timestamp (ISO string)
 };
@@ -34,6 +38,7 @@ export const ProductSchema = z.object({
   sizes: z.array(z.enum(ALL_SIZES)),
   stock: z.number().int().min(0),
   sellerId: z.string(),
+  season: z.enum(ALL_SEASONS).optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });

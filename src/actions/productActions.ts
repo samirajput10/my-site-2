@@ -2,8 +2,8 @@
 "use server";
 
 import { db } from '@/lib/firebase/config';
-import type { Product, ProductCategory, ProductSize } from '@/types';
-import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
+import type { Product, ProductCategory, ProductSeason, ProductSize } from '@/types';
+import { ALL_CATEGORIES, ALL_SEASONS, ALL_SIZES } from '@/types';
 import { collection, getDocs, doc, getDoc, query, orderBy, limit, updateDoc, serverTimestamp } from "firebase/firestore";
 
 // Helper to ensure imageUrls is always a non-empty array
@@ -52,6 +52,7 @@ export async function getAllProductsFromDB(): Promise<Product[] | { error: strin
         sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
         stock: typeof data.stock === 'number' ? data.stock : 0,
         sellerId: data.sellerId || "unknown_seller",
+        season: (ALL_SEASONS.includes(data.season) ? data.season : undefined) as ProductSeason | undefined,
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
         updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : undefined,
       };
@@ -98,6 +99,7 @@ export async function getProductFromDB(productId: string): Promise<Product | nul
       sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
       stock: typeof data.stock === 'number' ? data.stock : 10, // Default to 10 if not set
       sellerId: data.sellerId || "unknown_seller",
+      season: (ALL_SEASONS.includes(data.season) ? data.season : undefined) as ProductSeason | undefined,
       createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
       updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : undefined,
     };
@@ -137,6 +139,10 @@ export async function updateProductInDB(productId: string, updatedData: Partial<
                 .map((s: string) => s.trim())
                 .filter((s: string) => ALL_SIZES.includes(s as ProductSize));
             dataToUpdate.sizes = parsedSizes.length > 0 ? parsedSizes : ['One Size'];
+        }
+
+        if (dataToUpdate.season === '') {
+            dataToUpdate.season = null;
         }
 
         // Remove id from the data object as it shouldn't be updated

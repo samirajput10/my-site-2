@@ -36,8 +36,8 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { auth, db, storage } from '@/lib/firebase/config';
-import type { Product, ProductCategory, ProductSize } from '@/types';
-import { ALL_CATEGORIES, ALL_SIZES } from '@/types';
+import type { Product, ProductCategory, ProductSeason, ProductSize } from '@/types';
+import { ALL_CATEGORIES, ALL_SIZES, ALL_SEASONS } from '@/types';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import Image from 'next/image';
 import { getAllProductsFromDB, updateProductInDB } from '@/actions/productActions';
@@ -52,6 +52,7 @@ interface ProductFormState {
   category: string;
   sizes: string;
   stock: string;
+  season: string;
 }
 
 const recommendedDbRules = `{
@@ -78,7 +79,7 @@ export default function AdminPanelPage() {
   const { formatPrice } = useCurrency();
   
   const [formState, setFormState] = useState<ProductFormState>({
-    name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10',
+    name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: ''
   });
   const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
   const [previewUrls, setPreviewUrls] = useState<(string | null)[]>([null, null, null]);
@@ -207,6 +208,7 @@ export default function AdminPanelPage() {
         category: productToEdit.category,
         sizes: productToEdit.sizes.join(', '),
         stock: String(productToEdit.stock),
+        season: productToEdit.season || '',
       });
     } else {
       setEditFormState({});
@@ -344,6 +346,10 @@ export default function AdminPanelPage() {
         createdAt: serverTimestamp(),
       };
 
+      if (formState.season && ALL_SEASONS.includes(formState.season as ProductSeason)) {
+          newProductData.season = formState.season;
+      }
+
       if (formState.originalPrice && parseFloat(formState.originalPrice) > parseFloat(formState.price)) {
           newProductData.originalPrice = parseFloat(formState.originalPrice);
       }
@@ -351,7 +357,7 @@ export default function AdminPanelPage() {
       await addDoc(productsCollectionRef, newProductData);
       
       toast({ title: "Product Added", description: `Your product has been successfully listed.` });
-      setFormState({ name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10' });
+      setFormState({ name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '' });
       setImageFiles([null, null, null]);
       setPreviewUrls([null, null, null]);
       fileInputRefs.current.forEach(input => {
@@ -394,6 +400,7 @@ export default function AdminPanelPage() {
         category: editFormState.category as ProductCategory,
         sizes: editFormState.sizes ? editFormState.sizes.split(',').map(s => s.trim() as ProductSize) : undefined,
         stock: editFormState.stock ? parseInt(editFormState.stock, 10) : undefined,
+        season: editFormState.season as ProductSeason | undefined,
     };
 
     const result = await updateProductInDB(productToEdit.id, updatedProductData);
@@ -525,6 +532,11 @@ export default function AdminPanelPage() {
                 <div>
                     <Label htmlFor="originalPrice">Original Price (Optional)</Label>
                     <Input id="originalPrice" name="originalPrice" type="number" value={formState.originalPrice} onChange={handleChange} placeholder="e.g., 599" step="1" min="1" disabled={isSubmitting}/>
+                </div>
+                <div>
+                    <Label htmlFor="season">Season (e.g., Summer, Winter)</Label>
+                    <Input id="season" name="season" value={formState.season} onChange={handleChange} list="season-options" placeholder="Optional" disabled={isSubmitting}/>
+                    <datalist id="season-options">{ALL_SEASONS.map(s => <option key={s} value={s} />)}</datalist>
                 </div>
              </div>
             <div>
@@ -698,6 +710,10 @@ export default function AdminPanelPage() {
                         <Label htmlFor="edit-stock">Stock *</Label>
                         <Input id="edit-stock" name="stock" type="number" value={editFormState.stock || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
                       </div>
+                    </div>
+                    <div>
+                        <Label htmlFor="edit-season">Season</Label>
+                        <Input id="edit-season" name="season" value={editFormState.season || ''} onChange={handleEditFormChange} list="season-options" disabled={isUpdating} placeholder="e.g., Summer"/>
                     </div>
                      <div>
                         <Label>Product Image URLs</Label>
