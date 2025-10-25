@@ -1,19 +1,14 @@
 "use client";
-import type { Variants } from "motion";
-import { motion, useAnimation } from "motion/react";
+import type { Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import React from 'react';
 
 const pathVariants: Variants = {
-  normal: {
+  initial: {
     translateX: 0,
-    transition: {
-      type: "spring",
-      stiffness: 200,
-      damping: 13,
-    },
   },
-  animate: {
-    translateX: [-6, 0],
+  hover: {
+    translateX: [-4, 0],
     transition: {
       delay: 0.1,
       type: "spring",
@@ -37,12 +32,11 @@ const Users = ({
   stroke = "currentColor",
   ...props
 }: UsersProps) => {
-  const controls = useAnimation();
 
   return (
-    <div
-      onMouseEnter={() => controls.start("animate")}
-      onMouseLeave={() => controls.start("normal")}
+    <motion.div
+      initial="initial"
+      whileHover="hover"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -61,15 +55,13 @@ const Users = ({
         <motion.path
           d="M22 21v-2a4 4 0 0 0-3-3.87"
           variants={pathVariants}
-          animate={controls}
         />
         <motion.path
           d="M16 3.13a4 4 0 0 1 0 7.75"
           variants={pathVariants}
-          animate={controls}
         />
       </svg>
-    </div>
+    </motion.div>
   );
 };
 
