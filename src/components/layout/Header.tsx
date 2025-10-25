@@ -161,7 +161,7 @@ export function Header() {
     <>
       {mainNavLinks.map((link) => (
         <SheetClose key={link.label} asChild>
-          <Button variant="ghost" asChild className="w-full justify-start text-lg py-3 text-foreground hover:text-primary">
+          <Button variant="ghost" asChild className="w-full justify-start text-lg py-3 text-foreground hover:text-[#6E8CFB]">
               <Link href={link.href} onClick={onItemClick}>
                 {link.icon && <link.icon className="mr-2 h-4 w-4" />}
                 {link.label}
@@ -211,7 +211,7 @@ export function Header() {
           <Logo />
           <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
             {mainNavLinks.map((link) => (
-              <Button key={link.label} variant="ghost" asChild className="text-foreground hover:text-primary">
+              <Button key={link.label} variant="ghost" asChild className="text-foreground hover:text-[#6E8CFB]">
                 <Link href={link.href}>
                   {link.icon && <link.icon className="mr-2 h-4 w-4" />}
                   {link.label}
@@ -264,7 +264,7 @@ export function Header() {
             <div className="md:hidden">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-[#6E8CFB]">
                     <Menu className="h-6 w-6" />
                     <span className="sr-only">Open menu</span>
                   </Button>
