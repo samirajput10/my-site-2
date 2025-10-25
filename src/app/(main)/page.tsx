@@ -4,6 +4,7 @@ import { PersonalizedRecommendations } from '@/components/layout/PersonalizedRec
 import { NewArrivals } from '@/components/layout/NewArrivals';
 import { SaleBanner } from '@/components/layout/SaleBanner';
 import { SummerSale } from '@/components/layout/SummerSale';
+import { ChildwearSection } from '@/components/layout/ChildwearSection';
 
 export default function HomePage() {
   return (
@@ -13,6 +14,7 @@ export default function HomePage() {
       <SaleBanner />
       <SummerSale />
       <PersonalizedRecommendations />
+      <ChildwearSection />
     </>
   );
 }
