@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Heart, ShoppingCart, Menu, X, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Sun, Moon, Camera, Shirt } from 'lucide-react'; // Added icons
+import { ShoppingCart, Menu, X, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Sun, Moon, Camera, Shirt } from 'lucide-react'; // Added icons
 import { Logo } from '@/components/icons/Logo';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -29,6 +29,9 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTheme } from 'next-themes';
 import { Users } from '@/components/icons/Users';
 import { PackageOpen } from '../icons/PackageOpen';
+import { HeartHandshake } from '../icons/HeartHandshake';
+import { Heart } from 'lucide-react';
+
 
 const mainNavLinks = [
   { href: '/', label: 'Home' },
@@ -227,7 +230,7 @@ export function Header() {
             
             <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-[#6E8CFB] relative">
               <Link href="/wishlist">
-                <Heart className="h-5 w-5" />
+                <HeartHandshake />
                 {wishlistItems.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center">
                     {wishlistItems.length}
