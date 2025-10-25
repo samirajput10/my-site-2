@@ -1,8 +1,8 @@
 
 import { z } from 'zod';
 
-export type ProductCategory = "T-Shirts" | "Dresses" | "Pants" | "Jackets" | "Skirts" | "Loungewear";
-export const ALL_CATEGORIES: ProductCategory[] = ["T-Shirts", "Dresses", "Pants", "Jackets", "Skirts", "Loungewear"];
+export type ProductCategory = "T-Shirts" | "Dresses" | "Pants" | "Jackets" | "Skirts" | "Loungewear" | "Tracksuits" | "Menswear" | "Childwear";
+export const ALL_CATEGORIES: ProductCategory[] = ["T-Shirts", "Dresses", "Pants", "Jackets", "Skirts", "Loungewear", "Tracksuits", "Menswear", "Childwear"];
 
 export type ProductSize = "XS" | "S" | "M" | "L" | "XL" | "XXL" | "One Size";
 export const ALL_SIZES: ProductSize[] = ["XS", "S", "M", "L", "XL", "XXL", "One Size"];
