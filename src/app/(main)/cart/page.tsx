@@ -23,7 +23,7 @@ export default function CartPage() {
   const { toast } = useToast();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  const WHATSAPP_NUMBER = "923174919129"; // Should match the number in ChatButton.tsx
+  const WHATSAPP_NUMBER = "923204429871"; // Should match the number in ChatButton.tsx
   const SHIPPING_COST = 250;
   const finalTotal = totalPrice + SHIPPING_COST;
 
