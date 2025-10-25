@@ -6,6 +6,11 @@ import { ArrowRight } from 'lucide-react';
 import GradientText from './GradientText';
 
 export function HeroSection() {
+  const rainbowColors = [
+    '#ff8a80', '#ffc17e', '#ffff8d', '#a2d6a5', 
+    '#80d8ff', '#82b1ff', '#b39ddb', '#ff8a80'
+  ];
+    
   return (
     <section className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center text-center text-white overflow-hidden">
         <div 
@@ -17,7 +22,11 @@ export function HeroSection() {
         </div>
 
         <div className="relative z-20 container mx-auto px-4">
-            <GradientText className="text-4xl md:text-6xl font-headline font-extrabold text-white drop-shadow-lg mb-4 leading-tight">
+            <GradientText 
+              className="text-4xl md:text-6xl font-headline font-extrabold text-white drop-shadow-lg mb-4 leading-tight"
+              colors={rainbowColors}
+              animationSpeed={10}
+            >
                Where Comfort Meets Luxury Style
             </GradientText>
             <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-8 drop-shadow-md">
