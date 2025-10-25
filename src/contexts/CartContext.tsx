@@ -23,7 +23,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Load cart from localStorage on initial render
   useEffect(() => {
-    const storedCart = localStorage.getItem('lustraCart');
+    const storedCart = localStorage.getItem('velbricCart');
     if (storedCart) {
       setCartItems(JSON.parse(storedCart));
     }
@@ -31,7 +31,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('lustraCart', JSON.stringify(cartItems));
+    localStorage.setItem('velbricCart', JSON.stringify(cartItems));
   }, [cartItems]);
 
   const addToCart = (product: Product) => {

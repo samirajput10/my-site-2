@@ -18,7 +18,7 @@ const faqData = [
     answer: "Standard shipping typically takes 5-7 business days within the continental US. Expedited shipping options are available at checkout. You will receive a tracking number via email once your order has shipped."
   },
   {
-    question: "How does StyleFusion support independent designers?",
+    question: "How does Velbric support independent designers?",
     answer: "Our entire business model is built around supporting small brands and independent creators. We provide a platform for them to reach a wider audience, and a significant portion of every sale goes directly to the designer of the product you purchase."
   },
   {

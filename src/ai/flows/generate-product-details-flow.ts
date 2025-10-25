@@ -44,7 +44,7 @@ const prompt = ai.definePrompt({
   name: 'generateProductDetailsPrompt',
   input: {schema: GenerateProductDetailsFromImageInputSchema},
   output: {schema: GenerateProductDetailsFromImageOutputSchema},
-  prompt: `You are an expert e-commerce merchandiser for a clothing store called StyleFusion.
+  prompt: `You are an expert e-commerce merchandiser for a clothing store called Velbric.
   
 Analyze the following image of a clothing product and generate a product name, description, and select the best category.
 The category must be one of the following: ${ALL_CATEGORIES.join(', ')}.

@@ -9,7 +9,7 @@ import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'StyleFusion - Discover Unique Fashion',
+  title: 'Velbric - Discover Unique Fashion',
   description: 'Shop from hundreds of small fashion brands. Each purchase supports an independent creator.',
   openGraph: {
     images: ['/og-image.png'],

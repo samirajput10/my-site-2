@@ -17,7 +17,7 @@ export default function TermsOfServicePage() {
           <CardContent className="p-8 md:p-12">
             <div className="prose dark:prose-invert max-w-none text-foreground/90 leading-relaxed space-y-8">
               <p>
-                By accessing or using the StyleFusion website and services, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, then you may not access the service. This is a sample terms of service and should be replaced with your own legally reviewed terms.
+                By accessing or using the Velbric website and services, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, then you may not access the service. This is a sample terms of service and should be replaced with your own legally reviewed terms.
               </p>
 
               <section>
@@ -52,7 +52,7 @@ export default function TermsOfServicePage() {
                   3. Intellectual Property
                 </h2>
                 <p>
-                  The service and its original content, features, and functionality are and will remain the exclusive property of StyleFusion and its licensors. The service is protected by copyright, trademark, and other laws of both your country and foreign countries. Our trademarks and trade dress may not be used in connection with any product or service without the prior written consent of StyleFusion.
+                  The service and its original content, features, and functionality are and will remain the exclusive property of Velbric and its licensors. The service is protected by copyright, trademark, and other laws of both your country and foreign countries. Our trademarks and trade dress may not be used in connection with any product or service without the prior written consent of Velbric.
                 </p>
               </section>
 

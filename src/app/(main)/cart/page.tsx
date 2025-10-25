@@ -47,7 +47,7 @@ export default function CartPage() {
       `- ${item.name} (x${item.quantity})`
     ).join('\n');
 
-    const message = `Hello StyleFusion! I'd like to place an order for the following items:\n\n${orderDetails}\n\n*Shipping: ${formatPrice(SHIPPING_COST)}*\n*Total: ${formatPrice(finalTotal)}*\n\nThank you!`;
+    const message = `Hello Velbric! I'd like to place an order for the following items:\n\n${orderDetails}\n\n*Shipping: ${formatPrice(SHIPPING_COST)}*\n*Total: ${formatPrice(finalTotal)}*\n\nThank you!`;
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     
     // This logic was for AI Try-on, keeping the toast but removing credit logic

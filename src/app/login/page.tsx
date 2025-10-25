@@ -141,7 +141,7 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <LogIn className="mx-auto h-12 w-12 text-primary mb-2" />
           <CardTitle className="text-3xl font-headline">Welcome Back!</CardTitle>
-          <CardDescription>Sign in to continue to StyleFusion.</CardDescription>
+          <CardDescription>Sign in to continue to Velbric.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">

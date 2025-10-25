@@ -56,8 +56,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">Email Us</h3>
-                    <a href="mailto:support@stylefusion.com" className="text-muted-foreground hover:text-primary transition-colors">
-                      support@stylefusion.com
+                    <a href="mailto:support@velbric.com" className="text-muted-foreground hover:text-primary transition-colors">
+                      support@velbric.com
                     </a>
                   </div>
                 </div>
