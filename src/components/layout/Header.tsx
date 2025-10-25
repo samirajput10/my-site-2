@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Heart, ShoppingCart, User, Menu, X, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Sun, Moon, Camera, Shirt } from 'lucide-react'; // Added icons
+import { Heart, ShoppingCart, Menu, X, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Sun, Moon, Camera, Shirt } from 'lucide-react'; // Added icons
 import { Logo } from '@/components/icons/Logo';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTheme } from 'next-themes';
+import { Users } from '@/components/icons/Users';
 
 const mainNavLinks = [
   { href: '/', label: 'Home' },
@@ -109,7 +110,7 @@ export function Header() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-[#6E8CFB]">
-          <User className="h-5 w-5" />
+          <Users />
           <span className="sr-only">User Menu</span>
         </Button>
       </DropdownMenuTrigger>
