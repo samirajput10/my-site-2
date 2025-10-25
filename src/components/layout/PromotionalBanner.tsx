@@ -25,7 +25,7 @@ export function PromotionalBanner() {
 
   return (
     <div className={cn(
-        "relative bg-primary text-primary-foreground text-sm font-medium text-center z-50 transition-all duration-300 ease-in-out overflow-hidden",
+        "relative bg-primary text-primary-foreground text-sm font-medium text-center z-50 transition-all duration-300 ease-in-out overflow-hidden dark:shadow-[0_0_15px_rgba(255,255,255,0.2)]",
         isVisible ? "py-2 px-10 h-10" : "py-0 h-0"
     )}>
         <div className="flex items-center justify-center h-full">
