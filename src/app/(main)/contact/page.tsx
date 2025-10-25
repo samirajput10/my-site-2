@@ -67,7 +67,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">Call Us</h3>
-                    <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                    <p className="text-muted-foreground">+92 320 4429871</p>
                   </div>
                 </div>
                  <div className="flex items-start space-x-4">
@@ -76,7 +76,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-foreground">Visit Us</h3>
-                    <p className="text-muted-foreground">123 Fashion Ave, Style City, 45678</p>
+                    <p className="text-muted-foreground">Lahore ,pakistan</p>
                   </div>
                 </div>
               </CardContent>

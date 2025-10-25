@@ -32,21 +32,21 @@ export default function AboutUsPage() {
                     <div className="flex flex-col items-center space-y-2">
                         <Avatar className="w-32 h-32 mb-2 border-4 border-primary/20 shadow-lg">
                             <AvatarImage src="https://i.postimg.cc/kG8qW1q5/photo-1544005313-94ddf0286df2.jpg" alt="Alex" data-ai-hint="woman portrait"/>
-                            <AvatarFallback>AK</AvatarFallback>
+                            <AvatarFallback>MI</AvatarFallback>
                         </Avatar>
-                        <h3 className="text-xl font-semibold font-headline text-foreground">Alex Kim</h3>
+                        <h3 className="text-xl font-semibold font-headline text-foreground">Mansoor Irshad</h3>
                         <p className="text-primary font-medium">Co-Founder & Creative Director</p>
-                        <p className="mt-2 text-muted-foreground text-center max-w-xs">Alex is the visionary behind Velbric, passionate about curating unique styles and empowering independent designers.</p>
+                        <p className="mt-2 text-muted-foreground text-center max-w-xs">mansoor is the visionary behind Velbric, passionate about curating unique styles and empowering independent designers.</p>
                     </div>
                     {/* Founder 2 */}
                     <div className="flex flex-col items-center space-y-2">
                         <Avatar className="w-32 h-32 mb-2 border-4 border-primary/20 shadow-lg">
                            <AvatarImage src="https://i.postimg.cc/T3h2b3hR/photo-1507003211169-0a1dd7228f2d.jpg" alt="Ben" data-ai-hint="man portrait"/>
-                           <AvatarFallback>BS</AvatarFallback>
+                           <AvatarFallback>RS</AvatarFallback>
                         </Avatar>
-                        <h3 className="text-xl font-semibold font-headline text-foreground">Ben Carter</h3>
+                        <h3 className="text-xl font-semibold font-headline text-foreground">Rana shehzad</h3>
                         <p className="text-primary font-medium">Co-Founder & Tech Lead</p>
-                        <p className="mt-2 text-muted-foreground text-center max-w-xs">Ben is the technical architect behind Velbric, blending his love for code with a keen eye for user experience to build a seamless platform.</p>
+                        <p className="mt-2 text-muted-foreground text-center max-w-xs">shehzad is the technical architect behind Velbric, blending his love for code with a keen eye for user experience to build a seamless platform.</p>
                     </div>
                 </div>
             </div>

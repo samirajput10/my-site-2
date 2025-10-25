@@ -15,7 +15,7 @@ export function HeroSection() {
     <section className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center text-center text-white overflow-hidden">
         <div 
             className="absolute inset-0 bg-cover bg-center z-0" 
-            style={{ backgroundImage: 'url(https://i.postimg.cc/DzvKcbzJ/Gemini-Generated-Image-jwx2z2jwx2z2jwx2.png)' }}
+            style={{ backgroundImage: 'url("/images/Whisk_146c52a8b90425f9e5e4f578f20215abeg.png")' }}
             data-ai-hint="fashion runway models"
         >
              <div className="absolute inset-0 bg-black/40 z-10" />
