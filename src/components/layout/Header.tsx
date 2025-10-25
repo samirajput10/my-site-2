@@ -108,7 +108,7 @@ export function Header() {
   const UserActionsMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-[#6E8CFB]">
           <User className="h-5 w-5" />
           <span className="sr-only">User Menu</span>
         </Button>
@@ -223,7 +223,7 @@ export function Header() {
 
         <div className="flex items-center gap-2 md:gap-4">
             
-            <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary relative">
+            <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-[#6E8CFB] relative">
               <Link href="/wishlist">
                 <Heart className="h-5 w-5" />
                 {wishlistItems.length > 0 && (
@@ -234,7 +234,7 @@ export function Header() {
                 <span className="sr-only">Wishlist</span>
               </Link>
             </Button>
-            <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-primary relative">
+            <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-[#6E8CFB] relative">
               <Link href="/cart">
                 <ShoppingCart className="h-5 w-5" />
                 {cartTotalItems > 0 && (
@@ -249,7 +249,7 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-muted-foreground hover:text-primary"
+              className="text-muted-foreground hover:text-[#6E8CFB]"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             >
               <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -271,7 +271,6 @@ export function Header() {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] p-0 flex flex-col bg-card text-card-foreground">
                   <SheetHeader className="flex flex-row justify-between items-center p-4 border-b border-border">
-                    <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
                     <SheetClose asChild><Logo /></SheetClose>
                     <SheetClose asChild>
                        <Button variant="ghost" size="icon"><X className="h-5 w-5"/></Button>
@@ -291,5 +290,3 @@ export function Header() {
     </header>
   );
 }
-
-    
