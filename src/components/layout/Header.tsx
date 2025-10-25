@@ -209,7 +209,7 @@ export function Header() {
 
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-md dark:shadow-[0_4px_14px_0_rgba(255,255,255,0.08)]">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-lg dark:shadow-[0_4px_14px_0_rgba(255,255,255,0.08)]">
       <div className="flex h-20 items-center justify-between px-6 md:px-10">
         <div className="flex items-center gap-6">
           <Logo />
@@ -263,6 +263,7 @@ export function Header() {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[300px] p-0 flex flex-col bg-card text-card-foreground">
                   <SheetHeader className="flex flex-row justify-between items-center p-4 border-b border-border">
+                    <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
                     <SheetClose asChild><Logo /></SheetClose>
                     <SheetClose asChild>
                        <Button variant="ghost" size="icon"><X className="h-5 w-5"/></Button>
@@ -282,5 +283,3 @@ export function Header() {
     </header>
   );
 }
-
-    
