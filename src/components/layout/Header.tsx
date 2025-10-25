@@ -31,7 +31,6 @@ import { useTheme } from 'next-themes';
 const mainNavLinks = [
   { href: '/', label: 'Home' },
   { href: '/shop', label: 'Shop' },
-  { href: '/style-assistant', label: 'AI Stylist', icon: Sparkles },
 ];
 
 export function Header() {
@@ -292,3 +291,5 @@ export function Header() {
     </header>
   );
 }
+
+    
