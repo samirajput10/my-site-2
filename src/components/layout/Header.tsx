@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { ShoppingCart, Menu, X, LogIn, LogOut, UserPlus, Settings, ShoppingBag, Sparkles, LayoutDashboard, ChevronDown, Check, Camera, Shirt } from 'lucide-react'; // Added icons
+import { ShoppingCart, Menu, X, LogIn, LogOut, UserPlus, Settings, ShoppingBag, LayoutDashboard, ChevronDown, Check, Camera, Shirt } from 'lucide-react'; // Added icons
 import { Logo } from '@/components/icons/Logo';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -282,3 +282,5 @@ export function Header() {
     </header>
   );
 }
+
+    
