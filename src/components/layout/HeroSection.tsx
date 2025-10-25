@@ -18,7 +18,7 @@ export function HeroSection() {
 
         <div className="relative z-20 container mx-auto px-4">
             <GradientText className="text-4xl md:text-6xl font-headline font-extrabold text-white drop-shadow-lg mb-4 leading-tight">
-               Define Your Style Narrative
+               Where Comfort Meets Luxury Style
             </GradientText>
             <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-8 drop-shadow-md">
                 Each piece tells a story. Find the one that speaks to you. Curated collections from independent designers worldwide.
