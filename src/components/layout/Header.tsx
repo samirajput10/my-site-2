@@ -28,6 +28,7 @@ import { useRouter } from 'next/navigation';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTheme } from 'next-themes';
 import { Users } from '@/components/icons/Users';
+import { PackageOpen } from '../icons/PackageOpen';
 
 const mainNavLinks = [
   { href: '/', label: 'Home' },
@@ -237,7 +238,7 @@ export function Header() {
             </Button>
             <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-[#6E8CFB] relative">
               <Link href="/cart">
-                <ShoppingCart className="h-5 w-5" />
+                <PackageOpen />
                 {cartTotalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center">
                     {cartTotalItems}
