@@ -168,7 +168,6 @@ export function Header() {
         <SheetClose key={link.label} asChild>
           <Button variant="ghost" asChild className="w-full justify-start text-lg py-3 text-foreground hover:text-[#6E8CFB]">
               <Link href={link.href} onClick={onItemClick}>
-                {link.icon && <link.icon className="mr-2 h-4 w-4" />}
                 {link.label}
               </Link>
           </Button>
@@ -218,7 +217,6 @@ export function Header() {
             {mainNavLinks.map((link) => (
               <Button key={link.label} variant="ghost" asChild className="text-foreground hover:text-[#6E8CFB]">
                 <Link href={link.href}>
-                  {link.icon && <link.icon className="mr-2 h-4 w-4" />}
                   {link.label}
                 </Link>
               </Button>
@@ -230,7 +228,7 @@ export function Header() {
             
             <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-[#6E8CFB] relative">
               <Link href="/wishlist">
-                <HeartHandshake />
+                <HeartHandshake className="w-6 h-6"/>
                 {wishlistItems.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center">
                     {wishlistItems.length}
@@ -241,7 +239,7 @@ export function Header() {
             </Button>
             <Button variant="ghost" size="icon" asChild className="text-muted-foreground hover:text-[#6E8CFB] relative">
               <Link href="/cart">
-                <PackageOpen />
+                <PackageOpen className="w-6 h-6"/>
                 {cartTotalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center">
                     {cartTotalItems}
