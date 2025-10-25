@@ -43,7 +43,7 @@ export function ProductImage({ src, alt, width, height, className, priority = fa
   const imageClasses = "object-cover transition-transform duration-300 group-hover:scale-105 w-full h-full";
 
   return (
-    <div className={cn("relative overflow-hidden rounded-md bg-muted", className)} style={{ width, height }}>
+    <div className={cn("relative overflow-hidden rounded-md bg-muted", className)} style={{ width: '100%', height: 'auto', aspectRatio: `${width}/${height}` }}>
       {isWhitelisted ? (
         <Image
           src={src || placeholderSrc}
@@ -65,7 +65,7 @@ export function ProductImage({ src, alt, width, height, className, priority = fa
           className={imageClasses}
           data-ai-hint={aiHint}
           onError={handleError}
-          style={{ objectFit: 'cover' }}
+          style={{ objectFit: 'cover', width: '100%', height: '100%' }}
           loading={priority ? 'eager' : 'lazy'}
         />
       )}

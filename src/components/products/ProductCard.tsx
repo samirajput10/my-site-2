@@ -110,8 +110,8 @@ export function ProductCard({
                       <ProductImage
                         src={url}
                         alt={`${product.name} image ${index + 1}`}
-                        width={300}
-                        height={400} 
+                        width={240}
+                        height={320} 
                         className="w-full h-auto aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
                         aiHint={aiHintForImage}
                       />
@@ -120,10 +120,10 @@ export function ProductCard({
                 ) : (
                    <CarouselItem>
                       <ProductImage
-                        src={`https://placehold.co/300x400.png`}
+                        src={`https://placehold.co/240x320.png`}
                         alt={product.name}
-                        width={300}
-                        height={400} 
+                        width={240}
+                        height={320} 
                         className="w-full h-auto aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
                         aiHint={aiHintForImage}
                       />
