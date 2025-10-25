@@ -33,8 +33,8 @@ export function SummerSale() {
         console.error("SummerSale Error:", allProductsResult.error);
         setSaleProducts([]);
       } else {
-        // Filter for products that are on sale
-        const onSale = allProductsResult.filter(p => p.originalPrice && p.originalPrice > p.price);
+        // Filter for products that are on sale and are for the "Winter" season
+        const onSale = allProductsResult.filter(p => p.season === 'Winter' && p.originalPrice && p.originalPrice > p.price);
         setSaleProducts(onSale);
       }
       
