@@ -49,7 +49,7 @@ export function SummerSale() {
       <section className="bg-muted/30 py-12">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
-             <h2 className="text-2xl font-bold text-foreground flex items-center"><Gift className="mr-3 h-6 w-6 text-primary"/>Summer Sale</h2>
+             <h2 className="text-2xl font-bold text-foreground flex items-center"><Gift className="mr-3 h-6 w-6 text-primary"/>Winter Sale</h2>
           </div>
           <div className="flex items-center justify-center min-h-[200px]">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -67,7 +67,7 @@ export function SummerSale() {
     <section className="bg-muted/30 py-12">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-foreground flex items-center"><Gift className="mr-3 h-6 w-6 text-primary"/>Summer Sale</h2>
+          <h2 className="text-2xl font-bold text-foreground flex items-center"><Gift className="mr-3 h-6 w-6 text-primary"/>Winter Sale</h2>
           <Button variant="link" asChild className="text-primary hover:underline">
             <Link href="/shop?sale=true">View All <ArrowRight className="ml-1 h-4 w-4" /></Link>
           </Button>
