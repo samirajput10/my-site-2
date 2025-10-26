@@ -95,7 +95,7 @@ export function ProductCard({
   }
 
   return (
-    <Card className="group flex h-full flex-col overflow-hidden rounded-lg bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <Card className="group flex flex-col overflow-hidden rounded-lg bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
         <CardHeader className="p-0 relative">
           <Link href={`/products/${product.id}`} aria-label={product.name}>
              <Carousel 
