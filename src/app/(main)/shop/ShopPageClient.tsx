@@ -4,8 +4,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ProductList } from '@/components/products/ProductList';
-import type { Product, ProductCategory, ProductSeason } from '@/types';
-import { ALL_CATEGORIES, ALL_SEASONS }from '@/types';
+import type { Product, ProductCategory, ProductSeason, ChildAgeRange } from '@/types';
+import { ALL_CATEGORIES, ALL_SEASONS, ALL_AGE_RANGES }from '@/types';
 import { getAllProductsFromDB } from '@/actions/productActions';
 import { Loader2, ServerCrash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,7 @@ export function ShopPageClient() {
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | 'All' | 'Sale'>('All');
   const [selectedSeason, setSelectedSeason] = useState<ProductSeason | 'All'>('All');
+  const [selectedAgeRange, setSelectedAgeRange] = useState<ChildAgeRange | 'All'>('All');
   
   useEffect(() => {
     const categoryFromUrl = searchParams.get('category') as ProductCategory | null;
@@ -97,8 +98,13 @@ export function ShopPageClient() {
       products = products.filter(p => p.season === selectedSeason);
     }
 
+    // Filter by Age Range (only if Childwear is selected)
+    if (selectedCategory === 'Childwear' && selectedAgeRange !== 'All') {
+        products = products.filter(p => p.ageRange === selectedAgeRange);
+    }
+
     return products;
-  }, [allProducts, selectedCategory, selectedSeason]);
+  }, [allProducts, selectedCategory, selectedSeason, selectedAgeRange]);
   
   const FilterButtons = () => (
       <div className="flex flex-col gap-4 mb-10">
@@ -149,6 +155,28 @@ export function ShopPageClient() {
                 </Button>
             ))}
         </div>
+        {selectedCategory === 'Childwear' && (
+            <div className="flex flex-wrap items-center justify-center gap-2">
+                <span className="font-semibold mr-2">Age:</span>
+                <Button
+                    variant={selectedAgeRange === 'All' ? 'default' : 'outline'}
+                    onClick={() => setSelectedAgeRange('All')}
+                    className="rounded-full"
+                >
+                    All
+                </Button>
+                {ALL_AGE_RANGES.map(age => (
+                    <Button
+                        key={age}
+                        variant={selectedAgeRange === age ? 'default' : 'outline'}
+                        onClick={() => setSelectedAgeRange(age)}
+                        className="rounded-full"
+                    >
+                        {age}
+                    </Button>
+                ))}
+            </div>
+        )}
       </div>
   )
 

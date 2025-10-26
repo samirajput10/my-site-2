@@ -10,6 +10,9 @@ export const ALL_SIZES: ProductSize[] = ["XS", "S", "M", "L", "XL", "XXL", "One 
 export type ProductSeason = "Summer" | "Winter";
 export const ALL_SEASONS: ProductSeason[] = ["Summer", "Winter"];
 
+export type ChildAgeRange = "0-1Y" | "1-2Y" | "2-4Y" | "4-6Y" | "6-8Y" | "8-10Y";
+export const ALL_AGE_RANGES: ChildAgeRange[] = ["0-1Y", "1-2Y", "2-4Y", "4-6Y", "6-8Y", "8-10Y"];
+
 export type Product = {
   id: string; // Firestore document ID when fetched
   name: string;
@@ -22,6 +25,7 @@ export type Product = {
   stock: number; // Added stock quantity
   sellerId: string; 
   season?: ProductSeason; // Added season
+  ageRange?: ChildAgeRange; // New: Age range for childwear
   createdAt?: string; // Serialized Firestore Timestamp (ISO string)
   updatedAt?: string; // Serialized Firestore Timestamp (ISO string)
 };
@@ -39,6 +43,7 @@ export const ProductSchema = z.object({
   stock: z.number().int().min(0),
   sellerId: z.string(),
   season: z.enum(ALL_SEASONS).optional(),
+  ageRange: z.enum(ALL_AGE_RANGES).optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });
@@ -48,3 +53,4 @@ export type CartItem = Product & {
 };
 
 export type WishlistItem = Product;
+

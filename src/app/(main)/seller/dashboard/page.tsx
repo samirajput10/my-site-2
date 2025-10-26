@@ -36,8 +36,8 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { auth, db, storage } from '@/lib/firebase/config';
-import type { Product, ProductCategory, ProductSeason, ProductSize } from '@/types';
-import { ALL_CATEGORIES, ALL_SIZES, ALL_SEASONS } from '@/types';
+import type { Product, ProductCategory, ProductSeason, ProductSize, ChildAgeRange } from '@/types';
+import { ALL_CATEGORIES, ALL_SIZES, ALL_SEASONS, ALL_AGE_RANGES } from '@/types';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import Image from 'next/image';
 import { getAllProductsFromDB, updateProductInDB } from '@/actions/productActions';
@@ -53,6 +53,7 @@ interface ProductFormState {
   sizes: string;
   stock: string;
   season: string;
+  ageRange: string;
 }
 
 const recommendedDbRules = `{
@@ -79,7 +80,7 @@ export default function AdminPanelPage() {
   const { formatPrice } = useCurrency();
   
   const [formState, setFormState] = useState<ProductFormState>({
-    name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: ''
+    name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '', ageRange: ''
   });
   const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
   const [previewUrls, setPreviewUrls] = useState<(string | null)[]>([null, null, null]);
@@ -209,6 +210,7 @@ export default function AdminPanelPage() {
         sizes: productToEdit.sizes.join(', '),
         stock: String(productToEdit.stock),
         season: productToEdit.season || '',
+        ageRange: productToEdit.ageRange || '',
       });
     } else {
       setEditFormState({});
@@ -350,6 +352,10 @@ export default function AdminPanelPage() {
           newProductData.season = formState.season;
       }
 
+      if (formState.category === 'Childwear' && formState.ageRange && ALL_AGE_RANGES.includes(formState.ageRange as ChildAgeRange)) {
+        newProductData.ageRange = formState.ageRange;
+      }
+
       if (formState.originalPrice && parseFloat(formState.originalPrice) > parseFloat(formState.price)) {
           newProductData.originalPrice = parseFloat(formState.originalPrice);
       }
@@ -357,7 +363,7 @@ export default function AdminPanelPage() {
       await addDoc(productsCollectionRef, newProductData);
       
       toast({ title: "Product Added", description: `Your product has been successfully listed.` });
-      setFormState({ name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '' });
+      setFormState({ name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '', ageRange: '' });
       setImageFiles([null, null, null]);
       setPreviewUrls([null, null, null]);
       fileInputRefs.current.forEach(input => {
@@ -401,6 +407,7 @@ export default function AdminPanelPage() {
         sizes: editFormState.sizes ? editFormState.sizes.split(',').map(s => s.trim() as ProductSize) : undefined,
         stock: editFormState.stock ? parseInt(editFormState.stock, 10) : undefined,
         season: editFormState.season as ProductSeason | undefined,
+        ageRange: editFormState.ageRange as ChildAgeRange | undefined,
     };
 
     const result = await updateProductInDB(productToEdit.id, updatedProductData);
@@ -543,13 +550,22 @@ export default function AdminPanelPage() {
               <Label htmlFor="description">Description</Label>
               <Textarea id="description" name="description" value={formState.description} onChange={handleChange} disabled={isSubmitting}/>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="category">Category *</Label>
                 <Input id="category" name="category" value={formState.category} onChange={handleChange} list="category-options" required disabled={isSubmitting}/>
                 <datalist id="category-options">{ALL_CATEGORIES.map(cat => <option key={cat} value={cat} />)}</datalist>
               </div>
-              <div>
+              {formState.category === 'Childwear' && (
+                <div>
+                    <Label htmlFor="ageRange">Age Range (for Childwear)</Label>
+                    <Input id="ageRange" name="ageRange" value={formState.ageRange} onChange={handleChange} list="age-range-options" placeholder="e.g., 2-4Y" disabled={isSubmitting}/>
+                    <datalist id="age-range-options">{ALL_AGE_RANGES.map(age => <option key={age} value={age} />)}</datalist>
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+               <div>
                 <Label htmlFor="sizes">Sizes (comma-separated, or "One Size") *</Label>
                 <Input id="sizes" name="sizes" value={formState.sizes} onChange={handleChange} required disabled={isSubmitting}/>
               </div>
@@ -711,9 +727,18 @@ export default function AdminPanelPage() {
                         <Input id="edit-stock" name="stock" type="number" value={editFormState.stock || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
                       </div>
                     </div>
-                    <div>
-                        <Label htmlFor="edit-season">Season</Label>
-                        <Input id="edit-season" name="season" value={editFormState.season || ''} onChange={handleEditFormChange} list="season-options" disabled={isUpdating} placeholder="e.g., Summer"/>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="edit-season">Season</Label>
+                            <Input id="edit-season" name="season" value={editFormState.season || ''} onChange={handleEditFormChange} list="season-options" disabled={isUpdating} placeholder="e.g., Summer"/>
+                        </div>
+                        {editFormState.category === 'Childwear' && (
+                            <div>
+                                <Label htmlFor="edit-ageRange">Age Range</Label>
+                                <Input id="edit-ageRange" name="ageRange" value={editFormState.ageRange || ''} onChange={handleEditFormChange} list="age-range-options" disabled={isUpdating} placeholder="e.g., 2-4Y"/>
+                                <datalist id="age-range-options">{ALL_AGE_RANGES.map(age => <option key={age} value={age} />)}</datalist>
+                            </div>
+                        )}
                     </div>
                      <div>
                         <Label>Product Image URLs</Label>
