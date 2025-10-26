@@ -27,22 +27,10 @@ import Autoplay from "embla-carousel-autoplay"
 
 interface ProductCardProps {
   product: Product;
-  discount?: string; 
-  status?: "New" | "Last 2!" | string;
-  rating?: number;
-  reviewCount?: number;
-  brandName?: string;
-  secondaryInfo?: string;
 }
 
 export function ProductCard({ 
   product, 
-  discount, 
-  status, 
-  rating = 0,
-  reviewCount = 0,
-  brandName,
-  secondaryInfo 
 }: ProductCardProps) {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isWishlisted } = useWishlist();
@@ -51,15 +39,6 @@ export function ProductCard({
   const autoplayPlugin = useRef(
     Autoplay({ delay: 2000, stopOnInteraction: true, stopOnMouseEnter: true })
   );
-
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-    });
-    return () => unsubscribeAuth();
-  }, []);
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault(); 
@@ -88,49 +67,22 @@ export function ProductCard({
     displayBadge = <Badge variant="destructive" className="absolute top-2 left-2 text-xs px-2 py-1 z-10">Out of Stock</Badge>;
   } else if (showDiscount) {
     displayBadge = <Badge className="absolute top-2 left-2 text-xs px-2 py-1 z-10 bg-green-600 text-white hover:bg-green-700">{calculatedDiscount}% OFF</Badge>;
-  } else if (status === "New") {
-    displayBadge = <Badge variant="secondary" className="absolute top-2 left-2 text-xs px-2 py-1 bg-green-600 text-white z-10">{status}</Badge>;
-  } else if (status) {
-    displayBadge = <Badge variant="destructive" className="absolute top-2 left-2 text-xs px-2 py-1 z-10">{status}</Badge>;
   }
 
   return (
-    <Card className="group flex flex-col overflow-hidden rounded-lg bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <Card className="product-card group">
         <CardHeader className="p-0 relative">
           <Link href={`/products/${product.id}`} aria-label={product.name}>
-             <Carousel 
-                plugins={[autoplayPlugin.current]}
-                className="w-full"
-                opts={{ align: "start", loop: true, }}
-              >
-              <CarouselContent>
-                {product.imageUrls && product.imageUrls.length > 0 ? (
-                  product.imageUrls.map((url, index) => (
-                    <CarouselItem key={index}>
-                      <ProductImage
-                        src={url}
-                        alt={`${product.name} image ${index + 1}`}
-                        width={240}
-                        height={320} 
-                        className="w-full h-auto aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
-                        aiHint={aiHintForImage}
-                      />
-                    </CarouselItem>
-                  ))
-                ) : (
-                   <CarouselItem>
-                      <ProductImage
-                        src={`https://placehold.co/240x320.png`}
-                        alt={product.name}
-                        width={240}
-                        height={320} 
-                        className="w-full h-auto aspect-[3/4] transition-transform duration-300 group-hover:scale-105"
-                        aiHint={aiHintForImage}
-                      />
-                    </CarouselItem>
-                )}
-              </CarouselContent>
-            </Carousel>
+             <div className="product-image-wrapper">
+                <ProductImage
+                    src={product.imageUrls[0]}
+                    alt={`${product.name} image 1`}
+                    width={250}
+                    height={300} 
+                    className="w-full h-full"
+                    aiHint={aiHintForImage}
+                />
+             </div>
           </Link>
           {displayBadge}
           
@@ -150,43 +102,27 @@ export function ProductCard({
           </div>
 
         </CardHeader>
-        <CardContent className="flex-grow p-4">
+        <CardContent className="flex-grow p-3 text-center">
           <Link href={`/products/${product.id}`}>
-            <h3 className="font-semibold text-foreground mb-1 text-base truncate hover:text-primary transition-colors" title={product.name}>{product.name}</h3>
+            <h3 className="font-semibold text-foreground mb-1 text-sm truncate hover:text-primary transition-colors" title={product.name}>{product.name}</h3>
           </Link>
           
-          {rating > 0 && (
-            <div className="flex items-center mb-2">
-              <div className="flex text-yellow-400 text-sm">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className={cn("h-4 w-4", i < Math.floor(rating) ? "fill-current" : (i < rating ? "fill-current opacity-50" : "fill-transparent stroke-current"))} />
-                ))}
-              </div>
-              {reviewCount > 0 && <span className="text-muted-foreground text-xs ml-1">({reviewCount})</span>}
-            </div>
-          )}
-
-          <div className="flex items-baseline gap-2">
-            <span className="text-primary font-bold text-lg">{formatPrice(product.price)}</span>
+          <div className="flex items-baseline gap-2 justify-center">
+            <span className="text-primary font-bold text-base">{formatPrice(product.price)}</span>
             {showDiscount && (
-              <span className="text-muted-foreground text-sm line-through">{formatPrice(product.originalPrice!)}</span>
+              <span className="text-muted-foreground text-xs line-through">{formatPrice(product.originalPrice!)}</span>
             )}
           </div>
-
-          {brandName && <p className="text-xs text-muted-foreground mt-1">From "{brandName}"</p>}
-          {secondaryInfo && <p className="text-xs text-muted-foreground mt-1">{secondaryInfo}</p>}
           
-          {product.sizes && product.sizes.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {product.sizes.slice(0, 4).map(size => ( // Show max 4 sizes
-                <Badge key={size} variant="outline" className="text-xs px-1.5 py-0.5">{size}</Badge>
-              ))}
+          {product.sizes && product.sizes.length > 0 && product.sizes[0] !== 'One Size' && (
+            <div className="mt-1">
+              <span className="text-xs text-muted-foreground">{product.sizes.slice(0, 2).join(' / ')}</span>
             </div>
           )}
         </CardContent>
-        <CardFooter className="mt-auto p-4 pt-0 grid grid-cols-1 gap-2">
-           <Button size="sm" onClick={handleAddToCart} className={cn("w-full text-white", isOutOfStock ? "bg-red-500 hover:bg-red-600" : "bg-green-600 hover:bg-green-700")} disabled={isOutOfStock}>
-              <ShoppingCart size={16} className="mr-2" />
+        <CardFooter className="mt-auto p-2 pt-0 grid grid-cols-1 gap-2">
+           <Button size="sm" onClick={handleAddToCart} className={cn("w-full text-white text-xs", isOutOfStock ? "bg-red-500 hover:bg-red-600" : "bg-green-600 hover:bg-green-700")} disabled={isOutOfStock}>
+              <ShoppingCart size={14} className="mr-2" />
               {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
             </Button>
         </CardFooter>
