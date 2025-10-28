@@ -2,8 +2,8 @@
 "use server";
 
 import { db } from '@/lib/firebase/config';
-import type { Product, ProductCategory, ProductSeason, ProductSize, ChildAgeRange } from '@/types';
-import { ALL_CATEGORIES, ALL_SEASONS, ALL_SIZES, ALL_AGE_RANGES } from '@/types';
+import type { Product, ProductCategory, ProductSeason, ProductSize, ChildAgeRange, ProductColor } from '@/types';
+import { ALL_CATEGORIES, ALL_SEASONS, ALL_SIZES, ALL_AGE_RANGES, ALL_COLORS } from '@/types';
 import { collection, getDocs, doc, getDoc, query, orderBy, limit, updateDoc, serverTimestamp } from "firebase/firestore";
 
 // Helper to ensure imageUrls is always a non-empty array
@@ -52,6 +52,7 @@ export async function getAllProductsFromDB(): Promise<Product[] | { error: strin
         sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
         stock: typeof data.stock === 'number' ? data.stock : 0,
         sellerId: data.sellerId || "unknown_seller",
+        color: (ALL_COLORS.includes(data.color) ? data.color : undefined) as ProductColor | undefined,
         season: (ALL_SEASONS.includes(data.season) ? data.season : undefined) as ProductSeason | undefined,
         ageRange: (ALL_AGE_RANGES.includes(data.ageRange) ? data.ageRange : undefined) as ChildAgeRange | undefined,
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
@@ -100,6 +101,7 @@ export async function getProductFromDB(productId: string): Promise<Product | nul
       sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
       stock: typeof data.stock === 'number' ? data.stock : 10, // Default to 10 if not set
       sellerId: data.sellerId || "unknown_seller",
+      color: (ALL_COLORS.includes(data.color) ? data.color : undefined) as ProductColor | undefined,
       season: (ALL_SEASONS.includes(data.season) ? data.season : undefined) as ProductSeason | undefined,
       ageRange: (ALL_AGE_RANGES.includes(data.ageRange) ? data.ageRange : undefined) as ChildAgeRange | undefined,
       createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
@@ -149,6 +151,10 @@ export async function updateProductInDB(productId: string, updatedData: Partial<
 
         if (dataToUpdate.ageRange === '') {
             dataToUpdate.ageRange = null;
+        }
+
+        if (dataToUpdate.color === '') {
+            dataToUpdate.color = null;
         }
 
         // Remove id from the data object as it shouldn't be updated

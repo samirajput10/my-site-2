@@ -36,8 +36,8 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { auth, db, storage } from '@/lib/firebase/config';
-import type { Product, ProductCategory, ProductSeason, ProductSize, ChildAgeRange } from '@/types';
-import { ALL_CATEGORIES, ALL_SIZES, ALL_SEASONS, ALL_AGE_RANGES } from '@/types';
+import type { Product, ProductCategory, ProductSeason, ProductSize, ChildAgeRange, ProductColor } from '@/types';
+import { ALL_CATEGORIES, ALL_SIZES, ALL_SEASONS, ALL_AGE_RANGES, ALL_COLORS } from '@/types';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import Image from 'next/image';
 import { getAllProductsFromDB, updateProductInDB } from '@/actions/productActions';
@@ -47,13 +47,14 @@ interface ProductFormState {
   name: string;
   description: string;
   price: string;
-  originalPrice: string; // Add originalPrice to form state
+  originalPrice: string;
   imageUrls: string[];
   category: string;
   sizes: string;
   stock: string;
   season: string;
   ageRange: string;
+  color: string;
 }
 
 const recommendedDbRules = `{
@@ -80,7 +81,7 @@ export default function AdminPanelPage() {
   const { formatPrice } = useCurrency();
   
   const [formState, setFormState] = useState<ProductFormState>({
-    name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '', ageRange: ''
+    name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '', ageRange: '', color: ''
   });
   const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
   const [previewUrls, setPreviewUrls] = useState<(string | null)[]>([null, null, null]);
@@ -211,6 +212,7 @@ export default function AdminPanelPage() {
         stock: String(productToEdit.stock),
         season: productToEdit.season || '',
         ageRange: productToEdit.ageRange || '',
+        color: productToEdit.color || '',
       });
     } else {
       setEditFormState({});
@@ -249,12 +251,12 @@ export default function AdminPanelPage() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormState(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setEditFormState(prev => ({ ...prev, [name]: value }));
   };
@@ -351,6 +353,9 @@ export default function AdminPanelPage() {
       if (formState.season && ALL_SEASONS.includes(formState.season as ProductSeason)) {
           newProductData.season = formState.season;
       }
+       if (formState.color && ALL_COLORS.includes(formState.color as ProductColor)) {
+          newProductData.color = formState.color;
+      }
 
       if (formState.category === 'Childwear' && formState.ageRange && ALL_AGE_RANGES.includes(formState.ageRange as ChildAgeRange)) {
         newProductData.ageRange = formState.ageRange;
@@ -363,7 +368,7 @@ export default function AdminPanelPage() {
       await addDoc(productsCollectionRef, newProductData);
       
       toast({ title: "Product Added", description: `Your product has been successfully listed.` });
-      setFormState({ name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '', ageRange: '' });
+      setFormState({ name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '', ageRange: '', color: '' });
       setImageFiles([null, null, null]);
       setPreviewUrls([null, null, null]);
       fileInputRefs.current.forEach(input => {
@@ -408,6 +413,7 @@ export default function AdminPanelPage() {
         stock: editFormState.stock ? parseInt(editFormState.stock, 10) : undefined,
         season: editFormState.season as ProductSeason | undefined,
         ageRange: editFormState.ageRange as ChildAgeRange | undefined,
+        color: editFormState.color as ProductColor | undefined,
     };
 
     const result = await updateProductInDB(productToEdit.id, updatedProductData);
@@ -550,11 +556,18 @@ export default function AdminPanelPage() {
               <Label htmlFor="description">Description</Label>
               <Textarea id="description" name="description" value={formState.description} onChange={handleChange} disabled={isSubmitting}/>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div>
                 <Label htmlFor="category">Category *</Label>
                 <Input id="category" name="category" value={formState.category} onChange={handleChange} list="category-options" required disabled={isSubmitting}/>
                 <datalist id="category-options">{ALL_CATEGORIES.map(cat => <option key={cat} value={cat} />)}</datalist>
+              </div>
+              <div>
+                <Label htmlFor="color">Color</Label>
+                <select id="color" name="color" value={formState.color} onChange={handleChange} disabled={isSubmitting} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm">
+                    <option value="">Select Color</option>
+                    {ALL_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
               </div>
               {formState.category === 'Childwear' && (
                 <div>
@@ -718,16 +731,23 @@ export default function AdminPanelPage() {
                         <Label htmlFor="edit-category">Category *</Label>
                         <Input id="edit-category" name="category" value={editFormState.category || ''} onChange={handleEditFormChange} list="category-options" required disabled={isUpdating} />
                       </div>
+                       <div>
+                        <Label htmlFor="edit-color">Color</Label>
+                        <select id="edit-color" name="color" value={editFormState.color || ''} onChange={handleEditFormChange} disabled={isUpdating} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm">
+                            <option value="">Select Color</option>
+                            {ALL_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
                       <div>
                         <Label htmlFor="edit-sizes">Sizes *</Label>
                         <Input id="edit-sizes" name="sizes" value={editFormState.sizes || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
                       </div>
-                      <div>
-                        <Label htmlFor="edit-stock">Stock *</Label>
-                        <Input id="edit-stock" name="stock" type="number" value={editFormState.stock || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
-                      </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="edit-stock">Stock *</Label>
+                            <Input id="edit-stock" name="stock" type="number" value={editFormState.stock || ''} onChange={handleEditFormChange} required disabled={isUpdating} />
+                        </div>
                         <div>
                             <Label htmlFor="edit-season">Season</Label>
                             <Input id="edit-season" name="season" value={editFormState.season || ''} onChange={handleEditFormChange} list="season-options" disabled={isUpdating} placeholder="e.g., Summer"/>

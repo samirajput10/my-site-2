@@ -11,7 +11,7 @@ import { HelpCircle } from 'lucide-react';
 const faqData = [
   {
     question: "What is your return policy?",
-    answer: "We accept returns within 30 days of purchase, provided the item is unworn, with all tags attached, and in its original condition. To initiate a return, please visit our Shipping & Returns page for detailed instructions."
+    answer: "We accept returns within 3 days of purchase, provided the item is unworn, with all tags attached, and in its original condition. To initiate a return, please visit our Shipping & Returns page for detailed instructions."
   },
   {
     question: "How long does shipping take?",

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Heart, ShoppingCart, Loader2, AlertTriangle, Camera, ServerCrash } from 'lucide-react';
+import { Heart, ShoppingCart, Loader2, AlertTriangle, Camera, ServerCrash, Palette } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -225,6 +225,18 @@ export default function ProductDetailPage() {
               </div>
               
               <Separator />
+
+              <div className="flex items-center gap-6">
+                {product.color && (
+                  <div className="flex items-center gap-2">
+                    <Palette className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm font-medium">{product.color}</span>
+                  </div>
+                )}
+                {product.season && (
+                   <Badge variant="outline">{product.season}</Badge>
+                )}
+              </div>
 
               <div>
                 <h4 className="mb-2 text-sm font-medium text-foreground">Available Sizes:</h4>
