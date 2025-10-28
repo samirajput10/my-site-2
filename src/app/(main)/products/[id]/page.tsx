@@ -30,6 +30,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import Autoplay from "embla-carousel-autoplay";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 const recommendedDbRules = `{
@@ -246,19 +247,29 @@ export default function ProductDetailPage() {
               {product.colors.length > 0 && (
                 <div>
                   <h4 className="mb-2 text-sm font-medium text-foreground">Available Colors:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {product.colors.map(color => (
-                        <Button
-                        key={color}
-                        variant={selectedColor === color ? 'default' : 'outline'}
-                        onClick={() => setSelectedColor(color)}
-                        className="text-xs px-3 py-1 h-auto"
-                        >
-                        {color}
-                        </Button>
-                    ))}
-                  </div>
-                   {!selectedColor && (
+                  <TooltipProvider>
+                    <div className="flex flex-wrap gap-2">
+                      {product.colors.map(color => (
+                        <Tooltip key={color}>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => setSelectedColor(color)}
+                              className={cn(
+                                "h-8 w-8 rounded-full border-2 transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                                selectedColor === color ? 'ring-2 ring-ring ring-offset-2' : 'border-border'
+                              )}
+                              style={{ backgroundColor: color.toLowerCase() }}
+                              aria-label={`Select color ${color}`}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{color}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </div>
+                  </TooltipProvider>
+                  {!selectedColor && (
                     <p className="mt-2 text-sm text-destructive">Please select a color.</p>
                   )}
                 </div>
