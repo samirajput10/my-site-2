@@ -17,6 +17,21 @@ const ensureImageUrls = (data: any): string[] => {
     return [`https://placehold.co/300x450.png`]; // Fallback
 };
 
+const parseStringToArray = (value: any, validValues: readonly string[]): any[] => {
+    if (Array.isArray(value)) {
+        return value
+            .map(s => String(s).trim())
+            .filter(s => validValues.includes(s));
+    }
+    if (typeof value === 'string' && value.length > 0) {
+        return value.split(',')
+            .map(s => s.trim())
+            .filter(s => validValues.includes(s));
+    }
+    return [];
+};
+
+
 export async function getAllProductsFromDB(): Promise<Product[] | { error: string }> {
   try {
     const productsRef = collection(db, "products");
@@ -30,16 +45,8 @@ export async function getAllProductsFromDB(): Promise<Product[] | { error: strin
     const products = querySnapshot.docs.map(doc => {
       const data = doc.data();
       
-      let parsedSizes: ProductSize[] = [];
-      if (Array.isArray(data.sizes)) {
-        parsedSizes = data.sizes
-          .map(s => String(s).trim())
-          .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
-      } else if (typeof data.sizes === 'string' && data.sizes.length > 0) {
-        parsedSizes = data.sizes.split(',')
-          .map(s => s.trim())
-          .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
-      }
+      const parsedSizes = parseStringToArray(data.sizes, ALL_SIZES) as ProductSize[];
+      const parsedColors = parseStringToArray(data.colors, ALL_COLORS) as ProductColor[];
       
       const mappedProduct: Product = {
         id: doc.id,
@@ -52,7 +59,7 @@ export async function getAllProductsFromDB(): Promise<Product[] | { error: strin
         sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
         stock: typeof data.stock === 'number' ? data.stock : 0,
         sellerId: data.sellerId || "unknown_seller",
-        color: (ALL_COLORS.includes(data.color) ? data.color : undefined) as ProductColor | undefined,
+        colors: parsedColors,
         season: (ALL_SEASONS.includes(data.season) ? data.season : undefined) as ProductSeason | undefined,
         ageRange: (ALL_AGE_RANGES.includes(data.ageRange) ? data.ageRange : undefined) as ChildAgeRange | undefined,
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
@@ -79,16 +86,8 @@ export async function getProductFromDB(productId: string): Promise<Product | nul
 
     const data = docSnap.data();
       
-    let parsedSizes: ProductSize[] = [];
-    if (Array.isArray(data.sizes)) {
-      parsedSizes = data.sizes
-        .map(s => String(s).trim())
-        .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
-    } else if (typeof data.sizes === 'string' && data.sizes.length > 0) {
-      parsedSizes = data.sizes.split(',')
-        .map(s => s.trim())
-        .filter(s => ALL_SIZES.includes(s as ProductSize)) as ProductSize[];
-    }
+    const parsedSizes = parseStringToArray(data.sizes, ALL_SIZES) as ProductSize[];
+    const parsedColors = parseStringToArray(data.colors, ALL_COLORS) as ProductColor[];
     
     const mappedProduct: Product = {
       id: docSnap.id,
@@ -101,7 +100,7 @@ export async function getProductFromDB(productId: string): Promise<Product | nul
       sizes: parsedSizes.length > 0 ? parsedSizes : ['One Size'],
       stock: typeof data.stock === 'number' ? data.stock : 10, // Default to 10 if not set
       sellerId: data.sellerId || "unknown_seller",
-      color: (ALL_COLORS.includes(data.color) ? data.color : undefined) as ProductColor | undefined,
+      colors: parsedColors,
       season: (ALL_SEASONS.includes(data.season) ? data.season : undefined) as ProductSeason | undefined,
       ageRange: (ALL_AGE_RANGES.includes(data.ageRange) ? data.ageRange : undefined) as ChildAgeRange | undefined,
       createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
@@ -144,6 +143,14 @@ export async function updateProductInDB(productId: string, updatedData: Partial<
                 .filter((s: string) => ALL_SIZES.includes(s as ProductSize));
             dataToUpdate.sizes = parsedSizes.length > 0 ? parsedSizes : ['One Size'];
         }
+        
+        // Handle colors array
+        if (typeof dataToUpdate.colors === 'string') {
+             const parsedColors = dataToUpdate.colors.split(',')
+                .map((s: string) => s.trim())
+                .filter((s: string) => ALL_COLORS.includes(s as ProductColor));
+            dataToUpdate.colors = parsedColors;
+        }
 
         if (dataToUpdate.season === '') {
             dataToUpdate.season = null;
@@ -151,10 +158,6 @@ export async function updateProductInDB(productId: string, updatedData: Partial<
 
         if (dataToUpdate.ageRange === '') {
             dataToUpdate.ageRange = null;
-        }
-
-        if (dataToUpdate.color === '') {
-            dataToUpdate.color = null;
         }
 
         // Remove id from the data object as it shouldn't be updated

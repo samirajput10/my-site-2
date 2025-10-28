@@ -54,7 +54,7 @@ interface ProductFormState {
   stock: string;
   season: string;
   ageRange: string;
-  color: string;
+  colors: string;
 }
 
 const recommendedDbRules = `{
@@ -81,7 +81,7 @@ export default function AdminPanelPage() {
   const { formatPrice } = useCurrency();
   
   const [formState, setFormState] = useState<ProductFormState>({
-    name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '', ageRange: '', color: ''
+    name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '', ageRange: '', colors: ''
   });
   const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
   const [previewUrls, setPreviewUrls] = useState<(string | null)[]>([null, null, null]);
@@ -212,7 +212,7 @@ export default function AdminPanelPage() {
         stock: String(productToEdit.stock),
         season: productToEdit.season || '',
         ageRange: productToEdit.ageRange || '',
-        color: productToEdit.color || '',
+        colors: productToEdit.colors.join(', '),
       });
     } else {
       setEditFormState({});
@@ -338,6 +338,10 @@ export default function AdminPanelPage() {
           return;
       }
 
+      const parsedColors = formState.colors.split(',')
+        .map(c => c.trim())
+        .filter(c => ALL_COLORS.includes(c as ProductColor));
+
       const newProductData: any = {
         name: formState.name,
         description: formState.description,
@@ -348,13 +352,11 @@ export default function AdminPanelPage() {
         stock: parseInt(formState.stock, 10),
         sellerId: currentUser.uid,
         createdAt: serverTimestamp(),
+        colors: parsedColors,
       };
 
       if (formState.season && ALL_SEASONS.includes(formState.season as ProductSeason)) {
           newProductData.season = formState.season;
-      }
-       if (formState.color && ALL_COLORS.includes(formState.color as ProductColor)) {
-          newProductData.color = formState.color;
       }
 
       if (formState.category === 'Childwear' && formState.ageRange && ALL_AGE_RANGES.includes(formState.ageRange as ChildAgeRange)) {
@@ -368,7 +370,7 @@ export default function AdminPanelPage() {
       await addDoc(productsCollectionRef, newProductData);
       
       toast({ title: "Product Added", description: `Your product has been successfully listed.` });
-      setFormState({ name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '', ageRange: '', color: '' });
+      setFormState({ name: '', description: '', price: '', originalPrice: '', imageUrls: ['', '', ''], category: '', sizes: '', stock: '10', season: '', ageRange: '', colors: '' });
       setImageFiles([null, null, null]);
       setPreviewUrls([null, null, null]);
       fileInputRefs.current.forEach(input => {
@@ -402,6 +404,9 @@ export default function AdminPanelPage() {
 
     setIsUpdating(true);
 
+    // Assert editFormState.colors as string for processing
+    const colorsString = editFormState.colors as string | undefined;
+
     const updatedProductData: Partial<Product> = {
         name: editFormState.name,
         description: editFormState.description,
@@ -413,7 +418,7 @@ export default function AdminPanelPage() {
         stock: editFormState.stock ? parseInt(editFormState.stock, 10) : undefined,
         season: editFormState.season as ProductSeason | undefined,
         ageRange: editFormState.ageRange as ChildAgeRange | undefined,
-        color: editFormState.color as ProductColor | undefined,
+        colors: colorsString ? colorsString.split(',').map(c => c.trim() as ProductColor) : [],
     };
 
     const result = await updateProductInDB(productToEdit.id, updatedProductData);
@@ -563,11 +568,8 @@ export default function AdminPanelPage() {
                 <datalist id="category-options">{ALL_CATEGORIES.map(cat => <option key={cat} value={cat} />)}</datalist>
               </div>
               <div>
-                <Label htmlFor="color">Color</Label>
-                <select id="color" name="color" value={formState.color} onChange={handleChange} disabled={isSubmitting} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm">
-                    <option value="">Select Color</option>
-                    {ALL_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <Label htmlFor="colors">Colors (comma-separated)</Label>
+                <Input id="colors" name="colors" value={formState.colors} onChange={handleChange} disabled={isSubmitting} placeholder="e.g. Black, White"/>
               </div>
               {formState.category === 'Childwear' && (
                 <div>
@@ -732,11 +734,8 @@ export default function AdminPanelPage() {
                         <Input id="edit-category" name="category" value={editFormState.category || ''} onChange={handleEditFormChange} list="category-options" required disabled={isUpdating} />
                       </div>
                        <div>
-                        <Label htmlFor="edit-color">Color</Label>
-                        <select id="edit-color" name="color" value={editFormState.color || ''} onChange={handleEditFormChange} disabled={isUpdating} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm">
-                            <option value="">Select Color</option>
-                            {ALL_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
+                        <Label htmlFor="edit-colors">Colors</Label>
+                        <Input id="edit-colors" name="colors" value={editFormState.colors || ''} onChange={handleEditFormChange} disabled={isUpdating} placeholder="e.g. Black, White"/>
                       </div>
                       <div>
                         <Label htmlFor="edit-sizes">Sizes *</Label>

@@ -58,6 +58,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null | undefined>(undefined); // undefined for loading state
   const [error, setError] = useState<React.ReactNode | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   const { addToCart } = useCart();
@@ -113,6 +114,9 @@ export default function ProductDetailPage() {
 
         if (foundProduct.sizes.length) {
           setSelectedSize(foundProduct.sizes[0]);
+        }
+         if (foundProduct.colors.length > 0) {
+          setSelectedColor(foundProduct.colors[0]);
         }
 
         // Fetch related products
@@ -174,6 +178,13 @@ export default function ProductDetailPage() {
   
   const aiHintForImage = `${product.category.toLowerCase()} ${product.name.split(' ').slice(0,1).join(' ').toLowerCase()}`;
   const isOutOfStock = product.stock <= 0;
+  
+  const canAddToCart = () => {
+    if(isOutOfStock) return false;
+    if(product.sizes.length > 0 && product.sizes[0] !== 'One Size' && !selectedSize) return false;
+    if(product.colors.length > 0 && !selectedColor) return false;
+    return true;
+  }
 
   return (
     <div className="container mx-auto py-8 md:py-12">
@@ -227,35 +238,53 @@ export default function ProductDetailPage() {
               <Separator />
 
               <div className="flex items-center gap-6">
-                {product.color && (
-                  <div className="flex items-center gap-2">
-                    <Palette className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm font-medium">{product.color}</span>
-                  </div>
-                )}
                 {product.season && (
                    <Badge variant="outline">{product.season}</Badge>
                 )}
               </div>
 
-              <div>
-                <h4 className="mb-2 text-sm font-medium text-foreground">Available Sizes:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.map(size => (
-                    <Button
-                      key={size}
-                      variant={selectedSize === size ? 'default' : 'outline'}
-                      onClick={() => setSelectedSize(size)}
-                      className="text-xs px-3 py-1 h-auto"
-                    >
-                      {size}
-                    </Button>
-                  ))}
+              {product.colors.length > 0 && (
+                <div>
+                  <h4 className="mb-2 text-sm font-medium text-foreground">Available Colors:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {product.colors.map(color => (
+                        <Button
+                        key={color}
+                        variant={selectedColor === color ? 'default' : 'outline'}
+                        onClick={() => setSelectedColor(color)}
+                        className="text-xs px-3 py-1 h-auto"
+                        >
+                        {color}
+                        </Button>
+                    ))}
+                  </div>
+                   {!selectedColor && (
+                    <p className="mt-2 text-sm text-destructive">Please select a color.</p>
+                  )}
                 </div>
-                {!selectedSize && product.sizes.length > 0 && product.sizes[0] !== 'One Size' && (
-                  <p className="mt-2 text-sm text-destructive">Please select a size.</p>
-                )}
-              </div>
+              )}
+
+
+              {product.sizes.length > 0 && product.sizes[0] !== 'One Size' && (
+                <div>
+                  <h4 className="mb-2 text-sm font-medium text-foreground">Available Sizes:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {product.sizes.map(size => (
+                      <Button
+                        key={size}
+                        variant={selectedSize === size ? 'default' : 'outline'}
+                        onClick={() => setSelectedSize(size)}
+                        className="text-xs px-3 py-1 h-auto"
+                      >
+                        {size}
+                      </Button>
+                    ))}
+                  </div>
+                  {!selectedSize && (
+                    <p className="mt-2 text-sm text-destructive">Please select a size.</p>
+                  )}
+                </div>
+              )}
 
               <Separator />
 
@@ -265,7 +294,7 @@ export default function ProductDetailPage() {
                     size="lg" 
                     onClick={() => addToCart(product)} 
                     className="flex-grow bg-primary hover:bg-primary/90 text-primary-foreground"
-                    disabled={isOutOfStock || (!selectedSize && product.sizes.length > 0 && product.sizes[0] !== 'One Size')}
+                    disabled={!canAddToCart()}
                   >
                     <ShoppingCart size={20} className="mr-2" />
                     {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}

@@ -28,7 +28,7 @@ export type Product = {
   sizes: ProductSize[];
   stock: number; // Added stock quantity
   sellerId: string; 
-  color?: ProductColor; // Added color
+  colors: ProductColor[]; // Changed from color to colors
   season?: ProductSeason; // Added season
   ageRange?: ChildAgeRange; // New: Age range for childwear
   createdAt?: string; // Serialized Firestore Timestamp (ISO string)
@@ -47,7 +47,7 @@ export const ProductSchema = z.object({
   sizes: z.array(z.enum(ALL_SIZES)),
   stock: z.number().int().min(0),
   sellerId: z.string(),
-  color: z.enum(ALL_COLORS).optional(),
+  colors: z.array(z.enum(ALL_COLORS)),
   season: z.enum(ALL_SEASONS).optional(),
   ageRange: z.enum(ALL_AGE_RANGES).optional(),
   createdAt: z.string().optional(),
